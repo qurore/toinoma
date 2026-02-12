@@ -26,16 +26,18 @@ Toinoma is a marketplace platform that connects university student exam-problem 
 
 | Layer | Technology | Purpose |
 |-------|------------|---------|
-| **Framework** | Next.js 15 (App Router) | Full-stack React with Server Components, Server Actions, API routes |
-| **Language** | TypeScript | Type-safe development across frontend and backend |
-| **Styling** | Tailwind CSS + custom design tokens | Utility-first CSS |
-| **UI Components** | Radix UI + custom components | Accessible, unstyled primitives with custom design system |
+| **Monorepo** | pnpm + Turborepo | Workspace management, task orchestration, caching |
+| **Web** | Next.js 15 (App Router) | Full-stack React with Server Components, Server Actions, API routes |
+| **Mobile** | Expo (React Native) + Expo Router | iOS/Android with camera-based answer capture (Phase 6) |
+| **Language** | TypeScript | Type-safe development across all packages |
+| **Styling** | Tailwind CSS + custom design tokens | Utility-first CSS (web) |
+| **UI Components** | Radix UI + custom components | Accessible, unstyled primitives with custom design system (web) |
 | **Database** | Supabase (PostgreSQL) | Direct client, no ORM. SQL migrations via `supabase migration` |
 | **Auth** | Supabase Auth | OAuth 2.0 (Google, X/Twitter) |
 | **Payment** | Stripe Connect (Express accounts) | Creator payouts with identity verification |
 | **Storage** | Supabase Storage | Problem PDFs, images, handwritten answer uploads |
 | **AI Grading** | Vercel AI SDK + Google Generative AI provider | Auto-grading based on creator-defined rubrics |
-| **Deploy** | Vercel | Production hosting |
+| **Deploy** | Vercel (web), App Store / Google Play (mobile) | Production hosting |
 
 ### Key Design Decisions
 
@@ -44,51 +46,62 @@ Toinoma is a marketplace platform that connects university student exam-problem 
 3. **Supabase Storage** — Unified with the database layer. No separate S3/R2 setup needed.
 4. **Row-Level Security (RLS)** — All data access governed by Supabase RLS policies. No middleware-based auth checks for data.
 5. **Lazy Stripe Initialization** — Stripe client initializes at runtime to allow builds without secrets.
+6. **pnpm + Turborepo Monorepo** — Shared types, schemas, constants between web and mobile. Raw TypeScript in `packages/shared` (no build step).
+7. **Mobile calls web API routes** — Both platforms use the same `/api/*` endpoints. No separate backend for mobile.
 
 ---
 
-## Project Structure
+## Project Structure (pnpm + Turborepo Monorepo)
 
 ```
-src/
-├── app/
-│   ├── globals.css              # Tailwind v4 @import + @theme design tokens
-│   ├── layout.tsx               # Root layout (lang="ja", Inter font)
-│   ├── page.tsx                 # Landing page
-│   ├── (marketing)/             # Public pages (landing, explore)
-│   ├── (dashboard)/             # Authenticated student routes
-│   ├── (creator)/               # Authenticated creator routes
-│   ├── api/                     # API routes (webhooks, ai-grading)
-│   │   ├── webhooks/
-│   │   │   └── stripe/          # Stripe webhook handler
-│   │   └── grading/             # AI grading endpoint
-│   └── auth/
-│       └── callback/            # Supabase Auth callback
-├── components/
-│   ├── ui/                      # Radix-based primitives (Button, etc.)
-│   ├── marketplace/             # Problem cards, filters, search
-│   ├── grading/                 # Answer input, result display
-│   └── dashboard/               # Charts, stats, tables
-├── lib/
-│   ├── utils.ts                 # cn() — clsx + tailwind-merge
-│   ├── supabase/
-│   │   ├── client.ts            # Browser client
-│   │   ├── server.ts            # Server client (async cookies)
-│   │   └── middleware.ts         # Auth middleware + route protection
-│   ├── stripe.ts                # Stripe Connect logic (lazy singleton)
-│   └── ai/
-│       └── grading.ts           # Vercel AI SDK + Google Generative AI
-├── types/
-│   └── database.ts              # Supabase generated types
-├── test/
-│   └── setup.ts                 # Vitest setup (@testing-library/jest-dom)
-└── middleware.ts                 # Route protection (calls updateSession)
-supabase/
-├── config.toml                  # Supabase project config
-├── migrations/                  # SQL migration files
-└── seed.sql                     # Development seed data
-e2e/                             # Playwright E2E tests
-.env.example                     # Environment variable template
+apps/
+├── web/                             # Next.js 15 (App Router)
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── globals.css          # Tailwind v4 @import + @theme design tokens
+│   │   │   ├── layout.tsx           # Root layout (lang="ja", Inter font)
+│   │   │   ├── page.tsx             # Landing page
+│   │   │   ├── (marketing)/         # Public pages (landing, explore)
+│   │   │   ├── (dashboard)/         # Authenticated student routes
+│   │   │   ├── (creator)/           # Authenticated creator routes
+│   │   │   ├── api/                 # API routes (webhooks, ai-grading)
+│   │   │   └── auth/callback/       # Supabase Auth callback
+│   │   ├── components/
+│   │   │   ├── ui/                  # Radix-based primitives (Button, etc.)
+│   │   │   ├── marketplace/         # Problem cards, filters, search
+│   │   │   ├── grading/             # Answer input, result display
+│   │   │   └── dashboard/           # Charts, stats, tables
+│   │   ├── lib/
+│   │   │   ├── utils.ts             # cn() — clsx + tailwind-merge
+│   │   │   ├── supabase/            # Browser/Server/Middleware clients
+│   │   │   ├── stripe.ts            # Stripe Connect logic (lazy singleton)
+│   │   │   └── ai/grading.ts        # Vercel AI SDK + Google Generative AI
+│   │   ├── types/database.ts        # Re-exports from @toinoma/shared
+│   │   ├── test/setup.ts            # Vitest setup
+│   │   └── middleware.ts            # Route protection (calls updateSession)
+│   ├── e2e/                         # Playwright E2E tests
+│   └── .env.example                 # Environment variable template
+│
+└── mobile/                          # Expo (React Native) — Phase 6
+    ├── app/index.tsx                # Validation fixture
+    └── app.json                     # Expo config
+
+packages/
+└── shared/                          # Shared between web and mobile
+    └── src/
+        ├── types/                   # Supabase generated types (database.ts)
+        ├── schemas/                 # Zod schemas (grading result)
+        ├── constants/               # Subjects, difficulties, labels
+        └── utils/                   # Fee calculation, score formatting
+
+supabase/                            # Single source of truth for DB
+├── config.toml
+├── migrations/
+└── seed.sql
+
+turbo.json                           # Turborepo task pipeline
+pnpm-workspace.yaml                  # Workspace definition
+tsconfig.base.json                   # Shared TypeScript config
 ```
 
 ---

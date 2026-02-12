@@ -1,0 +1,10 @@
+{
+  "expo": {
+    "name": "Toinoma",
+    "slug": "toinoma",
+    "version": "0.1.0",
+    "scheme": "toinoma",
+    "platforms": ["ios", "android"],
+    "newArchEnabled": true
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "@toinoma/mobile",
+  "version": "0.1.0",
+  "private": true,
+  "main": "expo-router/entry",
+  "scripts": {
+    "dev": "expo start",
+    "build": "echo 'Mobile build skipped (Phase 6)'",
+    "type-check": "tsc --noEmit",
+    "lint": "echo 'Mobile lint skipped (Phase 6)'",
+    "test": "echo 'Mobile tests skipped (Phase 6)'",
+    "clean": "rm -rf .expo .turbo"
+  },
+  "dependencies": {
+    "@toinoma/shared": "workspace:*",
+    "expo": "~53.0.0",
+    "expo-router": "~5.0.0",
+    "react": "^19.2.4",
+    "react-native": "~0.79.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "typescript": "^5.9.3"
+  }
+}

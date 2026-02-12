@@ -1,4 +1,5 @@
 import Stripe from "stripe";
+import { calculatePlatformFee } from "@toinoma/shared/utils";
 
 let stripeInstance: Stripe | null = null;
 
@@ -18,8 +19,6 @@ export function getStripe(): Stripe {
   return stripeInstance;
 }
 
-const PLATFORM_FEE_PERCENT = 15;
-
 export async function createCheckoutSession({
   priceAmountJpy,
   problemSetId,
@@ -38,7 +37,7 @@ export async function createCheckoutSession({
   cancelUrl: string;
 }) {
   const stripe = getStripe();
-  const platformFee = Math.round(priceAmountJpy * (PLATFORM_FEE_PERCENT / 100));
+  const platformFee = calculatePlatformFee(priceAmountJpy);
 
   return stripe.checkout.sessions.create({
     mode: "payment",
