@@ -34,7 +34,7 @@ Toinoma is a marketplace platform that connects university student exam-problem 
 | **Auth** | Supabase Auth | OAuth 2.0 (Google, X/Twitter) |
 | **Payment** | Stripe Connect (Express accounts) | Creator payouts with identity verification |
 | **Storage** | Supabase Storage | Problem PDFs, images, handwritten answer uploads |
-| **AI Grading** | Anthropic Claude API (claude-sonnet-4-5-20250929) | Auto-grading based on creator-defined rubrics |
+| **AI Grading** | Vercel AI SDK + Google Generative AI provider | Auto-grading based on creator-defined rubrics |
 | **Deploy** | Vercel | Production hosting |
 
 ### Key Design Decisions
@@ -74,7 +74,7 @@ apps/web/
 │   │   │   └── middleware.ts     # Auth middleware
 │   │   ├── stripe.ts            # Stripe Connect logic
 │   │   └── ai/
-│   │       └── grading.ts       # Claude API grading logic
+│   │       └── grading.ts       # Vercel AI SDK grading logic
 │   ├── types/
 │   │   └── database.ts          # Supabase generated types
 │   └── middleware.ts             # Route protection
@@ -202,8 +202,8 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
 
-# Anthropic (AI Grading)
-ANTHROPIC_API_KEY=
+# AI Grading (Vercel AI SDK + Google Generative AI provider)
+GOOGLE_GENERATIVE_AI_API_KEY=
 
 # App
 NEXT_PUBLIC_APP_URL=https://toinoma.jp
@@ -316,6 +316,16 @@ Partial fixes are unacceptable.
 
 **For defect resolution tasks (bug fixes, error corrections, test failures), use DRW.**
 
+### MANDATORY: Skill Invocation
+
+**DRW stages MUST be executed via the `/defect-fix` master orchestrator.** The skill spawns subagents with isolated reviewer personas for independent judgment.
+
+| Command | Action |
+|---------|--------|
+| **`/defect-fix [error description]`** | **Entry point.** Runs all 5 stages (D1→D5) with restart handling. |
+
+**Invoking this skill is NOT optional. Attempting to execute DRW stages inline without the skill is a violation.**
+
 ### When DRW Applies
 
 - User-reported bugs, errors, or malfunctions
@@ -343,7 +353,23 @@ Partial fixes are unacceptable.
 | D4 | Verification | Full test suite, build verification, manifest coverage |
 | D5 | Technical Review | Code quality, pattern consistency, coverage verification |
 
-Maximum 2 restarts (3 total iterations); 4th attempt -> human escalation.
+### Escalation Triggers
+
+| Trigger (at D1) | Escalation Target |
+|------------------|-------------------|
+| Defect is actually a missing feature | `/se-pipeline` |
+| Defect reveals systemic architectural flaw | `/se-pipeline` |
+
+| Trigger (at D2) | Escalation Target |
+|------------------|-------------------|
+| Fix scope exceeds 10 files with heterogeneous patterns | `/eiw-review` |
+| Fix requires new DB tables or API endpoints | `/eiw-review` |
+
+### Restart Policy
+
+Maximum 2 restarts (3 total iterations); 4th attempt → human escalation.
+
+**PDCA auto-trigger**: After DRW completes with RESOLVED status, the PDCA cycle (`/pdca-cycle`) MUST be automatically invoked.
 
 ---
 
@@ -351,16 +377,73 @@ Maximum 2 restarts (3 total iterations); 4th attempt -> human escalation.
 
 **All tasks that produce file output (code, documentation, configuration) MUST follow an approved pipeline.**
 
-### Intent Classification (4-Tier System)
+### MANDATORY: Intent Classification (4-Tier System)
 
-Before responding to ANY user message, classify intent:
+**Before responding to ANY user message, classify the user's intent:**
 
-| Classification | Pipeline | Trigger |
-|---------------|----------|---------|
-| **Trivial Fix** | None | 1 file, <=3 lines, cosmetic/syntactic, no behavioral change |
-| **Defect Resolution** | DRW | Bug report, error, test failure requiring investigation |
-| **Implementation** | EIW | Requirements defined, design defined, implementation-only |
-| **Full Lifecycle** | SE Pipeline | New feature, architecture change, new artifact creation, undefined requirements |
+#### Step 1: Does the request require file modifications?
+
+| Answer | Result |
+|--------|--------|
+| **NO** | **Advisory** — Respond directly. No pipeline invocation. |
+| **YES** | Proceed to Step 2. |
+
+#### Step 2: Is the user reporting a bug, error, or test failure?
+
+| Answer | Result |
+|--------|--------|
+| **YES** | Is it trivial? (1 file, <=3 lines, cosmetic/syntactic only, no behavioral change) |
+|         | → **YES**: **Trivial Fix** — Apply directly. No pipeline. |
+|         | → **NO**: **Defect Resolution** → `/defect-fix` |
+| **NO** | Proceed to Step 3. |
+
+#### Step 3: Is this a new feature, architectural change, or new artifact creation?
+
+**"New artifact creation" includes:** Documentation, skill files, configuration, migrations, API endpoints, spec documents.
+
+**Conversational accumulation rule:** If the current message is part of a multi-message sequence requesting related file outputs, classify based on the AGGREGATE deliverable across the conversation, not each individual message in isolation.
+
+| Answer | Result |
+|--------|--------|
+| **YES** | **Full Lifecycle** → `/se-pipeline` |
+| **NO** | Proceed to Step 4. |
+
+#### Step 4: Are requirements and design already defined?
+
+| Answer | Result |
+|--------|--------|
+| **YES** | **Implementation** → `/eiw-review` |
+| **NO** | **Full Lifecycle** → `/se-pipeline` |
+
+#### Classification Rules
+
+1. If the response requires `Write`, `Edit`, `NotebookEdit`, or creating/modifying any file → **Output-Generating** → sub-classify per decision tree above
+2. If the response is purely conversational → **Advisory** → No pipeline
+3. **Bug reports are ALWAYS Defect Resolution** unless they meet ALL trivial fix criteria
+4. **Error messages, stack traces, or "X is broken/failing"** → always classify as Defect Resolution first
+5. **Mandatory rules are NOT subject to cost-benefit override.** The agent MUST NOT self-judge that a pipeline is "overkill." If the decision tree routes to a pipeline, that pipeline is invoked. Period.
+6. **`/site-patrol` invocations are QA exploration** — exempt from SE/EIW/DRW pipeline requirements
+
+#### Classification Examples
+
+| User Message | Classification | Pipeline |
+|-------------|---------------|----------|
+| "There's a typo in the README on line 5" | Trivial Fix | None |
+| "Zod validation fails because LLM returns uppercase enums" | Defect Resolution | `/defect-fix` |
+| "Add dark mode support" | Full Lifecycle | `/se-pipeline` |
+| "Implement the login page per the design doc" | Implementation | `/eiw-review` |
+| "Runtime error: Cannot read property 'id' of undefined" | Defect Resolution | `/defect-fix` |
+
+### MANDATORY: Skill Invocation
+
+**SE Pipeline phases MUST be executed via `/se-N-*` slash commands or the `/se-pipeline` master orchestrator.**
+
+| Command | Action |
+|---------|--------|
+| **`/se-pipeline [feature]`** | **Preferred entry point.** Runs ALL 9 phases end-to-end with automatic restart handling. |
+| `/se-1-prompt-analysis` through `/se-9-approval` | Run individual phases when resuming or debugging a specific phase. |
+
+**Invoking these skills is NOT optional. Attempting to execute SE Pipeline phases inline without the skills is a violation.**
 
 ### SE Pipeline Phases
 
@@ -376,7 +459,34 @@ Before responding to ANY user message, classify intent:
 | 8 | Evaluation | All 3 review rounds pass |
 | 9 | Final Approval | PM -> CTO -> CEO sequential approvals |
 
-Maximum 3 cross-phase restarts; 5th attempt -> human escalation.
+### Output Mode: Phase Skip Policy
+
+| Output Type | Required Phases | Skipped Phases |
+|-------------|----------------|----------------|
+| **Code + Tests** (default) | 1→9 | None |
+| **Documentation only** (no code) | 1→6→8→9 | Phase 7 (Testing) |
+| **Configuration only** (no code logic) | 1→6→8→9 | Phase 7 (Testing) |
+| **Code + Documentation** | 1→9 | None |
+
+Phase 7 is skipped ONLY when the output contains zero executable code.
+
+### Cross-Phase Restart Policy
+
+| Trigger | Restart Phase |
+|---------|--------------|
+| Phase 5 CEO/CTO rejection | Phase 4 |
+| Phase 5 PTE/PM rejection | Phase 5 (FREE) |
+| Phase 7 test failure | Phase 6 |
+| Phase 8 Code Quality failure | Phase 6 |
+| Phase 8 Requirements failure | Phase 4 |
+| Phase 8 UX failure | Phase 5 |
+| Phase 9 PM rejection | Phase 8 |
+| Phase 9 CTO rejection (impl flaw) | Phase 6 |
+| Phase 9 CTO rejection (arch invalid) | Phase 5 |
+| Phase 9 CEO REQUIRES_PIVOT | Phase 3 |
+| Phase 9 CEO REJECTED | **CANCELLED** |
+
+Maximum 3 cross-phase restarts (4 total iterations); 5th attempt → human escalation. Internal phase restarts (Step D → Step A within same phase) are FREE.
 
 **VIOLATION: Producing file output without invoking the correct pipeline is STRICTLY PROHIBITED.**
 
@@ -385,6 +495,17 @@ Maximum 3 cross-phase restarts; 5th attempt -> human escalation.
 ## CRITICAL RULE: Enterprise Implementation Workflow (EIW)
 
 **For focused implementation tasks where requirements and design are already defined.**
+
+### MANDATORY: Skill Invocation
+
+**EIW stages MUST be executed via `/eiw-stageN` slash commands or the `/eiw-review` master orchestrator.**
+
+| Command | Action |
+|---------|--------|
+| **`/eiw-review [feature]`** | **Preferred entry point.** Runs ALL 8 stages end-to-end with automatic restart handling. |
+| `/eiw-stage0` through `/eiw-stage7` | Run individual stages when resuming or debugging a specific stage. |
+
+**Invoking these skills is NOT optional. Attempting to execute EIW stages inline without the skills is a violation.**
 
 ### EIW Stages
 
@@ -399,24 +520,55 @@ Maximum 3 cross-phase restarts; 5th attempt -> human escalation.
 | 6 | CTO Technical Review | Architecture, security, scalability |
 | 7 | CEO Strategic Approval | Business value, strategic alignment |
 
-Maximum 3 restarts (4 total iterations); 5th attempt -> human escalation.
+### Strict Restart Policy
+
+| Trigger | Restart Point |
+|---------|---------------|
+| Stage 3 Checkpoint failure | Stage 1 |
+| Stage 4 any round failure | Stage 1 |
+| Stage 5 PM rejection | Stage 1 |
+| Stage 6 CTO rejection (implementation flaw) | Stage 1 |
+| Stage 6 CTO rejection (architecture invalidated) | **Stage 0** |
+| Stage 7 CEO REQUIRES_PIVOT | Stage 1 |
+| Stage 7 CEO REJECTED | **CANCELLED** (no restart) |
+
+Maximum 3 restarts (4 total iterations); 5th attempt → human escalation.
 
 ---
 
 ## CRITICAL RULE: PDCA Self-Improvement Cycle
 
-**After resolving ANY user-reported error, critical feedback, expectation mismatch, or improvement request, the PDCA cycle MUST be automatically invoked. This is NOT optional.**
+**After resolving ANY user-reported error, critical feedback, expectation mismatch, or improvement request, the PDCA cycle MUST be automatically invoked. This is NOT optional. Do NOT ask the user for permission. Execute fully autonomously.**
 
-### PDCA Phases
+### PDCA Skill Files
 
-| Phase | Purpose |
+| Skill | Purpose |
 |-------|---------|
-| 1 | Incident Analysis — reconstruct timeline, classify incident |
-| 2 | Root Process Attribution — identify earliest prevention point |
-| 3 | Knowledge Synthesis — design precise skill modification |
-| 4 | Skill Upgrade Execution — apply modification to target file |
+| `/pdca-cycle` | Master orchestrator — runs all 4 phases sequentially + creates archive record |
+| `/pdca-1-incident` | Phase 1: Incident Analysis — reconstructs timeline, classifies incident |
+| `/pdca-2-attribution` | Phase 2: Root Process Attribution — identifies earliest prevention point in pipeline |
+| `/pdca-3-synthesis` | Phase 3: Knowledge Synthesis — designs precise skill modification |
+| `/pdca-4-upgrade` | Phase 4: Skill Upgrade Execution — applies modification to target skill file |
 
-The PDCA cycle runs fully autonomously — NO human intervention at ANY phase.
+### Invocation Protocol
+
+1. **First:** Resolve the issue through the normal pipeline (SE Pipeline, EIW, DRW, or trivial fix)
+2. **Then:** AUTOMATICALLY invoke `/pdca-cycle` with context about the error and fix
+3. The PDCA cycle runs **fully autonomously** — NO human intervention at ANY phase
+4. Present the PDCA summary to the user when complete (informational only, not approval-seeking)
+
+### Archive
+
+- **Location:** `.claude/pdca-archive/`
+- **Index:** `.claude/pdca-archive/index.json` (searchable cycle index with counters)
+- **Records:** `.claude/pdca-archive/cycles/PDCA-YYYY-NNNN.md` (full cycle documentation)
+
+### Rules
+
+- Every PDCA cycle MUST be archived with a complete record
+- Every skill modification MUST include the PDCA cycle ID as a traceability comment: `<!-- PDCA-YYYY-NNNN: description -->`
+- If no actionable improvement is identified, archive with `NO_ACTIONABLE_IMPROVEMENT` status
+- One skill modification per PDCA cycle (targeted, not scattered)
 
 ---
 
@@ -424,13 +576,32 @@ The PDCA cycle runs fully autonomously — NO human intervention at ANY phase.
 
 **All implementations MUST follow TDD. Writing code without tests first is STRICTLY PROHIBITED for non-trivial changes.**
 
-### TDD Workflow
+### TDD Workflow (Red-Green-Refactor)
 
 ```
 1. RED:     Write a failing test that defines expected behavior
 2. GREEN:   Write minimum code to make the test pass
 3. REFACTOR: Clean up code while keeping tests green
 ```
+
+### Test Commands Reference
+
+| Command | Purpose | When to Use |
+|---------|---------|-------------|
+| `npm run test` | Run all unit/integration tests | After any code change |
+| `npm run test:watch` | Run tests in watch mode | During active development |
+| `npm run test:coverage` | Run tests with coverage report | Before checkpoint/final review |
+| `npm run test:e2e` | Run Playwright E2E tests | After feature completion |
+| `npm run test:e2e:headed` | Run E2E tests in headed mode | Debugging E2E failures |
+
+### Test File Locations
+
+| Test Type | Location | Naming Pattern |
+|-----------|----------|----------------|
+| Unit Tests | `src/**/*.test.ts` | `[filename].test.ts` |
+| Component Tests | `src/**/*.test.tsx` | `[component].test.tsx` |
+| Integration Tests | `src/**/*.test.ts` | `[feature].integration.test.ts` |
+| E2E Tests | `e2e/**/*.spec.ts` | `[feature].spec.ts` |
 
 ### Test Coverage Requirements
 
