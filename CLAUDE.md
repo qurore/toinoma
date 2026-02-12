@@ -8,7 +8,7 @@
 
 ## Project Overview
 
-Toinoma is a marketplace platform that connects university student exam-problem creators with students preparing for entrance exams. It integrates a **problem marketplace** with **AI-powered auto-grading** via Claude API, delivering clear value to both creators (problem authors) and students.
+Toinoma is a marketplace platform that connects university student exam-problem creators with students preparing for entrance exams. It integrates a **problem marketplace** with **AI-powered auto-grading** via Vercel AI SDK + Google Generative AI, delivering clear value to both creators (problem authors) and students.
 
 ### Core Value Proposition
 
@@ -50,38 +50,45 @@ Toinoma is a marketplace platform that connects university student exam-problem 
 ## Project Structure
 
 ```
-apps/web/
-├── src/
-│   ├── app/
-│   │   ├── (marketing)/         # Public pages (landing, explore)
-│   │   ├── (dashboard)/         # Authenticated student routes
-│   │   ├── (creator)/           # Authenticated creator routes
-│   │   ├── api/                 # API routes (webhooks, ai-grading)
-│   │   │   ├── webhooks/
-│   │   │   │   └── stripe/      # Stripe webhook handler
-│   │   │   └── grading/         # AI grading endpoint
-│   │   └── auth/
-│   │       └── callback/        # Supabase Auth callback
-│   ├── components/
-│   │   ├── ui/                  # Radix-based primitives
-│   │   ├── marketplace/         # Problem cards, filters, search
-│   │   ├── grading/             # Answer input, result display
-│   │   └── dashboard/           # Charts, stats, tables
-│   ├── lib/
-│   │   ├── supabase/
-│   │   │   ├── client.ts        # Browser client
-│   │   │   ├── server.ts        # Server client
-│   │   │   └── middleware.ts     # Auth middleware
-│   │   ├── stripe.ts            # Stripe Connect logic
-│   │   └── ai/
-│   │       └── grading.ts       # Vercel AI SDK grading logic
-│   ├── types/
-│   │   └── database.ts          # Supabase generated types
-│   └── middleware.ts             # Route protection
-├── supabase/
-│   ├── migrations/              # SQL migration files
-│   └── seed.sql                 # Development seed data
-└── .env.example
+src/
+├── app/
+│   ├── globals.css              # Tailwind v4 @import + @theme design tokens
+│   ├── layout.tsx               # Root layout (lang="ja", Inter font)
+│   ├── page.tsx                 # Landing page
+│   ├── (marketing)/             # Public pages (landing, explore)
+│   ├── (dashboard)/             # Authenticated student routes
+│   ├── (creator)/               # Authenticated creator routes
+│   ├── api/                     # API routes (webhooks, ai-grading)
+│   │   ├── webhooks/
+│   │   │   └── stripe/          # Stripe webhook handler
+│   │   └── grading/             # AI grading endpoint
+│   └── auth/
+│       └── callback/            # Supabase Auth callback
+├── components/
+│   ├── ui/                      # Radix-based primitives (Button, etc.)
+│   ├── marketplace/             # Problem cards, filters, search
+│   ├── grading/                 # Answer input, result display
+│   └── dashboard/               # Charts, stats, tables
+├── lib/
+│   ├── utils.ts                 # cn() — clsx + tailwind-merge
+│   ├── supabase/
+│   │   ├── client.ts            # Browser client
+│   │   ├── server.ts            # Server client (async cookies)
+│   │   └── middleware.ts         # Auth middleware + route protection
+│   ├── stripe.ts                # Stripe Connect logic (lazy singleton)
+│   └── ai/
+│       └── grading.ts           # Vercel AI SDK + Google Generative AI
+├── types/
+│   └── database.ts              # Supabase generated types
+├── test/
+│   └── setup.ts                 # Vitest setup (@testing-library/jest-dom)
+└── middleware.ts                 # Route protection (calls updateSession)
+supabase/
+├── config.toml                  # Supabase project config
+├── migrations/                  # SQL migration files
+└── seed.sql                     # Development seed data
+e2e/                             # Playwright E2E tests
+.env.example                     # Environment variable template
 ```
 
 ---
@@ -201,6 +208,8 @@ SUPABASE_SERVICE_ROLE_KEY=
 STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=
+STRIPE_PRO_MONTHLY_PRICE_ID=
+STRIPE_PRO_ANNUAL_PRICE_ID=
 
 # AI Grading (Vercel AI SDK + Google Generative AI provider)
 GOOGLE_GENERATIVE_AI_API_KEY=

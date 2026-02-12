@@ -1,0 +1,2 @@
+-- Seed data for development
+-- Add seed data here when database schema is created

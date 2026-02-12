@@ -7,10 +7,26 @@ vendor/
 .env.local
 .env.*.local
 
+# Next.js
+.next/
+out/
+
 # Build output
 dist/
 build/
-out/
+
+# Testing
+coverage/
+test-results/
+playwright-report/
+blob-report/
+
+# Supabase
+supabase/.branches
+supabase/.temp
+
+# Vercel
+.vercel/
 
 # OS files
 .DS_Store
@@ -25,6 +41,10 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
 
 # Claude Code
 .claude/
