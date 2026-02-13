@@ -226,6 +226,173 @@ Purchase Flow:
 
 ---
 
+## Feature Domain Tree
+
+> **Version:** 1.0 | **Status:** Active | **Total Features:** 38 (2 PRE + 36 FR)
+> **Build Order:** Prerequisites → Foundation → Authoring & Grading → Commerce & Analytics → Study Tools
+
+### Prerequisites (Iteration 0)
+
+- **PRE-001** Database schema alignment | prerequisite | iter:0 | P1 | deps: none
+- **PRE-002** Route group rename | prerequisite | iter:0 | P1 | deps: none
+
+### D1 — Design System
+
+#### Visual Foundation
+
+- **FR-001** Theme colors (bright blue-green) | explicit | iter:1 | P1 | deps: none
+- **FR-002** Design token foundation | inferred | iter:1 | P1 | deps: FR-001
+
+### D2 — Answer Type System
+
+#### Type Definitions
+
+- **FR-003** Polymorphic answer type definition | explicit | iter:1 | P1 | deps: PRE-001
+- **FR-009** Rubric schema v2 (polymorphic) | inferred | iter:1 | P1 | deps: FR-003
+
+#### Grading Logic
+
+- **FR-004** Essay partial credit AI grading | explicit | iter:2 | P1 | deps: FR-009
+- **FR-005** Mark-sheet grouped scoring | explicit | iter:2 | P1 | deps: FR-009 [OC]
+- **FR-006** Mark-sheet choice set config | explicit | iter:2 | P2 | deps: FR-005
+- **FR-007** Fill-in-the-blank exact match | explicit | iter:2 | P1 | deps: FR-009
+- **FR-010** Grading engine dispatch | inferred | iter:2 | P1 | deps: FR-004, FR-005, FR-007
+
+#### Input Components
+
+- **FR-008** Answer input components per type | inferred | iter:2 | P1 | deps: FR-003, FR-002
+
+### D3 — Seller Model & Governance
+
+#### Onboarding
+
+- **FR-013** Seller ToS acceptance | explicit | iter:1 | P1 | deps: PRE-001
+- **FR-015** Seller profile extended data | explicit | iter:1 | P1 | deps: PRE-001
+- **FR-018** Stripe Connect onboarding | inferred | iter:1 | P1 | deps: FR-013, FR-015
+
+#### Publishing
+
+- **FR-011** Free publishing path | explicit | iter:2 | P1 | deps: FR-018
+- **FR-012** Paid publishing path | explicit | iter:2 | P1 | deps: FR-018
+- **FR-016** Publishing rate limiter | explicit | iter:2 | P2 | deps: FR-011
+- **FR-017** Originality attestation | explicit | iter:2 | P2 | deps: FR-011
+
+#### Analytics
+
+- **FR-014** Revenue dashboard | explicit | iter:3 | P2 | deps: FR-012
+
+### D4 — Problem Authoring
+
+#### Core Editor
+
+- **FR-019** Problem creation interface | explicit | iter:2 | P1 | deps: FR-009, FR-002
+- **FR-020** Essay question via photo upload | explicit | iter:2 | P1 | deps: FR-019 [OC]
+- **FR-021** Structured upload format (mark-sheet/fill-in) | explicit | iter:2 | P1 | deps: FR-019
+
+#### Layout & Export
+
+- **FR-022** A4 page layout with page breaks | explicit | iter:3 | P2 | deps: FR-019
+- **FR-023** Margin options (narrow/normal) | explicit | iter:3 | P2 | deps: FR-022
+- **FR-024** PDF download | explicit | iter:3 | P2 | deps: FR-022
+
+#### Mobile
+
+- **FR-025** Mobile upload support | explicit | iter:2 | P1 | deps: FR-020
+
+### D5 — Subscription & Billing
+
+#### Tier Design
+
+- **FR-026** Two subscription tiers (500/2000 JPY) | explicit | iter:3 | P1 | deps: PRE-001
+- **FR-027** Annual subscription pricing | explicit | iter:3 | P1 | deps: FR-026 [OC]
+
+#### Stripe Integration
+
+- **FR-028** Stripe Billing integration | inferred | iter:3 | P1 | deps: FR-026
+- **FR-029** Subscription management UI | inferred | iter:3 | P1 | deps: FR-028, FR-002
+- **FR-032** Stripe subscription webhooks | inferred | iter:3 | P1 | deps: FR-028
+
+#### Usage & Metering
+
+- **FR-030** Subscription status middleware | inferred | iter:3 | P1 | deps: FR-028
+- **FR-031** Token usage tracking | explicit | iter:3 | P2 | deps: FR-030, FR-010
+- **FR-033** AI study assistance (DEFERRED) | explicit | iter:4 | P3 | deps: FR-031
+
+### D6 — Study Tools & Collections
+
+#### Collections
+
+- **FR-034** Custom collections data model | inferred | iter:4 | P2 | deps: PRE-001
+- **FR-035** Problem set aggregation | explicit | iter:4 | P2 | deps: FR-034
+- **FR-036** Problem shuffle within collections | explicit | iter:4 | P2 | deps: FR-034
+
+### Dependency Matrix
+
+**Critical path:** PRE-001 → FR-003 → FR-009 → FR-004/005/007 → FR-010 → FR-031 → FR-033
+
+| From | To | Relationship |
+|------|----|--------------|
+| PRE-001 | FR-003, FR-013, FR-015, FR-026, FR-034 | Foundation |
+| FR-003 | FR-009, FR-008 | Data cascade |
+| FR-009 | FR-004, FR-005, FR-007, FR-019 | Schema fan-out |
+| FR-004, FR-005, FR-007 | FR-010 | Grading fan-in |
+| FR-013, FR-015 | FR-018 | Onboarding gate |
+| FR-018 | FR-011, FR-012 | Publishing gate |
+| FR-019 | FR-020, FR-021, FR-022 | Editor fan-out |
+| FR-020 | FR-025 | Mobile chain |
+| FR-028 | FR-029, FR-030, FR-032 | Billing fan-out |
+| FR-010, FR-030 | FR-031 | Cross-domain join |
+
+### Non-Functional Requirements
+
+| ID | Requirement | Target |
+|----|-------------|--------|
+| NFR-01 | Page load time (LCP) | < 2.5s |
+| NFR-02 | AI grading response (essay) | < 30s |
+| NFR-03 | Deterministic grading response | < 500ms |
+| NFR-04 | Authentication security | OAuth 2.0 + RLS |
+| NFR-05 | Payment PCI compliance | Stripe-managed |
+| NFR-06 | Accessibility | WCAG 2.1 AA |
+| NFR-07 | Mobile responsiveness | >= 375px |
+| NFR-08 | Browser support | Chrome, Safari, Firefox (latest 2) |
+| NFR-09 | Data retention | 3 years minimum |
+| NFR-10 | Localization | Japanese primary, English secondary |
+
+### Constraints
+
+1. No ORM — Supabase client + SQL migrations only
+2. Server Components default — `"use client"` only for interactivity
+3. RLS enforced on all tables — no middleware-based data auth
+4. Stripe Connect Express — Japan 特定商取引法 compliance required
+5. AI grading displayed as reference scores — not authoritative
+6. Copyright — ToS prohibits copying real entrance exam questions
+7. Privacy — Japan APPI (個人情報保護法) compliance for student data
+8. PDF storage via Supabase Storage — no external object stores
+9. Monorepo shared types — `@toinoma/shared` is single source of truth
+10. Platform fee fixed at 15% — Stripe fee borne by platform
+
+### Iteration Plan
+
+| Iter | Focus | Features | Count | Gate |
+|------|-------|----------|-------|------|
+| 0 | Prerequisites | PRE-001, PRE-002 | 2 | Schema aligned, routes renamed |
+| 1 | Foundation | FR-001, FR-002, FR-003, FR-009, FR-013, FR-015, FR-018 | 7 | Types + tokens + seller onboarding |
+| 2 | Authoring & Grading | FR-004..008, FR-010..012, FR-016, FR-017, FR-019..021, FR-025 | 14 | Full grading loop + publishing |
+| 3 | Commerce & Analytics | FR-014, FR-022..024, FR-026..032 | 11 | Subscriptions live + PDF export |
+| 4 | Study Tools & Polish | FR-033..036 | 4 | Collections + deferred features |
+
+> Total: 2 + 7 + 14 + 11 + 4 = **38**
+
+### Open Confirmations
+
+| ID | Question | Affects | Default |
+|----|----------|---------|---------|
+| CONFIRM-001 | Annual premium price: ¥15,000 or ¥150,000? | FR-027 | ¥15,000 |
+| CONFIRM-002 | Mark-sheet grouped scoring: all-or-nothing? | FR-005 | All-or-nothing |
+| CONFIRM-003 | Photo upload: image IS question vs OCR? | FR-020 | Image IS question |
+
+---
+
 ## Environment Variables
 
 ```bash
