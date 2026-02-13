@@ -1,5 +1,9 @@
 "use client";
 
+import { useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,10 +13,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { BookOpen } from "lucide-react";
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { BookOpen, Loader2 } from "lucide-react";
 
 function GoogleIcon() {
   return (
@@ -39,7 +43,12 @@ function GoogleIcon() {
 
 function XIcon() {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden="true">
+    <svg
+      viewBox="0 0 24 24"
+      className="h-5 w-5"
+      fill="currentColor"
+      aria-hidden="true"
+    >
       <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
     </svg>
   );
@@ -48,7 +57,14 @@ function XIcon() {
 function LoginContent() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/dashboard";
-  const error = searchParams.get("error");
+  const errorParam = searchParams.get("error");
+
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(
+    errorParam ? "ログインに失敗しました。もう一度お試しください。" : null
+  );
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleOAuthLogin = async (provider: "google" | "twitter") => {
     const supabase = createClient();
@@ -58,6 +74,28 @@ function LoginContent() {
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
+  };
+
+  const handleEmailLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email || !password) return;
+
+    setIsLoading(true);
+    setError(null);
+
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError("メールアドレスまたはパスワードが正しくありません");
+      setIsLoading(false);
+      return;
+    }
+
+    window.location.assign(next);
   };
 
   return (
@@ -75,10 +113,59 @@ function LoginContent() {
         <CardContent className="space-y-4">
           {error && (
             <p className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
-              ログインに失敗しました。もう一度お試しください。
+              {error}
             </p>
           )}
 
+          {/* Email/password form */}
+          <form onSubmit={handleEmailLogin} className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="email">メールアドレス</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                autoComplete="email"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">パスワード</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-muted-foreground underline hover:text-foreground"
+                >
+                  パスワードをお忘れですか？
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                placeholder="パスワード"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                autoComplete="current-password"
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              ログイン
+            </Button>
+          </form>
+
+          <div className="flex items-center gap-3">
+            <Separator className="flex-1" />
+            <span className="text-xs text-muted-foreground">または</span>
+            <Separator className="flex-1" />
+          </div>
+
+          {/* OAuth buttons */}
           <Button
             variant="outline"
             className="w-full"
@@ -88,12 +175,6 @@ function LoginContent() {
             Googleでログイン
           </Button>
 
-          <div className="flex items-center gap-3">
-            <Separator className="flex-1" />
-            <span className="text-xs text-muted-foreground">または</span>
-            <Separator className="flex-1" />
-          </div>
-
           <Button
             variant="outline"
             className="w-full"
@@ -102,6 +183,16 @@ function LoginContent() {
             <XIcon />
             X (Twitter) でログイン
           </Button>
+
+          <p className="text-center text-sm text-muted-foreground">
+            アカウントをお持ちでないですか？{" "}
+            <Link
+              href="/signup"
+              className="font-medium text-primary underline hover:text-primary/80"
+            >
+              新規登録
+            </Link>
+          </p>
 
           <p className="text-center text-xs text-muted-foreground">
             ログインすることで、
