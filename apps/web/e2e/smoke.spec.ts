@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test("home page loads with Toinoma heading", async ({ page }) => {
+test("home page loads with Toinoma title", async ({ page }) => {
   await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Toinoma" })).toBeVisible();
+  await expect(page).toHaveTitle(/Toinoma/);
 });

@@ -432,9 +432,46 @@ The following rules are **non-negotiable** and govern ALL work on this product.
 
 ---
 
-## CRITICAL RULE: English-Only Code Output
+## CRITICAL RULE: Language Policy
 
-**All code output MUST be written in English. Using other languages (Japanese, etc.) in code is STRICTLY PROHIBITED.** This includes variable names, comments, function names, commit messages, and documentation files. User-facing UI strings that must be in Japanese are the only exception.
+**All output MUST be in English by default. Japanese is used ONLY for user-facing UI strings.**
+
+### English (mandatory for everything except UI strings)
+
+- Variable names, function names, class names, type names
+- Code comments (inline, block, JSDoc)
+- Commit messages, branch names, PR titles/descriptions
+- Documentation files (README, CLAUDE.md, etc.)
+- Log messages, error messages thrown in code
+- Test descriptions (`describe`, `it`, `test`)
+- SQL migration file names and comments
+- Thinking and reasoning process
+
+### Japanese (mandatory for user-facing UI only)
+
+- Rendered text visible to end users (buttons, labels, headings, descriptions, placeholders, toasts, error messages shown in UI)
+- SEO metadata (`<title>`, `<meta description>`, OGP tags) for the Japanese market
+- Email/notification content sent to users
+
+### Examples
+
+```tsx
+// CORRECT: English comment, Japanese UI string
+// Display the purchase confirmation dialog
+<Button>購入を確定する</Button>
+
+// WRONG: Japanese comment
+// 購入確認ダイアログを表示する
+<Button>購入を確定する</Button>
+
+// CORRECT: English test description
+describe("PurchaseButton", () => {
+  it("should disable button during payment processing", () => {
+
+// WRONG: Japanese test description
+describe("購入ボタン", () => {
+  it("決済処理中にボタンを無効にする", () => {
+```
 
 ---
 

@@ -1,5 +1,5 @@
-// Placeholder types — will be replaced by `supabase gen types typescript` output
-// These types match the schema defined in CLAUDE.md
+// Database types matching the Supabase schema
+// Source of truth: supabase/migrations/20260213080238_remote_schema.sql
 
 export type Json =
   | string
@@ -20,11 +20,12 @@ export type Subject =
   | "world_history"
   | "geography";
 
-export type UserRole = "student" | "creator";
-
 export type Difficulty = "easy" | "medium" | "hard";
 
 export type ProblemSetStatus = "draft" | "published";
+
+export type SubscriptionTier = "free" | "basic" | "pro";
+export type SubscriptionInterval = "monthly" | "annual";
 
 export interface Database {
   public: {
@@ -32,39 +33,71 @@ export interface Database {
       profiles: {
         Row: {
           id: string;
-          role: UserRole;
           display_name: string | null;
           avatar_url: string | null;
-          stripe_account_id: string | null;
-          stripe_onboarding_complete: boolean;
           created_at: string;
           updated_at: string;
         };
         Insert: {
           id: string;
-          role?: UserRole;
           display_name?: string | null;
           avatar_url?: string | null;
-          stripe_account_id?: string | null;
-          stripe_onboarding_complete?: boolean;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
-          id?: string;
-          role?: UserRole;
           display_name?: string | null;
           avatar_url?: string | null;
-          stripe_account_id?: string | null;
-          stripe_onboarding_complete?: boolean;
           updated_at?: string;
         };
         Relationships: [];
       };
+      seller_profiles: {
+        Row: {
+          id: string;
+          seller_display_name: string;
+          seller_description: string | null;
+          university: string | null;
+          circle_name: string | null;
+          tos_accepted_at: string | null;
+          stripe_account_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          seller_display_name: string;
+          seller_description?: string | null;
+          university?: string | null;
+          circle_name?: string | null;
+          tos_accepted_at?: string | null;
+          stripe_account_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          seller_display_name?: string;
+          seller_description?: string | null;
+          university?: string | null;
+          circle_name?: string | null;
+          tos_accepted_at?: string | null;
+          stripe_account_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "seller_profiles_id_fkey";
+            columns: ["id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       problem_sets: {
         Row: {
           id: string;
-          creator_id: string;
+          seller_id: string;
           title: string;
           description: string | null;
           subject: Subject;
@@ -80,7 +113,7 @@ export interface Database {
         };
         Insert: {
           id?: string;
-          creator_id: string;
+          seller_id: string;
           title: string;
           description?: string | null;
           subject: Subject;
@@ -109,10 +142,10 @@ export interface Database {
         };
         Relationships: [
           {
-            foreignKeyName: "problem_sets_creator_id_fkey";
-            columns: ["creator_id"];
+            foreignKeyName: "problem_sets_seller_id_fkey";
+            columns: ["seller_id"];
             isOneToOne: false;
-            referencedRelation: "profiles";
+            referencedRelation: "seller_profiles";
             referencedColumns: ["id"];
           },
         ];
@@ -231,14 +264,149 @@ export interface Database {
           },
         ];
       };
+      user_subscriptions: {
+        Row: {
+          id: string;
+          user_id: string;
+          tier: SubscriptionTier;
+          interval: SubscriptionInterval | null;
+          stripe_subscription_id: string | null;
+          stripe_customer_id: string | null;
+          current_period_start: string | null;
+          current_period_end: string | null;
+          cancel_at_period_end: boolean;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          tier?: SubscriptionTier;
+          interval?: SubscriptionInterval | null;
+          stripe_subscription_id?: string | null;
+          stripe_customer_id?: string | null;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          tier?: SubscriptionTier;
+          interval?: SubscriptionInterval | null;
+          stripe_subscription_id?: string | null;
+          stripe_customer_id?: string | null;
+          current_period_start?: string | null;
+          current_period_end?: string | null;
+          cancel_at_period_end?: boolean;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      collections: {
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          description: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          name: string;
+          description?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          description?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      collection_items: {
+        Row: {
+          id: string;
+          collection_id: string;
+          problem_set_id: string;
+          position: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          collection_id: string;
+          problem_set_id: string;
+          position?: number;
+          created_at?: string;
+        };
+        Update: {
+          position?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "collection_items_collection_id_fkey";
+            columns: ["collection_id"];
+            isOneToOne: false;
+            referencedRelation: "collections";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "collection_items_problem_set_id_fkey";
+            columns: ["problem_set_id"];
+            isOneToOne: false;
+            referencedRelation: "problem_sets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      token_usage: {
+        Row: {
+          id: string;
+          user_id: string;
+          submission_id: string | null;
+          tokens_used: number;
+          cost_usd: number;
+          model: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          submission_id?: string | null;
+          tokens_used?: number;
+          cost_usd?: number;
+          model?: string;
+          created_at?: string;
+        };
+        Update: {
+          tokens_used?: number;
+          cost_usd?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "token_usage_submission_id_fkey";
+            columns: ["submission_id"];
+            isOneToOne: false;
+            referencedRelation: "submissions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
     Enums: {
-      user_role: UserRole;
       subject: Subject;
       difficulty: Difficulty;
       problem_set_status: ProblemSetStatus;
+      subscription_tier: SubscriptionTier;
+      subscription_interval: SubscriptionInterval;
     };
   };
 }

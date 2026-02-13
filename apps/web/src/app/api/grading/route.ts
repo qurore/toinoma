@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { gradeSubmission } from "@/lib/ai/grading";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { gradeSubmission } from "@/lib/ai/grading-engine";
+import { getSubscriptionState } from "@/lib/subscription";
+import { problemSetRubricSchema, type QuestionAnswer } from "@toinoma/shared/schemas";
 import type { Json } from "@/types/database";
 
 export async function POST(request: Request) {
@@ -17,13 +20,27 @@ export async function POST(request: Request) {
   const body = await request.json();
   const { problemSetId, answers } = body as {
     problemSetId: string;
-    answers: Record<string, string>;
+    answers: Record<string, QuestionAnswer>;
   };
 
   if (!problemSetId || !answers) {
     return NextResponse.json(
       { error: "Missing problemSetId or answers" },
       { status: 400 }
+    );
+  }
+
+  // FR-030: Check subscription grading limits
+  const subState = await getSubscriptionState(user.id);
+  if (!subState.canGrade) {
+    return NextResponse.json(
+      {
+        error: "今月のAI採点回数の上限に達しました。プランをアップグレードしてください。",
+        code: "GRADING_LIMIT_REACHED",
+        gradingsUsed: subState.gradingsUsedThisMonth,
+        gradingLimit: subState.gradingLimit,
+      },
+      { status: 429 }
     );
   }
 
@@ -56,10 +73,19 @@ export async function POST(request: Request) {
     );
   }
 
-  // Grade with AI
+  // Validate rubric structure
+  const rubricResult = problemSetRubricSchema.safeParse(problemSet.rubric);
+  if (!rubricResult.success) {
+    return NextResponse.json(
+      { error: "Invalid rubric format" },
+      { status: 500 }
+    );
+  }
+
+  // Grade with the dispatch engine
   const result = await gradeSubmission({
-    rubric: problemSet.rubric as Record<string, unknown>,
-    studentAnswers: answers,
+    rubric: rubricResult.data,
+    answers,
   });
 
   // Store submission
@@ -83,6 +109,16 @@ export async function POST(request: Request) {
       { status: 500 }
     );
   }
+
+  // FR-031: Track token usage (using admin client to bypass RLS)
+  const adminSupabase = createAdminClient();
+  await adminSupabase.from("token_usage").insert({
+    user_id: user.id,
+    submission_id: submission.id,
+    tokens_used: result.tokensUsed ?? 0,
+    cost_usd: result.costUsd ?? 0,
+    model: result.model ?? "gemini-2.0-flash",
+  });
 
   return NextResponse.json({
     submissionId: submission.id,

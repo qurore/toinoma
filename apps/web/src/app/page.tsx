@@ -1,10 +1,23 @@
+import { Navbar } from "@/components/landing/navbar";
+import { HeroSection } from "@/components/landing/hero-section";
+import { ValueSection } from "@/components/landing/value-section";
+import { HowItWorksSection } from "@/components/landing/how-it-works-section";
+import { SubjectsSection } from "@/components/landing/subjects-section";
+import { CTASection } from "@/components/landing/cta-section";
+import { Footer } from "@/components/landing/footer";
+
 export default function HomePage() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center">
-      <h1 className="text-4xl font-bold tracking-tight">Toinoma</h1>
-      <p className="mt-4 text-lg text-muted-foreground">
-        Where questions meet answers.
-      </p>
-    </main>
+    <>
+      <Navbar />
+      <main>
+        <HeroSection />
+        <ValueSection />
+        <HowItWorksSection />
+        <SubjectsSection />
+        <CTASection />
+      </main>
+      <Footer />
+    </>
   );
 }

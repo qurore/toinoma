@@ -100,3 +100,88 @@ export async function createConnectAccount(email: string) {
     },
   });
 }
+
+// --- Stripe Billing (Subscriptions) ---
+
+export async function createSubscriptionCheckout({
+  customerId,
+  priceId,
+  successUrl,
+  cancelUrl,
+  userId,
+}: {
+  customerId: string;
+  priceId: string;
+  successUrl: string;
+  cancelUrl: string;
+  userId: string;
+}) {
+  const stripe = getStripe();
+
+  return stripe.checkout.sessions.create({
+    mode: "subscription",
+    customer: customerId,
+    line_items: [{ price: priceId, quantity: 1 }],
+    success_url: successUrl,
+    cancel_url: cancelUrl,
+    metadata: { user_id: userId },
+  });
+}
+
+export async function createOrRetrieveCustomer(
+  email: string,
+  userId: string
+): Promise<string> {
+  const stripe = getStripe();
+
+  // Check if customer already exists with this email
+  const existing = await stripe.customers.list({ email, limit: 1 });
+  if (existing.data.length > 0) {
+    return existing.data[0].id;
+  }
+
+  // Create new customer
+  const customer = await stripe.customers.create({
+    email,
+    metadata: { supabase_user_id: userId },
+  });
+  return customer.id;
+}
+
+export async function cancelSubscription(subscriptionId: string) {
+  const stripe = getStripe();
+  return stripe.subscriptions.update(subscriptionId, {
+    cancel_at_period_end: true,
+  });
+}
+
+export async function resumeSubscription(subscriptionId: string) {
+  const stripe = getStripe();
+  return stripe.subscriptions.update(subscriptionId, {
+    cancel_at_period_end: false,
+  });
+}
+
+export async function getSubscription(subscriptionId: string) {
+  const stripe = getStripe();
+  return stripe.subscriptions.retrieve(subscriptionId);
+}
+
+export function getSubscriptionPriceId(
+  tier: "basic" | "pro",
+  interval: "monthly" | "annual"
+): string {
+  const envKey =
+    tier === "pro"
+      ? interval === "annual"
+        ? "STRIPE_PRO_ANNUAL_PRICE_ID"
+        : "STRIPE_PRO_MONTHLY_PRICE_ID"
+      : interval === "annual"
+        ? "STRIPE_BASIC_ANNUAL_PRICE_ID"
+        : "STRIPE_BASIC_MONTHLY_PRICE_ID";
+  const priceId = process.env[envKey];
+  if (!priceId) {
+    throw new Error(`${envKey} is not set`);
+  }
+  return priceId;
+}

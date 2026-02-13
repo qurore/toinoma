@@ -1,3 +1,5 @@
+export { shuffleArray } from "./shuffle";
+
 export const PLATFORM_FEE_PERCENT = 15;
 
 export function calculatePlatformFee(priceAmountJpy: number): number {

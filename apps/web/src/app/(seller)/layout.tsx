@@ -1,4 +1,4 @@
-export default function CreatorLayout({
+export default function SellerLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
