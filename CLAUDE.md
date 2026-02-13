@@ -33,7 +33,7 @@ Toinoma is a marketplace platform that connects university student exam-problem 
 | **Styling** | Tailwind CSS + custom design tokens | Utility-first CSS (web) |
 | **UI Components** | Radix UI + custom components | Accessible, unstyled primitives with custom design system (web) |
 | **Database** | Supabase (PostgreSQL) | Direct client, no ORM. SQL migrations via `supabase migration` |
-| **Auth** | Supabase Auth | OAuth 2.0 (Google, X/Twitter) |
+| **Auth** | Supabase Auth | OAuth 2.0 (Google, X/Twitter). Single user type; seller capability is additive. |
 | **Payment** | Stripe Connect (Express accounts) | Creator payouts with identity verification |
 | **Storage** | Supabase Storage | Problem PDFs, images, handwritten answer uploads |
 | **AI Grading** | Vercel AI SDK + Google Generative AI provider | Auto-grading based on creator-defined rubrics |
@@ -48,6 +48,7 @@ Toinoma is a marketplace platform that connects university student exam-problem 
 5. **Lazy Stripe Initialization** — Stripe client initializes at runtime to allow builds without secrets.
 6. **pnpm + Turborepo Monorepo** — Shared types, schemas, constants between web and mobile. Raw TypeScript in `packages/shared` (no build step).
 7. **Mobile calls web API routes** — Both platforms use the same `/api/*` endpoints. No separate backend for mobile.
+8. **Unified User Model with Additive Seller Role** — No `role` enum on `profiles`. All users can browse and purchase. Seller capability is additive: users opt into selling by completing seller onboarding (seller ToS acceptance + seller profile creation + Stripe Connect). Seller state is derived from the existence of a `seller_profiles` record, not a role field.
 
 ---
 
@@ -62,8 +63,8 @@ apps/
 │   │   │   ├── layout.tsx           # Root layout (lang="ja", Inter font)
 │   │   │   ├── page.tsx             # Landing page
 │   │   │   ├── (marketing)/         # Public pages (landing, explore)
-│   │   │   ├── (dashboard)/         # Authenticated student routes
-│   │   │   ├── (creator)/           # Authenticated creator routes
+│   │   │   ├── (dashboard)/         # Authenticated user routes (purchases, history, favorites)
+│   │   │   ├── (seller)/            # Seller routes (requires seller_profiles record)
 │   │   │   ├── api/                 # API routes (webhooks, ai-grading)
 │   │   │   └── auth/callback/       # Supabase Auth callback
 │   │   ├── components/
@@ -118,16 +119,16 @@ tsconfig.base.json                   # Shared TypeScript config
 /auth/callback              Supabase Auth OAuth callback
 /login                      Sign in (Google, X/Twitter)
 
-/dashboard                  Student dashboard (purchases, performance trends)
+/dashboard                  User dashboard (purchases, performance trends)
 /dashboard/history          Submission history
 /dashboard/favorites        Saved problems
 
-/creator                    Creator dashboard
-/creator/new                Create new problem set
-/creator/[id]/edit          Edit problem set
-/creator/[id]/rubric        Rubric editor
-/creator/analytics          Sales analytics
-/creator/stripe-setup       Stripe Connect setup
+/sell                       Seller dashboard (requires seller_profiles)
+/sell/new                   Create new problem set
+/sell/[id]/edit             Edit problem set
+/sell/[id]/rubric           Rubric editor
+/sell/analytics             Sales analytics
+/sell/onboarding            Seller onboarding (ToS → profile → Stripe Connect)
 
 /settings                   Account settings
 ```
@@ -138,11 +139,26 @@ tsconfig.base.json                   # Shared TypeScript config
 
 ### Tables
 
-- **profiles** — Extends Supabase Auth users (role: student/creator, stripe_account_id)
-- **problem_sets** — Creator-published exam problems (subject, university, difficulty, price, rubric JSONB, PDF URLs)
-- **purchases** — Student purchases (unique per user+problem_set)
-- **submissions** — Student answer submissions with AI grading results (answers JSONB, score, feedback JSONB)
-- **favorites** — Student wishlists
+- **profiles** — Extends Supabase Auth users (display_name, avatar_url). No role field. All authenticated users can browse and purchase.
+- **seller_profiles** — Seller-specific data (seller_display_name, seller_description, university, circle_name, tos_accepted_at, stripe_account_id). Existence of this record = user has seller capability. Created upon completing seller onboarding.
+- **problem_sets** — Seller-published exam problems (subject, university, difficulty, price, rubric JSONB, PDF URLs). FK to seller_profiles.
+- **purchases** — User purchases (unique per user+problem_set)
+- **submissions** — User answer submissions with AI grading results (answers JSONB, score, feedback JSONB)
+- **favorites** — User wishlists
+
+### User Model
+
+```
+All users (profiles)
+  ├── Can browse, purchase, submit answers, manage favorites
+  └── Optionally: complete seller onboarding
+        ├── Step 1: Accept seller Terms of Service
+        ├── Step 2: Create seller profile (display name, description, etc.)
+        └── Step 3: Complete Stripe Connect onboarding
+        → seller_profiles record created → can publish and sell problem sets
+```
+
+**Seller capability check:** `seller_profiles` record exists with `tos_accepted_at IS NOT NULL` AND `stripe_account_id IS NOT NULL`.
 
 ### Subjects
 
@@ -151,9 +167,10 @@ tsconfig.base.json                   # Shared TypeScript config
 ### RLS Policies
 
 - Profiles: Public read, self-update only
-- Problem sets: Published visible to all, drafts visible to creator only, CRUD restricted to creator
+- Seller profiles: Public read, self-update only, self-create only
+- Problem sets: Published visible to all, drafts visible to owning seller only, CRUD restricted to owning seller
 - Purchases: Self-read, self-create only
-- Submissions: Self-read/create, creators can view submissions for their own problems
+- Submissions: Self-read/create, sellers can view submissions for their own problem sets
 - Favorites: Self-manage only
 
 ---
@@ -198,14 +215,14 @@ Creators define rubrics per section/sub-question as JSONB:
 
 ```
 Purchase Flow:
-  Student -> Stripe Checkout -> Payment Complete
+  User -> Stripe Checkout -> Payment Complete
     ├── Platform fee: 15%
     ├── Stripe fee: 3.6% + ¥40 (Japan)
-    └── Creator payout: remaining (via Stripe Connect Express)
+    └── Seller payout: remaining (via Stripe Connect Express)
 ```
 
 - Free problems (¥0) skip Stripe checkout
-- Creators upgrade from Student by completing Stripe Connect onboarding
+- Stripe Connect onboarding is part of the seller onboarding flow (Step 3 of 3)
 
 ---
 
