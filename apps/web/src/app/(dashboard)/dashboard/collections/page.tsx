@@ -2,8 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, FolderOpen } from "lucide-react";
+import { FolderOpen } from "lucide-react";
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 
 export default async function CollectionsPage() {
@@ -43,15 +42,6 @@ export default async function CollectionsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
-          </Link>
-        </Button>
-      </div>
-
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">コレクション</h1>
         <CreateCollectionDialog />

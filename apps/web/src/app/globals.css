@@ -6,22 +6,22 @@
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-display: "Inter", "Noto Sans JP", ui-sans-serif, system-ui, sans-serif;
 
-  /* Primary — Teal */
-  --color-primary: hsl(174 72% 44%);
-  --color-primary-foreground: hsl(220 20% 97%);
+  /* Primary — Wakaba Green (若葉色) */
+  --color-primary: hsl(142 71% 38%);
+  --color-primary-foreground: hsl(0 0% 100%);
 
   /* Accent — Deep Indigo */
   --color-accent: hsl(235 60% 52%);
   --color-accent-foreground: hsl(0 0% 100%);
 
-  /* Navy */
-  --color-navy: hsl(230 40% 12%);
-  --color-navy-light: hsl(228 30% 20%);
+  /* Forest Green (replaces Navy) */
+  --color-forest: hsl(152 40% 14%);
+  --color-forest-light: hsl(152 35% 20%);
 
-  /* Teal extended */
-  --color-teal: hsl(174 72% 44%);
-  --color-teal-light: hsl(174 60% 58%);
-  --color-teal-glow: hsl(174 80% 70%);
+  /* Green extended (replaces Teal) */
+  --color-green: hsl(142 71% 38%);
+  --color-green-light: hsl(142 60% 54%);
+  --color-green-glow: hsl(142 70% 70%);
 
   /* Indigo extended */
   --color-indigo: hsl(235 60% 52%);
@@ -40,7 +40,7 @@
   --color-muted-foreground: hsl(220 10% 46%);
   --color-border: hsl(220 16% 90%);
   --color-input: hsl(220 16% 90%);
-  --color-ring: hsl(174 72% 44%);
+  --color-ring: hsl(142 71% 38%);
 
   /* Status */
   --color-destructive: hsl(0 84% 60%);
@@ -69,14 +69,14 @@
   :root {
     --gradient-hero: linear-gradient(
       135deg,
-      hsl(230 40% 12%) 0%,
-      hsl(235 45% 22%) 50%,
-      hsl(174 50% 25%) 100%
+      hsl(152 40% 14%) 0%,
+      hsl(152 38% 19%) 50%,
+      hsl(142 50% 22%) 100%
     );
-    --gradient-teal: linear-gradient(
+    --gradient-green: linear-gradient(
       135deg,
-      hsl(174 72% 44%),
-      hsl(174 80% 58%)
+      hsl(142 71% 38%),
+      hsl(142 70% 54%)
     );
     --gradient-indigo: linear-gradient(
       135deg,
@@ -88,11 +88,11 @@
       hsl(220 20% 97%) 0%,
       hsl(220 16% 93%) 100%
     );
-    --shadow-sm: 0 1px 3px hsl(230 40% 12% / 0.06);
-    --shadow-md: 0 4px 16px hsl(230 40% 12% / 0.08);
-    --shadow-lg: 0 8px 32px hsl(230 40% 12% / 0.12);
-    --shadow-teal: 0 4px 24px hsl(174 72% 44% / 0.25);
-    --shadow-glow: 0 0 40px hsl(174 72% 44% / 0.15);
+    --shadow-sm: 0 1px 3px hsl(152 40% 14% / 0.06);
+    --shadow-md: 0 4px 16px hsl(152 40% 14% / 0.08);
+    --shadow-lg: 0 8px 32px hsl(152 40% 14% / 0.12);
+    --shadow-green: 0 4px 24px hsl(142 71% 38% / 0.25);
+    --shadow-glow: 0 0 40px hsl(142 71% 38% / 0.15);
   }
 
   body {
@@ -148,16 +148,16 @@
 @keyframes pulse-glow {
   0%,
   100% {
-    box-shadow: 0 0 20px hsl(174 72% 44% / 0.15);
+    box-shadow: 0 0 20px hsl(142 71% 38% / 0.15);
   }
   50% {
-    box-shadow: 0 0 40px hsl(174 72% 44% / 0.3);
+    box-shadow: 0 0 40px hsl(142 71% 38% / 0.3);
   }
 }
 
 @layer utilities {
-  .text-gradient-teal {
-    background-image: var(--gradient-teal);
+  .text-gradient-green {
+    background-image: var(--gradient-green);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -174,8 +174,8 @@
     background: var(--gradient-hero);
   }
 
-  .shadow-teal {
-    box-shadow: var(--shadow-teal);
+  .shadow-green {
+    box-shadow: var(--shadow-green);
   }
 
   .shadow-glow {

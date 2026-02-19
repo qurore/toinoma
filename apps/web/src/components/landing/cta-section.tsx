@@ -7,7 +7,7 @@ export function CTASection() {
     <section className="px-6 py-24 md:py-32">
       <div className="bg-hero relative mx-auto max-w-5xl overflow-hidden rounded-3xl p-12 text-center md:p-20">
         {/* Glow */}
-        <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-teal/20 blur-3xl" />
+        <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-green/20 blur-3xl" />
 
         <div className="relative">
           <h2 className="font-display text-3xl font-bold text-white md:text-5xl">

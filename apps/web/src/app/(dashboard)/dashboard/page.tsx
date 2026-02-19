@@ -104,20 +104,7 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-      {/* Quick links */}
-      <div className="mb-8 flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/favorites">お気に入り</Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/collections">コレクション</Link>
-        </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href="/dashboard/history">解答履歴</Link>
-        </Button>
-      </div>
-
-      <div className="grid gap-6 lg:grid-cols-2">
+<div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Purchases */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">

@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
 
@@ -25,15 +24,6 @@ export default async function FavoritesPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
-          </Link>
-        </Button>
-      </div>
-
       <h1 className="mb-6 text-2xl font-bold tracking-tight">お気に入り</h1>
 
       {items.length === 0 ? (

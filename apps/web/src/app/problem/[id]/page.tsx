@@ -9,6 +9,8 @@ import { FileText, GraduationCap } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { PurchaseSection } from "@/components/marketplace/purchase-section";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
+import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { ShareButton } from "@/components/navigation/share-button";
 import type { Subject, Difficulty } from "@/types/database";
 
 export default async function ProblemDetailPage({
@@ -17,7 +19,10 @@ export default async function ProblemDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const supabase = await createClient();
+  const [navbarData, supabase] = await Promise.all([
+    getNavbarData(),
+    createClient(),
+  ]);
 
   // Fetch problem set with seller info
   const { data: ps } = await supabase
@@ -53,7 +58,9 @@ export default async function ProblemDetailPage({
   }
 
   return (
-    <main className="container mx-auto max-w-3xl px-4 py-8">
+    <>
+      <AppNavbar {...navbarData} />
+      <main className="container mx-auto max-w-3xl px-4 py-8 pt-[calc(3.5rem+2rem)]">
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/explore">問題一覧に戻る</Link>
@@ -61,11 +68,14 @@ export default async function ProblemDetailPage({
       </div>
 
       <div className="space-y-6">
-        {/* Header */}
+        {/* Header with share button */}
         <div>
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            {ps.title}
-          </h1>
+          <div className="flex items-start justify-between gap-4">
+            <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+              {ps.title}
+            </h1>
+            <ShareButton title={ps.title} className="shrink-0" />
+          </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge variant="outline">
               {SUBJECT_LABELS[ps.subject as Subject]}
@@ -145,5 +155,6 @@ export default async function ProblemDetailPage({
         />
       </div>
     </main>
+    </>
   );
 }

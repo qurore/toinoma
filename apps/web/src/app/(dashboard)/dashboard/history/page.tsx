@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 
 export default async function SubmissionHistoryPage() {
   const supabase = await createClient();
@@ -23,15 +22,6 @@ export default async function SubmissionHistoryPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
-          </Link>
-        </Button>
-      </div>
-
       <h1 className="mb-6 text-2xl font-bold tracking-tight">解答履歴</h1>
 
       {items.length === 0 ? (

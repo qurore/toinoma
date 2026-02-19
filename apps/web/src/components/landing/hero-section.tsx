@@ -13,13 +13,13 @@ export function HeroSection() {
   return (
     <section className="bg-hero relative flex min-h-[90vh] items-center overflow-hidden pt-16">
       {/* Glow effect */}
-      <div className="absolute left-1/2 top-1/4 h-96 w-96 -translate-x-1/2 rounded-full bg-teal/10 blur-3xl" />
+      <div className="absolute left-1/2 top-1/4 h-96 w-96 -translate-x-1/2 rounded-full bg-green/10 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="max-w-3xl">
           {/* Badge */}
           <div className="opacity-0 animate-fade-up">
-            <Badge className="mb-6 border-teal/30 bg-teal/10 px-4 py-1.5 text-sm font-medium text-teal-light backdrop-blur-sm">
+            <Badge className="mb-6 border-green/30 bg-green/10 px-4 py-1.5 text-sm font-medium text-green-light backdrop-blur-sm">
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
               AI採点で、学びが変わる
             </Badge>
@@ -29,7 +29,7 @@ export function HeroSection() {
           <h1 className="opacity-0 animate-fade-up font-display text-5xl font-bold leading-tight tracking-tight md:text-7xl [animation-delay:100ms]">
             <span className="text-white">問の間</span>
             <br />
-            <span className="text-gradient-teal">Toinoma</span>
+            <span className="text-gradient-green">Toinoma</span>
           </h1>
 
           {/* Subtitle */}
@@ -58,7 +58,7 @@ export function HeroSection() {
           <div className="mt-16 grid grid-cols-3 gap-8 opacity-0 animate-fade-up [animation-delay:400ms]">
             {stats.map((stat) => (
               <div key={stat.label}>
-                <div className="font-display text-2xl font-bold text-teal-glow md:text-3xl">
+                <div className="font-display text-2xl font-bold text-green-glow md:text-3xl">
                   {stat.value}
                 </div>
                 <div className="mt-1 text-sm text-white/50">{stat.label}</div>

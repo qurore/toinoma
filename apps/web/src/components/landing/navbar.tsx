@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 
 export function Navbar() {
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-navy/80 backdrop-blur-md">
+    <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-forest/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-6">
         <Link href="/" className="flex items-center gap-2">
-          <BookOpen className="h-6 w-6 text-teal" />
+          <BookOpen className="h-6 w-6 text-green" />
           <div className="flex flex-col">
             <span className="font-display text-lg font-bold leading-tight text-white">
               問の間
