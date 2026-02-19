@@ -68,12 +68,12 @@ describe("DashboardSidebar", () => {
     expect(sidebarSource).toContain("./sidebar-nav");
   });
 
-  it("uses Supabase server client for user data", () => {
-    expect(sidebarSource).toContain("createClient");
-    expect(sidebarSource).toContain("getUser");
+  it("delegates user identity to AppNavbar (no auth code in sidebar)", () => {
+    expect(sidebarSource).not.toContain("createClient");
+    expect(sidebarSource).not.toContain("getUser");
   });
 
-  it("handles null user gracefully with fallback display name", () => {
-    expect(sidebarSource).toContain("ゲスト");
+  it("positions below navbar with top-14 offset", () => {
+    expect(sidebarSource).toContain("top-14");
   });
 });

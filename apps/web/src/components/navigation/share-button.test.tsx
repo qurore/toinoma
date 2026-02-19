@@ -19,7 +19,7 @@ describe("ShareButton share logic", () => {
     const url = "https://toinoma.jp/problem/abc";
     const title = "Test problem";
     try {
-      if (nav.share) {
+      if (typeof nav.share === "function") {
         await nav.share({ url, title });
       } else {
         await nav.clipboard.writeText(url);
@@ -41,8 +41,8 @@ describe("ShareButton share logic", () => {
     const url = "https://toinoma.jp/problem/abc";
     const title = "Test problem";
     try {
-      if (nav.share) {
-        await (nav as Navigator).share({ url, title });
+      if (typeof nav.share === "function") {
+        await nav.share({ url, title });
       } else {
         await nav.clipboard.writeText(url);
       }
@@ -63,7 +63,7 @@ describe("ShareButton share logic", () => {
     const url = "https://toinoma.jp/problem/abc";
     const title = "Test problem";
     try {
-      if (nav.share) await nav.share({ url, title });
+      if (typeof nav.share === "function") await nav.share({ url, title });
     } catch (err) {
       if (err instanceof Error && err.name !== "AbortError") {
         toastErrorMock("共有に失敗しました");

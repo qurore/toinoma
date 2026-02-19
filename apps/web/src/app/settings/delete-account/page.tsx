@@ -1,6 +1,5 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteAccountConfirm } from "@/components/settings/delete-account-confirm";
 
@@ -59,26 +58,4 @@ export default async function DeleteAccountPage() {
       </Card>
     </div>
   );
-}
-
-// Server Action for account deletion
-export async function deleteAccountAction() {
-  "use server";
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
-
-  // Use service role to delete the auth user — cascades to profiles via DB triggers
-  const adminClient = createAdminClient();
-  const { error } = await adminClient.auth.admin.deleteUser(user.id);
-
-  if (error) {
-    throw new Error("アカウントの削除に失敗しました");
-  }
-
-  redirect("/");
 }
