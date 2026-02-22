@@ -424,7 +424,7 @@ export function RubricEditor({
           className={cn(
             "rounded-md p-3 text-sm",
             message.type === "success"
-              ? "bg-emerald-500/10 text-emerald-600"
+              ? "bg-success/10 text-success"
               : "bg-destructive/10 text-destructive"
           )}
         >

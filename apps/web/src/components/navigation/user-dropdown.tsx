@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LogOut, User, Store, HelpCircle, BookOpen } from "lucide-react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import {
   DropdownMenu,
@@ -48,7 +49,11 @@ export function UserDropdown({
 
   async function handleLogout() {
     const supabase = createClient();
-    await supabase.auth.signOut();
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("ログアウトに失敗しました");
+      return;
+    }
     router.push("/login");
     router.refresh();
   }
@@ -114,7 +119,7 @@ export function UserDropdown({
                 data-testid="seller-link"
               >
                 <Store className="h-4 w-4" />
-                出品者ページ
+                出品管理
               </Link>
             </DropdownMenuItem>
           </>

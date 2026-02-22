@@ -104,7 +104,7 @@ export function AddToCollectionDialog({
                     {collection.name}
                   </span>
                   {isAdded ? (
-                    <Check className="h-4 w-4 text-emerald-500" />
+                    <Check className="h-4 w-4 text-success" />
                   ) : addingId === collection.id ? (
                     <Loader2 className="h-4 w-4 animate-spin" />
                   ) : null}

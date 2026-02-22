@@ -139,7 +139,7 @@ export default async function SalesAnalyticsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-emerald-500">
+            <p className="text-3xl font-bold text-success">
               ¥{netRevenue.toLocaleString()}
             </p>
           </CardContent>

@@ -24,7 +24,10 @@ export function DeleteAccountConfirm() {
     setIsDeleting(true);
     try {
       const res = await fetch("/api/account/delete", { method: "DELETE" });
-      if (!res.ok) throw new Error("Failed");
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error ?? "アカウントの削除に失敗しました");
+      }
 
       // Sign out and redirect
       const supabase = createClient();

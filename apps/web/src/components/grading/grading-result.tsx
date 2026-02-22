@@ -24,7 +24,7 @@ function ScoreBar({
           className={cn(
             "h-full rounded-full transition-all duration-500",
             percentage >= 80
-              ? "bg-emerald-500"
+              ? "bg-success"
               : percentage >= 50
                 ? "bg-amber-500"
                 : "bg-destructive"
@@ -47,7 +47,7 @@ function RubricMatchItem({
   return (
     <div className="flex items-start gap-2 rounded-md border border-border bg-card p-3">
       {match.matched ? (
-        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
       ) : (
         <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
       )}
@@ -85,7 +85,7 @@ export function GradingResultDisplay({
             className={cn(
               "mx-auto mb-2 flex h-20 w-20 items-center justify-center rounded-full",
               percentage >= 80
-                ? "bg-emerald-500/10"
+                ? "bg-success/10"
                 : percentage >= 50
                   ? "bg-amber-500/10"
                   : "bg-destructive/10"
@@ -95,7 +95,7 @@ export function GradingResultDisplay({
               className={cn(
                 "text-3xl font-bold",
                 percentage >= 80
-                  ? "text-emerald-500"
+                  ? "text-success"
                   : percentage >= 50
                     ? "text-amber-500"
                     : "text-destructive"

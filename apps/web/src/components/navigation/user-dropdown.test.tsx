@@ -32,6 +32,23 @@ describe("UserDropdown data logic", () => {
     expect(shouldShowSellerLink(false)).toBe(false);
   });
 
+  it("does not redirect when signOut returns an error", async () => {
+    // Simulate the handleLogout guard: error → no navigation
+    const navigateCalls: string[] = [];
+
+    async function handleLogout(signOutError: Error | null) {
+      if (signOutError) return; // guard: do not navigate on error
+      navigateCalls.push("/login");
+    }
+
+    await handleLogout(new Error("network error"));
+    expect(navigateCalls).toHaveLength(0);
+
+    await handleLogout(null);
+    expect(navigateCalls).toHaveLength(1);
+    expect(navigateCalls[0]).toBe("/login");
+  });
+
   it("maps subscription tiers to correct Japanese labels", () => {
     const TIER_LABELS: Record<string, string> = {
       free: "フリー",

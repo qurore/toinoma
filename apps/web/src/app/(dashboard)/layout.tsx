@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
+import { MobileDashboardNav } from "@/components/dashboard/mobile-nav";
 
 export default async function DashboardLayout({
   children,
@@ -13,12 +14,17 @@ export default async function DashboardLayout({
   return (
     <>
       <AppNavbar {...navbarData} />
-      {/* pt-14 offsets fixed top navbar (h-14). Sidebar starts at top-14. */}
-      <div className="flex pt-14">
-        <DashboardSidebar />
-        <div className="flex flex-1 flex-col pl-60">
-          {children}
-        </div>
+      {/* Desktop sidebar: fixed left, below navbar, hidden on mobile */}
+      <DashboardSidebar />
+      {/* Mobile tab bar: fixed below navbar, only on mobile (md:hidden) */}
+      <MobileDashboardNav />
+      {/*
+        Content offset:
+        - Mobile: pt-24 = navbar (h-14=56px) + mobile tab bar (h-10=40px) = 96px
+        - Desktop: pt-14 = navbar (h-14=56px) only, pl-60 = sidebar (w-60=240px)
+      */}
+      <div className="pt-24 md:pl-60 md:pt-14">
+        {children}
       </div>
     </>
   );

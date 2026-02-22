@@ -59,6 +59,11 @@ describe("DashboardSidebar", () => {
     expect(sidebarSource).toContain("fixed");
   });
 
+  it("is hidden on mobile, visible on md+ (responsive)", () => {
+    expect(sidebarSource).toContain("hidden");
+    expect(sidebarSource).toContain("md:flex");
+  });
+
   it("uses bg-card for sidebar background (light theme)", () => {
     expect(sidebarSource).toContain("bg-card");
   });
@@ -75,5 +80,37 @@ describe("DashboardSidebar", () => {
 
   it("positions below navbar with top-14 offset", () => {
     expect(sidebarSource).toContain("top-14");
+  });
+});
+
+describe("MobileDashboardNav", () => {
+  const mobileNavSource = readFileSync(
+    resolve(__dirname, "./mobile-nav.tsx"),
+    "utf-8"
+  );
+
+  it("is a Client Component with usePathname for active detection", () => {
+    expect(mobileNavSource).toContain('"use client"');
+    expect(mobileNavSource).toContain("usePathname");
+  });
+
+  it("is only visible on mobile (hidden on md+ breakpoint)", () => {
+    expect(mobileNavSource).toContain("md:hidden");
+  });
+
+  it("is fixed below the AppNavbar at top-14", () => {
+    expect(mobileNavSource).toContain("fixed");
+    expect(mobileNavSource).toContain("top-14");
+    expect(mobileNavSource).toContain("h-10");
+  });
+
+  it("reuses NAV_ITEMS from sidebar-nav (single source of truth)", () => {
+    expect(mobileNavSource).toContain("NAV_ITEMS");
+    expect(mobileNavSource).toContain("./sidebar-nav");
+  });
+
+  it("uses border-primary active indicator (not bg-primary/10)", () => {
+    expect(mobileNavSource).toContain("border-primary");
+    expect(mobileNavSource).toContain("text-primary");
   });
 });

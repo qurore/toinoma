@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
+export const NAV_ITEMS = [
   {
     href: "/dashboard",
     label: "ダッシュボード",

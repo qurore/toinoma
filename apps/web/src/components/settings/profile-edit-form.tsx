@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { User } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -25,7 +25,8 @@ export function ProfileEditForm({
   const [isSaving, setIsSaving] = useState(false);
 
   const initials = (displayName || "?")
-    .split(" ")
+    .split(/[\s@]/)
+    .filter(Boolean)
     .map((n) => n[0])
     .join("")
     .toUpperCase()
@@ -62,13 +63,16 @@ export function ProfileEditForm({
         </Avatar>
         <div className="text-sm text-muted-foreground">
           <User className="mb-1 inline h-4 w-4" />
-          {" プロフィール画像はGravatar / OAuth プロバイダーから取得されます"}
+          プロフィール画像はGravatar / OAuth プロバイダーから取得されます
         </div>
       </div>
 
       {/* Display name */}
       <div className="space-y-1.5">
-        <Label htmlFor="display-name">表示名</Label>
+        <div className="flex items-baseline justify-between">
+          <Label htmlFor="display-name">表示名</Label>
+          <span className="text-xs text-muted-foreground">{displayName.length}/50</span>
+        </div>
         <Input
           id="display-name"
           value={displayName}
@@ -82,9 +86,7 @@ export function ProfileEditForm({
       </div>
 
       <Button onClick={handleSave} disabled={isSaving || !displayName.trim()}>
-        {isSaving && (
-          <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
-        )}
+        {isSaving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
         保存する
       </Button>
     </div>

@@ -68,8 +68,8 @@ export default function SignupPage() {
       <main className="flex min-h-screen items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-500/10">
-              <CheckCircle2 className="h-7 w-7 text-emerald-500" />
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-success/10">
+              <CheckCircle2 className="h-7 w-7 text-success" />
             </div>
             <CardTitle className="text-2xl">確認メールを送信しました</CardTitle>
             <CardDescription>

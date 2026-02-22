@@ -4,7 +4,7 @@ import { SidebarNav } from "./sidebar-nav";
 // Logo and user identity are handled by the AppNavbar above.
 export function DashboardSidebar() {
   return (
-    <aside className="fixed bottom-0 left-0 top-14 z-40 flex w-60 flex-col border-r border-border bg-card">
+    <aside className="fixed bottom-0 left-0 top-14 z-40 hidden w-60 flex-col border-r border-border bg-card md:flex">
       <SidebarNav />
     </aside>
   );

@@ -108,6 +108,7 @@ export function AppNavbar({ user, isSeller, displayName, avatarUrl, subscription
             <input
               name="q"
               type="search"
+              aria-label="問題を検索"
               placeholder="問題を検索..."
               className="w-full rounded-full border border-border bg-muted/50 py-1.5 pl-9 pr-4 text-sm outline-none transition-colors placeholder:text-foreground/40 focus:border-primary/50 focus:bg-white focus:ring-2 focus:ring-primary/10"
             />
@@ -126,17 +127,19 @@ export function AppNavbar({ user, isSeller, displayName, avatarUrl, subscription
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {user ? (
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden items-center gap-1.5 sm:flex"
-                asChild
-              >
-                <Link href={createHref}>
-                  <Plus className="h-3.5 w-3.5" />
-                  出題する
-                </Link>
-              </Button>
+              {isSeller && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="hidden items-center gap-1.5 sm:flex"
+                  asChild
+                >
+                  <Link href={createHref}>
+                    <Plus className="h-3.5 w-3.5" />
+                    出題する
+                  </Link>
+                </Button>
+              )}
               <UserDropdown
                 user={user}
                 isSeller={isSeller}

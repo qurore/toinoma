@@ -47,9 +47,11 @@ const DELETE_NAV_ITEM: NavItem = {
 
 interface SettingsSidebarProps {
   isSeller: boolean;
+  /** When true, renders as a horizontal scrollable tab bar for mobile viewports. */
+  horizontal?: boolean;
 }
 
-export function SettingsSidebar({ isSeller }: SettingsSidebarProps) {
+export function SettingsSidebar({ isSeller, horizontal = false }: SettingsSidebarProps) {
   const pathname = usePathname();
 
   const navItems: NavItem[] = [
@@ -57,6 +59,39 @@ export function SettingsSidebar({ isSeller }: SettingsSidebarProps) {
     ...(isSeller ? [SELLER_NAV_ITEM] : []),
     DELETE_NAV_ITEM,
   ];
+
+  if (horizontal) {
+    return (
+      <nav aria-label="設定ナビゲーション" className="overflow-x-auto">
+        <ul className="flex gap-1 pb-1">
+          {navItems.map((item) => {
+            const isActive = !item.external && (
+              item.exact ? pathname === item.href : pathname.startsWith(item.href)
+            );
+            const isDestructive = item.variant === "destructive";
+
+            return (
+              <li key={`${item.href}-${item.label}`} className="shrink-0">
+                <Link
+                  href={item.href}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+                    isActive
+                      ? "bg-secondary text-foreground"
+                      : isDestructive
+                        ? "text-destructive hover:bg-destructive/10"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  )}
+                >
+                  {item.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    );
+  }
 
   return (
     <nav aria-label="設定ナビゲーション">

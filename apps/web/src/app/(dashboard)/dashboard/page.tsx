@@ -104,7 +104,7 @@ export default async function DashboardPage() {
         </Card>
       </div>
 
-<div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Purchases */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">

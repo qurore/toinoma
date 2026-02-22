@@ -61,7 +61,7 @@ export default async function SellerDashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-emerald-500">
+            <p className="text-3xl font-bold text-success">
               {publishedCount}
             </p>
           </CardContent>
