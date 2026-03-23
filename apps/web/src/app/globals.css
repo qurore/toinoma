@@ -181,4 +181,42 @@
   .shadow-glow {
     box-shadow: var(--shadow-glow);
   }
+
+  /* Vertical text (tategaki) for kokugo/Japanese language problems */
+  .vertical-text {
+    writing-mode: vertical-rl;
+    text-orientation: mixed;
+    line-height: 2;
+    letter-spacing: 0.05em;
+    font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+  }
+
+  /* Horizontal-in-vertical for numbers and Latin in vertical text */
+  .vertical-text .tcy {
+    text-combine-upright: all;
+  }
+
+  /* Override vertical for specific inline elements */
+  .vertical-text .horizontal-override {
+    writing-mode: horizontal-tb;
+  }
+
+  /* A4 print styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    .print-a4 {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0;
+      padding: 25mm;
+    }
+    .print-a4-narrow {
+      padding: 15mm;
+    }
+    .print-page-break {
+      page-break-before: always;
+    }
+  }
 }

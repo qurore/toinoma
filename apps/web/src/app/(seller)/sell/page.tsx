@@ -97,11 +97,17 @@ export default async function SellerDashboardPage() {
             問題セットの管理・作成
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <Button variant="outline" asChild>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/sell/pool">問題プール</Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
             <Link href="/sell/analytics">販売分析</Link>
           </Button>
-          <Button asChild>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/sell/payouts">振込・収益</Link>
+          </Button>
+          <Button size="sm" asChild>
             <Link href="/sell/new">新規作成</Link>
           </Button>
         </div>

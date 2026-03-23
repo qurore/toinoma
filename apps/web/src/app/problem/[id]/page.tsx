@@ -11,6 +11,8 @@ import { PurchaseSection } from "@/components/marketplace/purchase-section";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { ShareButton } from "@/components/navigation/share-button";
+import { ReviewsSection } from "@/components/reviews/reviews-section";
+import { PdfDownloadButton } from "@/components/solving/pdf-download-button";
 import type { Subject, Difficulty } from "@/types/database";
 
 export default async function ProblemDetailPage({
@@ -139,9 +141,10 @@ export default async function ProblemDetailPage({
           </Card>
         )}
 
-        {/* Collection action for purchased users */}
+        {/* Collection + PDF actions for purchased users */}
         {hasPurchased && user && (
-          <div className="flex justify-end">
+          <div className="flex items-center justify-end gap-2">
+            <PdfDownloadButton problemSetId={id} />
             <AddToCollectionDialog problemSetId={id} />
           </div>
         )}
@@ -152,6 +155,12 @@ export default async function ProblemDetailPage({
           price={ps.price}
           hasPurchased={hasPurchased}
           isLoggedIn={!!user}
+        />
+
+        {/* Reviews */}
+        <ReviewsSection
+          problemSetId={id}
+          userId={user?.id ?? null}
         />
       </div>
     </main>

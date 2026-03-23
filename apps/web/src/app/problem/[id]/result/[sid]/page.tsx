@@ -2,7 +2,8 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { PdfDownloadButton } from "@/components/solving/pdf-download-button";
+import { ArrowLeft, History } from "lucide-react";
 import { gradingResultSchema } from "@toinoma/shared/schemas";
 import { GradingResultDisplay } from "@/components/grading/grading-result";
 
@@ -55,9 +56,18 @@ export default async function GradingResultPage({
             問題詳細に戻る
           </Link>
         </Button>
-        <Button variant="outline" size="sm" asChild>
-          <Link href={`/problem/${id}/solve`}>もう一度解く</Link>
-        </Button>
+        <div className="flex items-center gap-2">
+          <PdfDownloadButton problemSetId={id} />
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/problem/${id}/history`}>
+              <History className="mr-1 h-3.5 w-3.5" />
+              履歴
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/problem/${id}/solve`}>もう一度解く</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="mb-6">

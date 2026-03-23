@@ -1,9 +1,26 @@
 import Link from "next/link";
 import { BookOpen, Grid2x2, House, LayoutDashboard, Plus, Store } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { UserDropdown } from "./user-dropdown";
+import { NotificationBell } from "@/components/notifications/notification-bell";
 import type { SubscriptionTier } from "@/types/database";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fromUntyped(supabase: SupabaseClient<any>, table: string) {
+  return supabase.from(table);
+}
+
+interface NotificationData {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  link: string | null;
+  read_at: string | null;
+  created_at: string;
+}
 
 export interface NavbarData {
   user: { id: string; email?: string } | null;
@@ -11,6 +28,8 @@ export interface NavbarData {
   displayName: string | null;
   avatarUrl: string | null;
   subscriptionTier: SubscriptionTier;
+  notificationCount: number;
+  notifications: NotificationData[];
 }
 
 /**
@@ -24,7 +43,10 @@ export async function getNavbarData(): Promise<NavbarData> {
   } = await supabase.auth.getUser();
 
   if (!user) {
-    return { user: null, isSeller: false, displayName: null, avatarUrl: null, subscriptionTier: "free" };
+    return {
+      user: null, isSeller: false, displayName: null, avatarUrl: null,
+      subscriptionTier: "free", notificationCount: 0, notifications: [],
+    };
   }
 
   const [profileResult, sellerResult, subResult] = await Promise.all([
@@ -40,12 +62,35 @@ export async function getNavbarData(): Promise<NavbarData> {
   const isSeller =
     !!sellerResult.data?.tos_accepted_at && !!sellerResult.data?.stripe_account_id;
 
+  // Fetch notifications (gracefully handle missing table)
+  let notificationCount = 0;
+  let notifications: NotificationData[] = [];
+  try {
+    const [countResult, listResult] = await Promise.all([
+      fromUntyped(supabase, "notifications")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .is("read_at", null),
+      fromUntyped(supabase, "notifications")
+        .select("id, type, title, body, link, read_at, created_at")
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false })
+        .limit(10),
+    ]);
+    notificationCount = countResult.count ?? 0;
+    notifications = (listResult.data ?? []) as NotificationData[];
+  } catch {
+    // Table may not exist yet — graceful degradation
+  }
+
   return {
     user: { id: user.id, email: user.email },
     isSeller,
     displayName: profileResult.data?.display_name ?? null,
     avatarUrl: profileResult.data?.avatar_url ?? null,
     subscriptionTier: (subResult.data?.tier ?? "free") as SubscriptionTier,
+    notificationCount,
+    notifications,
   };
 }
 
@@ -71,7 +116,10 @@ function NavItem({ href, icon: Icon, label }: NavItemProps) {
  * AppNavbar — Server Component.
  * Receives auth/profile data from the calling layout via getNavbarData().
  */
-export function AppNavbar({ user, isSeller, displayName, avatarUrl, subscriptionTier }: NavbarData) {
+export function AppNavbar({
+  user, isSeller, displayName, avatarUrl, subscriptionTier,
+  notificationCount, notifications,
+}: NavbarData) {
   const createHref = isSeller ? "/sell/new" : "/sell/onboarding";
 
   return (
@@ -151,6 +199,10 @@ export function AppNavbar({ user, isSeller, displayName, avatarUrl, subscription
                   </Link>
                 </Button>
               )}
+              <NotificationBell
+                initialCount={notificationCount}
+                initialNotifications={notifications}
+              />
               <UserDropdown
                 user={user}
                 isSeller={isSeller}
