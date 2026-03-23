@@ -555,263 +555,210 @@ Partial fixes are unacceptable.
 
 ---
 
-## CRITICAL RULE: Defect Resolution Workflow (DRW)
-
-**For defect resolution tasks (bug fixes, error corrections, test failures), use DRW.**
-
-### MANDATORY: Skill Invocation
-
-**DRW stages MUST be executed via the `/defect-fix` master orchestrator.** The skill spawns subagents with isolated reviewer personas for independent judgment.
-
-| Command | Action |
-|---------|--------|
-| **`/defect-fix [error description]`** | **Entry point.** Runs all 5 stages (D1→D5) with restart handling. |
-
-**Invoking this skill is NOT optional. Attempting to execute DRW stages inline without the skill is a violation.**
-
-### When DRW Applies
-
-- User-reported bugs, errors, or malfunctions
-- Runtime errors (e.g., Zod validation failures, type mismatches)
-- Test failures requiring investigation and code fixes
-- Error patterns affecting multiple files (2+ files)
-- Any defect requiring investigation before fixing
-
-### When DRW Does NOT Apply
-
-| Scenario | Correct Action |
-|----------|---------------|
-| Single typo, 1 file, <=3 lines, cosmetic only | Trivial Fix — apply directly |
-| Bug fix reveals missing feature | Escalate to SE Pipeline |
-| Bug fix reveals systemic architectural flaw | Escalate to SE Pipeline |
-| Fix requires new DB tables or API endpoints | Escalate to EIW |
-
-### DRW Stages
-
-| Stage | Name | Purpose |
-|-------|------|---------|
-| D1 | Investigation & Root Cause | Reproduce, trace root cause, classify scope |
-| D2 | Scope Analysis | Search ALL occurrences codebase-wide, build fix manifest |
-| D3 | TDD Fix | Write regression test (RED), fix all items (GREEN), refactor |
-| D4 | Verification | Full test suite, build verification, manifest coverage |
-| D5 | Technical Review | Code quality, pattern consistency, coverage verification |
-
-### Escalation Triggers
-
-| Trigger (at D1) | Escalation Target |
-|------------------|-------------------|
-| Defect is actually a missing feature | `/se-pipeline` |
-| Defect reveals systemic architectural flaw | `/se-pipeline` |
-
-| Trigger (at D2) | Escalation Target |
-|------------------|-------------------|
-| Fix scope exceeds 10 files with heterogeneous patterns | `/eiw-review` |
-| Fix requires new DB tables or API endpoints | `/eiw-review` |
-
-### Restart Policy
-
-Maximum 2 restarts (3 total iterations); 4th attempt → human escalation.
-
-**PDCA auto-trigger**: After DRW completes with RESOLVED status, the PDCA cycle (`/pdca-cycle`) MUST be automatically invoked.
-
----
-
-## CRITICAL RULE: Software Engineering Pipeline (SE Pipeline)
+## CRITICAL RULE: Pipeline Governance
 
 **All tasks that produce file output (code, documentation, configuration) MUST follow an approved pipeline.**
 
-### MANDATORY: Intent Classification (4-Tier System)
+### MANDATORY: Intent Classification (4-Tier Decision Tree)
 
-**Before responding to ANY user message, classify the user's intent:**
+**Before responding to ANY user message, classify intent:**
 
-#### Step 1: Does the request require file modifications?
+1. **Does it require file modifications?** NO → **Advisory** (respond directly, no pipeline)
+2. **Is it a bug/error/test failure?** YES → Trivial? (1 file, <=3 lines, cosmetic only) → YES: **Trivial Fix** (apply directly) / NO: **Defect Resolution** → `/defect-fix`
+3. **New feature, architecture, or artifact creation?** (includes docs, skills, configs, migrations, APIs, specs) → YES: **Full Lifecycle** → `/se-pipeline`
+4. **Requirements and design already defined?** YES → **Implementation** → `/eiw-review` / NO → `/se-pipeline`
 
-| Answer | Result |
-|--------|--------|
-| **NO** | **Advisory** — Respond directly. No pipeline invocation. |
-| **YES** | Proceed to Step 2. |
+**Classification Rules:**
+- Conversational accumulation: classify based on AGGREGATE deliverable across multi-message sequences, not each message in isolation
+- Mandatory rules are NOT subject to cost-benefit override — if the tree routes to a pipeline, invoke it
+- Bug reports are ALWAYS Defect Resolution unless ALL trivial criteria met
+- Error messages, stack traces, "X is broken" → Defect Resolution first; escalation happens inside DRW if needed
+- Generating commits/PRs from existing code is NOT output-generating (git operation)
+- `/site-patrol` is QA exploration, exempt from pipelines
 
-#### Step 2: Is the user reporting a bug, error, or test failure?
-
-| Answer | Result |
-|--------|--------|
-| **YES** | Is it trivial? (1 file, <=3 lines, cosmetic/syntactic only, no behavioral change) |
-|         | → **YES**: **Trivial Fix** — Apply directly. No pipeline. |
-|         | → **NO**: **Defect Resolution** → `/defect-fix` |
-| **NO** | Proceed to Step 3. |
-
-#### Step 3: Is this a new feature, architectural change, or new artifact creation?
-
-**"New artifact creation" includes:** Documentation, skill files, configuration, migrations, API endpoints, spec documents.
-
-**Conversational accumulation rule:** If the current message is part of a multi-message sequence requesting related file outputs, classify based on the AGGREGATE deliverable across the conversation, not each individual message in isolation.
-
-| Answer | Result |
-|--------|--------|
-| **YES** | **Full Lifecycle** → `/se-pipeline` |
-| **NO** | Proceed to Step 4. |
-
-#### Step 4: Are requirements and design already defined?
-
-| Answer | Result |
-|--------|--------|
-| **YES** | **Implementation** → `/eiw-review` |
-| **NO** | **Full Lifecycle** → `/se-pipeline` |
-
-#### Classification Rules
-
-1. If the response requires `Write`, `Edit`, `NotebookEdit`, or creating/modifying any file → **Output-Generating** → sub-classify per decision tree above
-2. If the response is purely conversational → **Advisory** → No pipeline
-3. **Bug reports are ALWAYS Defect Resolution** unless they meet ALL trivial fix criteria
-4. **Error messages, stack traces, or "X is broken/failing"** → always classify as Defect Resolution first
-5. **Mandatory rules are NOT subject to cost-benefit override.** The agent MUST NOT self-judge that a pipeline is "overkill." If the decision tree routes to a pipeline, that pipeline is invoked. Period.
-6. **`/site-patrol` invocations are QA exploration** — exempt from SE/EIW/DRW pipeline requirements
-
-#### Classification Examples
-
-| User Message | Classification | Pipeline |
-|-------------|---------------|----------|
-| "There's a typo in the README on line 5" | Trivial Fix | None |
-| "Zod validation fails because LLM returns uppercase enums" | Defect Resolution | `/defect-fix` |
+| User Message Example | Classification | Pipeline |
+|---------------------|---------------|----------|
+| "Typo in README line 5" | Trivial Fix | None |
+| "Zod validation fails on uppercase enums" | Defect Resolution | `/defect-fix` |
 | "Add dark mode support" | Full Lifecycle | `/se-pipeline` |
-| "Implement the login page per the design doc" | Implementation | `/eiw-review` |
-| "Runtime error: Cannot read property 'id' of undefined" | Defect Resolution | `/defect-fix` |
+| "Implement login page per design doc" | Implementation | `/eiw-review` |
+| "Create a workflow skill file" | Full Lifecycle | `/se-pipeline` |
 
-### MANDATORY: Skill Invocation
+**VIOLATION: Producing file output without invoking the correct pipeline is STRICTLY PROHIBITED.** Exceptions: files generated within active pipeline phases, trivial fixes, `/site-patrol` reports.
 
-**SE Pipeline phases MUST be executed via `/se-N-*` slash commands or the `/se-pipeline` master orchestrator.**
+### Pipeline Overview
 
-| Command | Action |
-|---------|--------|
-| **`/se-pipeline [feature]`** | **Preferred entry point.** Runs ALL 9 phases end-to-end with automatic restart handling. |
-| `/se-1-prompt-analysis` through `/se-9-approval` | Run individual phases when resuming or debugging a specific phase. |
+| Pipeline | Skill | Purpose | Stages |
+|----------|-------|---------|--------|
+| **DRW** | `/defect-fix` | Bug fixes requiring investigation | D1 Investigation → D2 Scope Analysis → D3 TDD Fix → D3.5 Bar Raiser → D4 Verification → D5 Technical Review |
+| **SE Pipeline** | `/se-pipeline` | Full lifecycle (new features, architecture, artifacts) | Phase 0-9 (+ 5.5, 7.5 Bar Raisers): Exploration → Analysis → Requirements → Planning → Design → BR1 → Implementation → Testing → BR2 → Evaluation → Approval |
+| **EIW** | `/eiw-review` | Implementation-only (requirements/design defined) | Stage 0-7 (+ 3.5 Bar Raiser): Architecture → Tasks → TDD → Checkpoint → BR → 3-Review → PM → CTO → CEO |
+| **PDCA** | `/pdca-cycle` | Self-improvement after error resolution | 4 phases: Incident → Attribution → Synthesis → Upgrade |
 
-**Invoking these skills is NOT optional. Attempting to execute SE Pipeline phases inline without the skills is a violation.**
+**All stages MUST be executed via slash command skills. Inline execution without skills is a violation.**
 
-### SE Pipeline Phases
+### Defect Resolution Workflow (DRW)
 
-| Phase | Name | Gate |
-|-------|------|------|
-| 1 | Prompt Analysis | Scope validated |
-| 2 | Prompt Requirements | Traceable to Phase 1 |
-| 3 | SE Planning | Feasible, dependencies correct |
-| 4 | SE Requirements | Complete, traceable |
-| 5 | Analysis & Design | All 4 stakeholders approve (CEO/CTO/PTE/PM) |
-| 6 | Implementation | Per-task-group checkpoint |
-| 7 | Testing | Coverage >=80%, 0 failures |
-| 8 | Evaluation | All 3 review rounds pass |
-| 9 | Final Approval | PM -> CTO -> CEO sequential approvals |
+**When DRW applies:** User-reported bugs, runtime errors, test failures, error patterns affecting 2+ files, defects requiring investigation.
 
-### Output Mode: Phase Skip Policy
+**Stages:**
 
-| Output Type | Required Phases | Skipped Phases |
-|-------------|----------------|----------------|
-| **Code + Tests** (default) | 1→9 | None |
-| **Documentation only** (no code) | 1→6→8→9 | Phase 7 (Testing) |
-| **Configuration only** (no code logic) | 1→6→8→9 | Phase 7 (Testing) |
-| **Code + Documentation** | 1→9 | None |
+| Stage | Name | Persona | Gate |
+|-------|------|---------|------|
+| D1 | Investigation & Root Cause | Defect Analyst | Root cause identified; no escalation triggers |
+| D2 | Scope Analysis | Pattern Analyst | Complete fix manifest (file:line for every instance) |
+| D3 | TDD Fix | Senior Developer | RED test → GREEN fix → all tests pass; lint clean |
+| D3.5 | UX Bar Raiser (DRW-D3.5) | Obsessive UX Bar Raiser | Mandatory critique, no verdict — forces D3 redo (FREE). Conditional: skipped for doc-only fixes. |
+| D4 | Verification | QA Lead | 0 failures; build passes; 100% manifest items fixed |
+| D5 | Technical Review | Code Quality Reviewer | APPROVED or REWORK |
 
-Phase 7 is skipped ONLY when the output contains zero executable code.
+**Escalation triggers:**
+- At D1: Missing feature → `/se-pipeline`. Systemic architectural flaw → `/se-pipeline`.
+- At D2: 10+ files with heterogeneous patterns → `/eiw-review`. New DB tables/API needed → `/eiw-review`.
 
-### Cross-Phase Restart Policy
+**Restart policy:** D4 failure / D5 REWORK → restart D3. D3.5 Bar Raiser critique → restart D3 (FREE — does not count against restart limit). Max 2 restarts (3 iterations). D5 internal rework is FREE.
 
-| Trigger | Restart Phase |
-|---------|--------------|
+**PDCA auto-trigger**: After DRW completes with RESOLVED status, the PDCA cycle (`/pdca-cycle`) MUST be automatically invoked.
+
+### Software Engineering Pipeline (SE Pipeline)
+
+**When SE applies:** New features, documentation creation, database migrations, API additions, config/skill file creation, architectural changes, any undefined-requirements task producing file output.
+
+**Phase overview (Phases 1-9 each have 4 sub-steps: A Discussion → B Convergence → C Deliverable → D Approval. Phase 0 has 3 steps: A Strategy → B Investigation → C Report. Phases 5.5 and 7.5 are Bar Raiser critique injections with no sub-steps):**
+
+| Phase | Name | Skill | Gate |
+|-------|------|-------|------|
+| 0 | Codebase Exploration | `/se-0-codebase-exploration` | Informational — no approval gate. Runs once before iteration loop. |
+| 1 | Prompt Analysis | `/se-1-prompt-analysis` | Scope validated, no hallucinated requirements |
+| 2 | Prompt Requirements | `/se-2-prompt-requirements` | Traceable to Phase 1, no gaps |
+| 3 | SE Planning | `/se-3-planning` | Feasible, dependencies correct |
+| 4 | SE Requirements | `/se-4-requirements` | Complete, traceable, constitution-compliant |
+| 5 | Analysis & Design | `/se-5-design` | ALL 4 stakeholders (CEO/CTO/PTE/PM) approve |
+| 5.5 | UX Bar Raiser (Design) | `/se-5-5-bar-raiser` | Mandatory critique, no verdict — forces Phase 5 redo (FREE) |
+| 6 | Implementation | `/se-6-implementation` | Per-task-group checkpoint (absorbs EIW Stage 2+3) |
+| 7 | Testing | `/se-7-testing` | Coverage >=80%, 0 failures |
+| 7.5 | UX Bar Raiser (Implementation) | `/se-7-5-bar-raiser` | Mandatory critique, no verdict — forces Phase 6+7 redo (FREE). Skipped in documentation mode. |
+| 8 | Evaluation | `/se-8-evaluation` | All 3 parallel review rounds pass (absorbs EIW Stage 4) |
+| 9 | Final Approval | `/se-9-approval` | Sequential PM → CTO → CEO approval (absorbs EIW Stage 5/6/7) |
+
+**Phase 5 detail:** 4 parallel stakeholder reviews (CEO/CTO/PTE/PM) with parallel approvals. All 4 must approve.
+
+**Phase 5.5/7.5 detail (Bar Raisers):** Mandatory UX critique injections that execute exactly once per pipeline run (guarded by `$BR_EXECUTED_SE_1`/`$BR_EXECUTED_SE_2` boolean flags). No verdict, no approval gate — always produce critique, always force redo. BR restarts are FREE (do not increment iteration counter or count against restart limit). Phase 7.5 skipped when `$OUTPUT_MODE == "documentation"`. Critique covers 4 UX dimensions: FRICTION, DELIGHT_GAP, CONSISTENCY, ACCESSIBILITY. See the Bar Raisers section below for cross-pipeline details.
+
+**Phase Skip Policy:**
+
+| Output Type | Skipped Phases | Rule |
+|-------------|---------------|------|
+| Code + Tests (default) | None | Full pipeline |
+| Documentation only | Phase 7, Phase 7.5 | No code to test |
+| Configuration only | Phase 7, Phase 7.5 | No testable logic |
+| Code + Documentation | None | Code present → full |
+
+DB migrations (`.sql` with schema changes) ARE considered code and require Phase 7.
+
+**Cross-Phase Restart Policy:**
+
+| Trigger | Restart From |
+|---------|-------------|
+| Phase 1-4 Step D rejection | Same phase (FREE — internal restart) |
 | Phase 5 CEO/CTO rejection | Phase 4 |
-| Phase 5 PTE/PM rejection | Phase 5 (FREE) |
-| Phase 7 test failure | Phase 6 |
-| Phase 8 Code Quality failure | Phase 6 |
+| Phase 5 PTE/PM rejection | Phase 5 |
+| Phase 5.5 BR1 (SE-5.5) critique | Phase 5 (FREE — does not count as cross-phase restart) |
+| Phase 6 checkpoint failure | Phase 6 |
+| Phase 7 test failure / Phase 8 Code Quality failure | Phase 6 |
+| Phase 7.5 BR2 (SE-7.5) critique | Phase 6 (FREE — does not count as cross-phase restart) |
 | Phase 8 Requirements failure | Phase 4 |
 | Phase 8 UX failure | Phase 5 |
 | Phase 9 PM rejection | Phase 8 |
-| Phase 9 CTO rejection (impl flaw) | Phase 6 |
-| Phase 9 CTO rejection (arch invalid) | Phase 5 |
+| Phase 9 CTO rejection (impl) | Phase 6 |
+| Phase 9 CTO rejection (arch) | Phase 5 |
 | Phase 9 CEO REQUIRES_PIVOT | Phase 3 |
 | Phase 9 CEO REJECTED | **CANCELLED** |
 
-Maximum 3 cross-phase restarts (4 total iterations); 5th attempt → human escalation. Internal phase restarts (Step D → Step A within same phase) are FREE.
+Max 3 cross-phase restarts (4 iterations). Internal phase restarts (Step D→A within same phase) are FREE. Phase 0 is pre-loop and preserved across all restarts — no restart path routes to Phase 0.
 
-**VIOLATION: Producing file output without invoking the correct pipeline is STRICTLY PROHIBITED.**
+### Enterprise Implementation Workflow (EIW)
 
----
+**When EIW applies:** Requirements and design already defined, implementation-only tasks, DRW escalations needing new DB/API.
 
-## CRITICAL RULE: Enterprise Implementation Workflow (EIW)
+| Stage | Name | Skill | Persona | Gate |
+|-------|------|-------|---------|------|
+| 0 | Architecture Review | `/eiw-stage0` | Principal Architect | UCAR (6 criteria) + LAR (8 criteria) |
+| 1 | Task Decomposition | `/eiw-stage1` | Task Architect | Hierarchical task structure with deps |
+| 2 | Implementation (TDD) | `/eiw-stage2` | Senior Developer | Red-Green-Refactor; type-check + lint + tests |
+| 3 | Checkpoint Review | `/eiw-stage3` | QA Lead | Per-Task-Group verification; UCAR/LAR alignment |
+| 3.5 | UX Bar Raiser (EIW-3.5) | `/eiw-bar-raiser` | Obsessive UX Bar Raiser | Mandatory critique, no verdict — forces Stage 2+3 redo (FREE). Conditional: skipped for doc-only changes. |
+| 4 | Final 3-Round Review | `/eiw-stage4` | 3 parallel reviewers | Code Quality + Requirements + UX |
+| 5 | PM Approval | `/eiw-stage5` | Product Manager | Implementation completeness |
+| 6 | CTO Technical Review | `/eiw-stage6` | CTO | Architecture, security, scalability (7 criteria) |
+| 7 | CEO Strategic Approval | `/eiw-stage7` | CEO | Business value, market fit (7 criteria) |
 
-**For focused implementation tasks where requirements and design are already defined.**
+**Stages 2-3 repeat for each Task Group. Stage 3.5 Bar Raiser executes once after all task group checkpoints pass. Stage 4 runs 3 subagents in parallel.** All detailed review criteria live inside the skill files.
 
-### MANDATORY: Skill Invocation
+**Restart policy:**
 
-**EIW stages MUST be executed via `/eiw-stageN` slash commands or the `/eiw-review` master orchestrator.**
-
-| Command | Action |
-|---------|--------|
-| **`/eiw-review [feature]`** | **Preferred entry point.** Runs ALL 8 stages end-to-end with automatic restart handling. |
-| `/eiw-stage0` through `/eiw-stage7` | Run individual stages when resuming or debugging a specific stage. |
-
-**Invoking these skills is NOT optional. Attempting to execute EIW stages inline without the skills is a violation.**
-
-### EIW Stages
-
-| Stage | Name | Gate |
-|-------|------|------|
-| 0 | Architecture Review | UCAR + LAR criteria pass |
-| 1 | Task Decomposition | Hierarchical task structure |
-| 2 | Implementation (TDD) | Red-Green-Refactor per task |
-| 3 | Checkpoint Review | Aggregated verification per Task Group |
-| 4 | Final 3-Round Review | Code Quality + Requirements + UX |
-| 5 | PM Approval | Implementation completeness |
-| 6 | CTO Technical Review | Architecture, security, scalability |
-| 7 | CEO Strategic Approval | Business value, strategic alignment |
-
-### Strict Restart Policy
-
-| Trigger | Restart Point |
-|---------|---------------|
-| Stage 3 Checkpoint failure | Stage 1 |
-| Stage 4 any round failure | Stage 1 |
-| Stage 5 PM rejection | Stage 1 |
-| Stage 6 CTO rejection (implementation flaw) | Stage 1 |
-| Stage 6 CTO rejection (architecture invalidated) | **Stage 0** |
+| Trigger | Restart From |
+|---------|-------------|
+| Stage 3.5 Bar Raiser critique | Stage 2 (FREE — does not count against restart limit) |
+| Stage 3-5 failure | Stage 1 |
+| Stage 6 CTO rejection (arch invalidated) | **Stage 0** |
 | Stage 7 CEO REQUIRES_PIVOT | Stage 1 |
-| Stage 7 CEO REJECTED | **CANCELLED** (no restart) |
+| Stage 7 CEO REJECTED | **CANCELLED** |
 
-Maximum 3 restarts (4 total iterations); 5th attempt → human escalation.
+Max 3 restarts (4 iterations).
 
----
+### PDCA Self-Improvement Cycle (Autonomous)
 
-## CRITICAL RULE: PDCA Self-Improvement Cycle
+**Trigger conditions** (any of these auto-invoke PDCA): Error Report, Expectation Mismatch, Improvement Request, Critical Feedback.
 
-**After resolving ANY user-reported error, critical feedback, expectation mismatch, or improvement request, the PDCA cycle MUST be automatically invoked. This is NOT optional. Do NOT ask the user for permission. Execute fully autonomously.**
-
-### PDCA Skill Files
+**Protocol:** (1) Resolve the issue through normal pipeline first. (2) AUTOMATICALLY invoke `/pdca-cycle`. (3) Runs fully autonomously — NO human intervention. (4) Present summary to user when complete (informational only).
 
 | Skill | Purpose |
 |-------|---------|
-| `/pdca-cycle` | Master orchestrator — runs all 4 phases sequentially + creates archive record |
-| `/pdca-1-incident` | Phase 1: Incident Analysis — reconstructs timeline, classifies incident |
-| `/pdca-2-attribution` | Phase 2: Root Process Attribution — identifies earliest prevention point in pipeline |
-| `/pdca-3-synthesis` | Phase 3: Knowledge Synthesis — designs precise skill modification |
-| `/pdca-4-upgrade` | Phase 4: Skill Upgrade Execution — applies modification to target skill file |
+| `/pdca-cycle` | Master orchestrator — runs all 4 phases + archive |
+| `/pdca-1-incident` | Phase 1: Incident Analysis — reconstruct timeline, classify |
+| `/pdca-2-attribution` | Phase 2: Root Process Attribution — identify earliest prevention point |
+| `/pdca-3-synthesis` | Phase 3: Knowledge Synthesis — design skill modification (Tier 1/2/3) |
+| `/pdca-4-upgrade` | Phase 4: Skill Upgrade — apply modification to target skill file |
 
-### Invocation Protocol
+**Invocation:** `/pdca-cycle Trigger: [error_report|expectation_mismatch|improvement_request|critical_feedback]. Error: [desc]. Fix: [desc]. Files Changed: [list].`
 
-1. **First:** Resolve the issue through the normal pipeline (SE Pipeline, EIW, DRW, or trivial fix)
-2. **Then:** AUTOMATICALLY invoke `/pdca-cycle` with context about the error and fix
-3. The PDCA cycle runs **fully autonomously** — NO human intervention at ANY phase
-4. Present the PDCA summary to the user when complete (informational only, not approval-seeking)
+**Rules:** One skill modification per cycle. Archive at `.claude/pdca-archive/`. Every modification annotated with `<!-- PDCA-YYYY-NNNN: description -->`. If no actionable improvement, archive with `NO_ACTIONABLE_IMPROVEMENT` status.
 
-### Archive
+### Bar Raisers (Cross-Pipeline UX Critique)
 
-- **Location:** `.claude/pdca-archive/`
-- **Index:** `.claude/pdca-archive/index.json` (searchable cycle index with counters)
-- **Records:** `.claude/pdca-archive/cycles/PDCA-YYYY-NNNN.md` (full cycle documentation)
+**What is a Bar Raiser?** A mandatory UX critique injection point that exists in every pipeline with implementation output. Bar Raisers are NOT reviewers — they have no verdict, no pass/fail. They ALWAYS produce critique and ALWAYS force a FREE redo of the preceding implementation stage. Their purpose is to raise the UX quality bar by one full notch.
 
-### Rules
+**Shared protocol:** All Bar Raisers inherit from `/bar-raiser-protocol` (the canonical reference for persona, 4 UX dimensions, minimum issue scaling, skip conditions, and output format).
 
-- Every PDCA cycle MUST be archived with a complete record
-- Every skill modification MUST include the PDCA cycle ID as a traceability comment: `<!-- PDCA-YYYY-NNNN: description -->`
-- If no actionable improvement is identified, archive with `NO_ACTIONABLE_IMPROVEMENT` status
-- One skill modification per PDCA cycle (targeted, not scattered)
+**4 UX Dimensions:** FRICTION, DELIGHT_GAP, CONSISTENCY, ACCESSIBILITY — evaluated in every Bar Raiser critique across all pipelines.
+
+**Registry:**
+
+| Shorthand | Pipeline | Skill | Insertion Point | Redo Target | Guard Flag |
+|-----------|----------|-------|----------------|-------------|------------|
+| SE-5.5 | SE Pipeline | `/se-5-5-bar-raiser` | After Phase 5 (Design) approved | Phase 5 | `$BR_EXECUTED_SE_1` |
+| SE-7.5 | SE Pipeline | `/se-7-5-bar-raiser` | After Phase 7 (Testing) approved | Phase 6+7 | `$BR_EXECUTED_SE_2` |
+| EIW-3.5 | EIW | `/eiw-bar-raiser` | After all Stage 2+3 task groups pass | Stage 2+3 | `$BR_EXECUTED_EIW_1` |
+| DRW-D3.5 | DRW | `/drw-bar-raiser` | After Stage D3 (TDD Fix) passes | Stage D3 | `$BR_EXECUTED_DRW_1` |
+
+**Universal rules:**
+- **Exactly once:** Boolean flag guard ensures each Bar Raiser executes at most once per pipeline run, even across restarts
+- **FREE redo:** Bar Raiser restarts do NOT increment `$ITERATION` and do NOT count against the max restart limit
+- **Skip conditions:** When ALL changed/manifest files match doc-only globs (`*.md`, `*.mdx`, `*.txt`, `*.json` config-only, `*.yaml`, `*.yml`), the Bar Raiser is skipped. SE-7.5 is also skipped when `$OUTPUT_MODE == "documentation"`
+- **Scope-scaled minimums:** 1-3 files → 1 issue/dimension, 4-9 files → 2 issues/dimension, 10+ files → 3 issues/dimension
+- **Boolean flag convention:** `$BR_EXECUTED_{PIPELINE}_{SEQ}` (e.g., `$BR_EXECUTED_SE_1`, `$BR_EXECUTED_EIW_1`, `$BR_EXECUTED_DRW_1`)
+
+### Universal Violation Rules (All Pipelines)
+
+| Violation | Consequence |
+|-----------|-------------|
+| Skip any stage | STOP. Execute the skipped stage. |
+| Exceed max restarts | ESCALATE to human operator. |
+| Execute without skill invocation | STOP. Use the slash command. |
+| Produce file output without correct pipeline | STRICTLY PROHIBITED. |
+
+**Pipeline Phase Completion is NON-NEGOTIABLE.** When a pipeline (SE, EIW, DRW) is invoked, ALL phases MUST execute to completion — no exceptions. If the user requests "skip approvals" or "no intermediate approvals", this means auto-approve internal gates (treat Step D approvals as auto-passed) — it does NOT mean skip phases entirely. Every phase must still produce its deliverable and run its review logic. Compressing or omitting phases is a VIOLATION even when the user appears to authorize it. The user's intent is always "work faster", never "reduce quality".
 
 ---
 
