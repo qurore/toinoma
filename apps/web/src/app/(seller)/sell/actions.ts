@@ -10,6 +10,38 @@ type ProblemSetInsert = Database["public"]["Tables"]["problem_sets"]["Insert"];
 type Subject = Database["public"]["Enums"]["subject"];
 type Difficulty = Database["public"]["Enums"]["difficulty"];
 
+/**
+ * Accept seller Terms of Service.
+ * Creates or updates seller_profiles with tos_accepted_at.
+ * Called from the ToS modal at /sell.
+ */
+export async function acceptSellerTos() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return { error: "認証が必要です" };
+  }
+
+  const { error } = await supabase.from("seller_profiles").upsert(
+    {
+      id: user.id,
+      seller_display_name: "__pending__",
+      tos_accepted_at: new Date().toISOString(),
+    },
+    { onConflict: "id" }
+  );
+
+  if (error) {
+    return { error: "利用規約の同意に失敗しました" };
+  }
+
+  revalidatePath("/sell");
+  return { success: true };
+}
+
 export async function createProblemSet(formData: FormData) {
   const supabase = await createClient();
   const {

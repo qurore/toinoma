@@ -108,22 +108,18 @@ export function UserDropdown({
           </Link>
         </DropdownMenuItem>
 
-        {/* Seller link — additive, only when user has seller profile */}
-        {isSeller && (
-          <>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link
-                href="/sell"
-                className="flex cursor-pointer items-center gap-2"
-                data-testid="seller-link"
-              >
-                <Store className="h-4 w-4" />
-                出品管理
-              </Link>
-            </DropdownMenuItem>
-          </>
-        )}
+        {/* Seller dashboard link — visible to all authenticated users */}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem asChild>
+          <Link
+            href="/sell"
+            className="flex cursor-pointer items-center gap-2"
+            data-testid="seller-link"
+          >
+            <Store className="h-4 w-4" />
+            {isSeller ? "出品管理" : "出品者モード"}
+          </Link>
+        </DropdownMenuItem>
 
         <DropdownMenuSeparator />
 

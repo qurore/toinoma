@@ -1,14 +1,13 @@
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
-import { requireCompleteSeller } from "@/lib/auth/require-seller";
+import { requireAuth } from "@/lib/auth/require-seller";
 
 export default async function SellerLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Verify complete seller capability (redirects to /sell/onboarding if not)
-  await requireCompleteSeller();
-  // Fetch full navbar data (parallel to seller check above for display purposes)
+  // Only require authentication — ToS check is handled at page level
+  await requireAuth();
   const navbarData = await getNavbarData();
 
   return (

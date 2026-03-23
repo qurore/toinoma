@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { requireCompleteSeller } from "@/lib/auth/require-seller";
+import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { RubricEditor } from "@/components/seller/rubric-editor";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ export default async function RubricEditorPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const { user } = await requireCompleteSeller();
+  const { user } = await requireSellerTos();
   const supabase = await createClient();
 
   const { data: ps } = await supabase

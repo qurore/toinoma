@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { requireCompleteSeller } from "@/lib/auth/require-seller";
+import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +8,7 @@ import { SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject } from "@/types/database";
 
 export default async function SalesAnalyticsPage() {
-  const { user } = await requireCompleteSeller();
+  const { user } = await requireSellerTos();
   const supabase = await createClient();
 
   // Fetch seller's problem sets with purchase counts

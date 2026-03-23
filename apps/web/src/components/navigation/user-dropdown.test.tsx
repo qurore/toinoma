@@ -23,13 +23,14 @@ describe("UserDropdown data logic", () => {
     expect(getInitials("Single")).toBe("S"); // single word → one initial
   });
 
-  it("renders seller link only when isSeller is true", () => {
-    function shouldShowSellerLink(isSeller: boolean): boolean {
-      return isSeller;
+  it("always shows seller link for authenticated users", () => {
+    // Seller link is now always visible for authenticated users (SLR-001)
+    function getSellerLinkLabel(isSeller: boolean): string {
+      return isSeller ? "出品管理" : "出品者モード";
     }
 
-    expect(shouldShowSellerLink(true)).toBe(true);
-    expect(shouldShowSellerLink(false)).toBe(false);
+    expect(getSellerLinkLabel(true)).toBe("出品管理");
+    expect(getSellerLinkLabel(false)).toBe("出品者モード");
   });
 
   it("does not redirect when signOut returns an error", async () => {

@@ -120,13 +120,24 @@ export function AppNavbar({ user, isSeller, displayName, avatarUrl, subscription
           <NavItem href="/" icon={House} label="ホーム" />
           <NavItem href="/explore" icon={Grid2x2} label="問題を探す" />
           <NavItem href="/dashboard" icon={LayoutDashboard} label="マイページ" />
-          {isSeller && <NavItem href="/sell" icon={Store} label="出品管理" />}
         </nav>
 
         {/* Right-side actions */}
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {user ? (
             <>
+              {/* Seller mode toggle — visible to ALL authenticated users */}
+              <Button
+                variant="outline"
+                size="sm"
+                className="items-center gap-1.5 border-primary/20 text-primary hover:bg-primary/5 hover:text-primary"
+                asChild
+              >
+                <Link href="/sell" aria-label="出品者モード">
+                  <Store className="h-4 w-4" />
+                  <span className="hidden sm:inline">出品者モード</span>
+                </Link>
+              </Button>
               {isSeller && (
                 <Button
                   variant="outline"
