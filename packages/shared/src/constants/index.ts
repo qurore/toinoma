@@ -56,23 +56,26 @@ export const SUBSCRIPTION_TIERS = {
     monthlyPrice: 0,
     annualPrice: 0,
     gradingLimit: 3,
+    collectionsLimit: 3,
     description: "月3回までAI採点が利用可能",
   },
   basic: {
     name: "Basic",
     label: "ベーシック",
     monthlyPrice: 500,
-    annualPrice: 5000,
+    annualPrice: 4000,
     gradingLimit: 30,
+    collectionsLimit: 20,
     description: "月30回までAI採点が利用可能",
   },
   pro: {
     name: "Pro",
     label: "プロ",
     monthlyPrice: 2000,
-    annualPrice: 20000,
+    annualPrice: 150000,
     gradingLimit: -1, // unlimited
-    description: "AI採点が無制限",
+    collectionsLimit: -1, // unlimited
+    description: "AI採点無制限・AI学習アシスタント利用可能",
   },
 } as const;
 

@@ -5,15 +5,62 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { FileText, GraduationCap } from "lucide-react";
+import { FileText, GraduationCap, Flag } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { PurchaseSection } from "@/components/marketplace/purchase-section";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { ShareButton } from "@/components/navigation/share-button";
 import { ReviewsSection } from "@/components/reviews/reviews-section";
+import { QaSection } from "@/components/qa/qa-section";
 import { PdfDownloadButton } from "@/components/solving/pdf-download-button";
+import { ReportDialog } from "@/components/marketplace/report-dialog";
+import {
+  generateProblemSetMetadata,
+  buildProductJsonLd,
+} from "@/lib/metadata";
 import type { Subject, Difficulty } from "@/types/database";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+
+  const { data: ps } = await supabase
+    .from("problem_sets")
+    .select(
+      "id, title, description, subject, university, difficulty, price, cover_image_url, seller_id"
+    )
+    .eq("id", id)
+    .eq("status", "published")
+    .single();
+
+  if (!ps) {
+    return { title: "問題セット - 問の間" };
+  }
+
+  const { data: seller } = await supabase
+    .from("seller_profiles")
+    .select("seller_display_name")
+    .eq("id", ps.seller_id)
+    .single();
+
+  return generateProblemSetMetadata({
+    id: ps.id,
+    title: ps.title,
+    description: ps.description,
+    subject: ps.subject as Subject,
+    difficulty: ps.difficulty as Difficulty,
+    university: ps.university,
+    price: ps.price,
+    cover_image_url: ps.cover_image_url,
+    seller_display_name: seller?.seller_display_name ?? null,
+  });
+}
 
 export default async function ProblemDetailPage({
   params,
@@ -155,6 +202,7 @@ export default async function ProblemDetailPage({
           price={ps.price}
           hasPurchased={hasPurchased}
           isLoggedIn={!!user}
+          sellerId={ps.seller_id}
         />
 
         {/* Reviews */}
@@ -162,7 +210,46 @@ export default async function ProblemDetailPage({
           problemSetId={id}
           userId={user?.id ?? null}
         />
+
+        {/* Q&A */}
+        <QaSection
+          problemSetId={id}
+          sellerId={ps.seller_id}
+          userId={user?.id ?? null}
+        />
+
+        {/* Report content */}
+        <div className="flex justify-end">
+          <ReportDialog
+            targetType="problem_set"
+            targetId={id}
+            trigger={
+              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+                <Flag className="mr-1 h-3 w-3" />
+                この問題セットを報告
+              </Button>
+            }
+          />
+        </div>
       </div>
+
+      {/* JSON-LD structured data */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: buildProductJsonLd({
+            id: ps.id,
+            title: ps.title,
+            description: ps.description,
+            subject: ps.subject as Subject,
+            difficulty: ps.difficulty as Difficulty,
+            university: ps.university,
+            price: ps.price,
+            cover_image_url: null,
+            seller_display_name: seller?.seller_display_name ?? null,
+          }),
+        }}
+      />
     </main>
     </>
   );

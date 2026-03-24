@@ -7,6 +7,8 @@ import {
   Users,
   Flag,
   DollarSign,
+  Megaphone,
+  ClipboardList,
 } from "lucide-react";
 
 const ADMIN_NAV = [
@@ -14,6 +16,8 @@ const ADMIN_NAV = [
   { href: "/admin/users", label: "ユーザー管理", icon: Users, exact: false },
   { href: "/admin/reports", label: "報告管理", icon: Flag, exact: false },
   { href: "/admin/revenue", label: "売上レポート", icon: DollarSign, exact: false },
+  { href: "/admin/announcements", label: "お知らせ管理", icon: Megaphone, exact: false },
+  { href: "/admin/audit", label: "監査ログ", icon: ClipboardList, exact: false },
 ] as const;
 
 export default async function AdminLayout({

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Inter, Noto_Sans_JP } from "next/font/google";
 import { Toaster } from "sonner";
+import { SkipToContent } from "@/components/ui/skip-to-content";
+import { CookieConsent } from "@/components/legal/cookie-consent";
 import "./globals.css";
 
 const inter = Inter({
@@ -36,8 +38,10 @@ export default function RootLayout({
   return (
     <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
       <body>
+        <SkipToContent />
         {children}
         <Toaster richColors position="top-right" />
+        <CookieConsent />
       </body>
     </html>
   );

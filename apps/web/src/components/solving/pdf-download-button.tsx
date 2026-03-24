@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Download, FileText, FileCheck, Files } from "lucide-react";
+import { Printer, FileText, FileCheck, Files } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -17,8 +17,8 @@ interface PdfDownloadButtonProps {
 export function PdfDownloadButton({ problemSetId }: PdfDownloadButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  function handleDownload(type: "problems" | "answers" | "combined") {
-    const url = `/api/pdf?problem_set_id=${problemSetId}&type=${type}`;
+  function handlePrint(mode: "problems" | "answers" | "combined") {
+    const url = `/problem/${problemSetId}/print?mode=${mode}&margin=normal`;
     window.open(url, "_blank");
     setIsOpen(false);
   }
@@ -27,20 +27,20 @@ export function PdfDownloadButton({ problemSetId }: PdfDownloadButtonProps) {
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          <Download className="mr-1.5 h-3.5 w-3.5" />
+          <Printer className="mr-1.5 h-3.5 w-3.5" />
           PDF
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => handleDownload("problems")}>
+        <DropdownMenuItem onClick={() => handlePrint("problems")}>
           <FileText className="mr-2 h-4 w-4" />
           問題のみ
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleDownload("answers")}>
+        <DropdownMenuItem onClick={() => handlePrint("answers")}>
           <FileCheck className="mr-2 h-4 w-4" />
-          解答用紙のみ
+          模範解答のみ
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => handleDownload("combined")}>
+        <DropdownMenuItem onClick={() => handlePrint("combined")}>
           <Files className="mr-2 h-4 w-4" />
           問題 + 模範解答
         </DropdownMenuItem>

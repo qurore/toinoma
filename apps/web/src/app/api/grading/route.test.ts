@@ -471,7 +471,7 @@ describe("POST /api/grading", () => {
     // Second from() call should be problem_sets for rubric
     const problemSetsChain = mockSb.from.mock.results[1].value;
     expect(mockSb.from.mock.calls[1][0]).toBe("problem_sets");
-    expect(problemSetsChain.select).toHaveBeenCalledWith("rubric");
+    expect(problemSetsChain.select).toHaveBeenCalledWith("rubric, title");
     expect(problemSetsChain.eq).toHaveBeenCalledWith("id", MOCK_PROBLEM_SET_ID);
   });
 

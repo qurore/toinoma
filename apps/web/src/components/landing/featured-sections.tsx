@@ -1,0 +1,306 @@
+import Link from "next/link";
+import { ArrowRight, TrendingUp, Clock, Star } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import {
+  ProblemSetCard,
+  type ProblemSetCardData,
+} from "@/components/marketplace/problem-set-card";
+import type { Subject, Difficulty } from "@/types/database";
+
+// ──────────────────────────────────────────────
+// Shared section wrapper
+// ──────────────────────────────────────────────
+
+function SectionWrapper({
+  icon: Icon,
+  title,
+  subtitle,
+  href,
+  children,
+  className,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  title: string;
+  subtitle: string;
+  href: string;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={className}>
+      <div className="mx-auto max-w-7xl px-6">
+        {/* Header */}
+        <div className="mb-8 flex items-end justify-between">
+          <div>
+            <div className="mb-2 flex items-center gap-2">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                <Icon className="h-4 w-4 text-primary" />
+              </div>
+              <h2 className="font-display text-xl font-bold tracking-tight sm:text-2xl">
+                {title}
+              </h2>
+            </div>
+            <p className="text-sm text-muted-foreground">{subtitle}</p>
+          </div>
+          <Link
+            href={href}
+            className="hidden items-center gap-1 text-sm font-medium text-primary transition-colors hover:text-primary/80 sm:flex"
+          >
+            すべて見る
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+
+        {/* Cards grid */}
+        {children}
+
+        {/* Mobile "see all" link */}
+        <div className="mt-6 text-center sm:hidden">
+          <Link
+            href={href}
+            className="inline-flex items-center gap-1 text-sm font-medium text-primary"
+          >
+            すべて見る
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function CardsGrid({ cards }: { cards: ProblemSetCardData[] }) {
+  if (cards.length === 0) return null;
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {cards.map((card) => (
+        <ProblemSetCard key={card.id} data={card} />
+      ))}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Data fetching helpers
+// ──────────────────────────────────────────────
+
+interface RawProblemSet {
+  id: string;
+  title: string;
+  subject: string;
+  difficulty: string;
+  price: number;
+  cover_image_url: string | null;
+  university: string | null;
+  seller_id: string;
+  created_at: string;
+}
+
+async function enrichWithReviewsAndSellers(
+  sets: RawProblemSet[]
+): Promise<ProblemSetCardData[]> {
+  if (sets.length === 0) return [];
+
+  const supabase = await createClient();
+  const setIds = sets.map((s) => s.id);
+  const sellerIds = [...new Set(sets.map((s) => s.seller_id))];
+
+  const [reviewsResult, sellersResult] = await Promise.all([
+    supabase
+      .from("reviews")
+      .select("problem_set_id, rating")
+      .in("problem_set_id", setIds),
+    supabase
+      .from("seller_profiles")
+      .select("id, seller_display_name")
+      .in("id", sellerIds),
+  ]);
+
+  // Aggregate reviews
+  const agg: Record<string, { sum: number; count: number }> = {};
+  for (const r of reviewsResult.data ?? []) {
+    const key = r.problem_set_id;
+    if (!agg[key]) agg[key] = { sum: 0, count: 0 };
+    agg[key].sum += r.rating;
+    agg[key].count++;
+  }
+
+  const sellerMap: Record<string, string> = {};
+  for (const s of sellersResult.data ?? []) {
+    sellerMap[s.id] = s.seller_display_name;
+  }
+
+  return sets.map((ps) => ({
+    id: ps.id,
+    title: ps.title,
+    subject: ps.subject as Subject,
+    difficulty: ps.difficulty as Difficulty,
+    price: ps.price,
+    cover_image_url: ps.cover_image_url,
+    university: ps.university,
+    seller_display_name: sellerMap[ps.seller_id] ?? null,
+    avg_rating: agg[ps.id] ? agg[ps.id].sum / agg[ps.id].count : null,
+    review_count: agg[ps.id]?.count ?? null,
+  }));
+}
+
+// ──────────────────────────────────────────────
+// Trending section (top 8 by recent purchase count)
+// ──────────────────────────────────────────────
+
+export async function TrendingSection() {
+  const supabase = await createClient();
+
+  // Get recent purchases (last 30 days) grouped by problem_set_id
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+  const { data: recentPurchases } = await supabase
+    .from("purchases")
+    .select("problem_set_id")
+    .gte("created_at", thirtyDaysAgo.toISOString());
+
+  if (!recentPurchases || recentPurchases.length === 0) return null;
+
+  // Count purchases per set
+  const counts: Record<string, number> = {};
+  for (const p of recentPurchases) {
+    counts[p.problem_set_id] = (counts[p.problem_set_id] ?? 0) + 1;
+  }
+
+  // Sort by count, take top 8
+  const topIds = Object.entries(counts)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, 8)
+    .map(([id]) => id);
+
+  if (topIds.length === 0) return null;
+
+  const { data: sets } = await supabase
+    .from("problem_sets")
+    .select(
+      "id, title, subject, difficulty, price, cover_image_url, university, seller_id, created_at"
+    )
+    .eq("status", "published")
+    .in("id", topIds);
+
+  if (!sets || sets.length === 0) return null;
+
+  // Maintain trending order
+  const setMap = new Map(sets.map((s) => [s.id, s]));
+  const ordered = topIds
+    .map((id) => setMap.get(id))
+    .filter(Boolean) as RawProblemSet[];
+
+  const cards = await enrichWithReviewsAndSellers(ordered);
+
+  return (
+    <SectionWrapper
+      icon={TrendingUp}
+      title="人気の問題セット"
+      subtitle="直近30日間で最も購入されている問題セット"
+      href="/explore?sort=popular"
+      className="py-16 md:py-20"
+    >
+      <CardsGrid cards={cards} />
+    </SectionWrapper>
+  );
+}
+
+// ──────────────────────────────────────────────
+// New arrivals section (latest 8 published)
+// ──────────────────────────────────────────────
+
+export async function NewArrivalsSection() {
+  const supabase = await createClient();
+
+  const { data: sets } = await supabase
+    .from("problem_sets")
+    .select(
+      "id, title, subject, difficulty, price, cover_image_url, university, seller_id, created_at"
+    )
+    .eq("status", "published")
+    .order("created_at", { ascending: false })
+    .limit(8);
+
+  if (!sets || sets.length === 0) return null;
+
+  const cards = await enrichWithReviewsAndSellers(sets as RawProblemSet[]);
+
+  return (
+    <SectionWrapper
+      icon={Clock}
+      title="新着問題セット"
+      subtitle="最近公開された問題セット"
+      href="/explore?sort=newest"
+      className="bg-secondary/30 py-16 md:py-20"
+    >
+      <CardsGrid cards={cards} />
+    </SectionWrapper>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Top rated section (top 8 by avg rating, min 3 reviews)
+// ──────────────────────────────────────────────
+
+export async function TopRatedSection() {
+  const supabase = await createClient();
+
+  // Get all reviews and aggregate
+  const { data: allReviews } = await supabase
+    .from("reviews")
+    .select("problem_set_id, rating");
+
+  if (!allReviews || allReviews.length === 0) return null;
+
+  const agg: Record<string, { sum: number; count: number }> = {};
+  for (const r of allReviews) {
+    const key = r.problem_set_id;
+    if (!agg[key]) agg[key] = { sum: 0, count: 0 };
+    agg[key].sum += r.rating;
+    agg[key].count++;
+  }
+
+  // Filter for min 3 reviews, sort by avg rating
+  const topIds = Object.entries(agg)
+    .filter(([, v]) => v.count >= 3)
+    .map(([id, v]) => ({
+      id,
+      avg: v.sum / v.count,
+      count: v.count,
+    }))
+    .sort((a, b) => b.avg - a.avg)
+    .slice(0, 8)
+    .map((e) => e.id);
+
+  if (topIds.length === 0) return null;
+
+  const { data: sets } = await supabase
+    .from("problem_sets")
+    .select(
+      "id, title, subject, difficulty, price, cover_image_url, university, seller_id, created_at"
+    )
+    .eq("status", "published")
+    .in("id", topIds);
+
+  if (!sets || sets.length === 0) return null;
+
+  // Pre-computed review data — pass through enrichment for seller names
+  const cards = await enrichWithReviewsAndSellers(sets as RawProblemSet[]);
+
+  // Re-sort by avg rating (enrichment may change order)
+  cards.sort((a, b) => (b.avg_rating ?? 0) - (a.avg_rating ?? 0));
+
+  return (
+    <SectionWrapper
+      icon={Star}
+      title="高評価の問題セット"
+      subtitle="3件以上のレビューで高い評価を得ている問題セット"
+      href="/explore?sort=highest_rated"
+      className="py-16 md:py-20"
+    >
+      <CardsGrid cards={cards} />
+    </SectionWrapper>
+  );
+}

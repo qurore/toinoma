@@ -3,12 +3,7 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fromUntyped(supabase: SupabaseClient<any>, table: string) {
-  return supabase.from(table);
-}
+import type { AnswerType, Subject, Difficulty, Json } from "@/types/database";
 
 export async function createQuestion(formData: FormData) {
   const supabase = await createClient();
@@ -71,17 +66,17 @@ export async function createQuestion(formData: FormData) {
     }
   }
 
-  const { data, error } = await fromUntyped(supabase, "questions")
+  const { data, error } = await supabase.from("questions")
     .insert({
       seller_id: user.id,
-      question_type: questionType,
+      question_type: questionType as AnswerType,
       question_text: questionText,
-      subject,
-      difficulty,
+      subject: subject as Subject,
+      difficulty: difficulty as Difficulty,
       points,
       model_answer: modelAnswer || null,
       vertical_text: verticalText,
-      rubric,
+      rubric: rubric as unknown as Json,
     })
     .select("id")
     .single();
@@ -102,7 +97,7 @@ export async function deleteQuestion(questionId: string) {
 
   if (!user) return { error: "認証が必要です" };
 
-  const { error } = await fromUntyped(supabase, "questions")
+  const { error } = await supabase.from("questions")
     .delete()
     .eq("id", questionId)
     .eq("seller_id", user.id);
@@ -123,7 +118,7 @@ export async function addQuestionToSet(problemSetId: string, questionId: string,
 
   if (!user) return { error: "認証が必要です" };
 
-  const { error } = await fromUntyped(supabase, "problem_set_questions")
+  const { error } = await supabase.from("problem_set_questions")
     .insert({
       problem_set_id: problemSetId,
       question_id: questionId,
@@ -150,7 +145,7 @@ export async function removeQuestionFromSet(problemSetId: string, questionId: st
 
   if (!user) return { error: "認証が必要です" };
 
-  const { error } = await fromUntyped(supabase, "problem_set_questions")
+  const { error } = await supabase.from("problem_set_questions")
     .delete()
     .eq("problem_set_id", problemSetId)
     .eq("question_id", questionId);

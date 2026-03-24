@@ -1,10 +1,26 @@
 import Link from "next/link";
-import { Check, Circle, BookOpen, Upload, BarChart3 } from "lucide-react";
+import {
+  Check,
+  Circle,
+  BookOpen,
+  Upload,
+  BarChart3,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  PlusCircle,
+  FileUp,
+  Star,
+  ShoppingCart,
+  ClipboardList,
+  Eye,
+} from "lucide-react";
 import { getSellerTosStatus } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { SellerTosGate } from "@/components/seller/seller-tos-gate";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
@@ -26,6 +42,7 @@ export default async function SellerDashboardPage() {
   const stripeComplete = !!sellerProfile?.stripe_account_id;
   const onboardingComplete = profileComplete && stripeComplete;
 
+  // Fetch problem sets
   const { data: problemSets } = await supabase
     .from("problem_sets")
     .select("id, title, subject, difficulty, price, status, created_at")
@@ -35,6 +52,163 @@ export default async function SellerDashboardPage() {
   const sets = problemSets ?? [];
   const publishedCount = sets.filter((s) => s.status === "published").length;
   const draftCount = sets.filter((s) => s.status === "draft").length;
+  const publishedIds = sets
+    .filter((s) => s.status === "published")
+    .map((s) => s.id);
+
+  // Calculate date ranges for trend comparison
+  const now = new Date();
+  const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+  const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
+
+  // Fetch current period purchases (last 30 days)
+  const { count: currentPurchaseCount } = await supabase
+    .from("purchases")
+    .select("id", { count: "exact", head: true })
+    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
+    .gte("created_at", thirtyDaysAgo.toISOString());
+
+  // Fetch previous period purchases (30-60 days ago)
+  const { count: prevPurchaseCount } = await supabase
+    .from("purchases")
+    .select("id", { count: "exact", head: true })
+    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
+    .gte("created_at", sixtyDaysAgo.toISOString())
+    .lt("created_at", thirtyDaysAgo.toISOString());
+
+  // Fetch current period submissions (last 30 days)
+  const { count: currentSubmissionCount } = await supabase
+    .from("submissions")
+    .select("id", { count: "exact", head: true })
+    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
+    .gte("created_at", thirtyDaysAgo.toISOString());
+
+  // Fetch previous period submissions (30-60 days ago)
+  const { count: prevSubmissionCount } = await supabase
+    .from("submissions")
+    .select("id", { count: "exact", head: true })
+    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
+    .gte("created_at", sixtyDaysAgo.toISOString())
+    .lt("created_at", thirtyDaysAgo.toISOString());
+
+  // Fetch current period revenue (last 30 days)
+  const { data: currentRevenue } = await supabase
+    .from("purchases")
+    .select("amount_paid")
+    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
+    .gte("created_at", thirtyDaysAgo.toISOString());
+
+  const currentRevenueTotal = (currentRevenue ?? []).reduce(
+    (sum, p) => sum + p.amount_paid,
+    0
+  );
+
+  // Fetch previous period revenue (30-60 days ago)
+  const { data: prevRevenue } = await supabase
+    .from("purchases")
+    .select("amount_paid")
+    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
+    .gte("created_at", sixtyDaysAgo.toISOString())
+    .lt("created_at", thirtyDaysAgo.toISOString());
+
+  const prevRevenueTotal = (prevRevenue ?? []).reduce(
+    (sum, p) => sum + p.amount_paid,
+    0
+  );
+
+  // Fetch recent activity: last 10 across purchases, submissions, reviews
+  const allSetIds =
+    sets.length > 0 ? sets.map((s) => s.id) : ["__none__"];
+
+  const [
+    { data: recentPurchases },
+    { data: recentSubmissions },
+    { data: recentReviews },
+  ] = await Promise.all([
+    supabase
+      .from("purchases")
+      .select("id, created_at, amount_paid, problem_set_id, problem_sets(title)")
+      .in("problem_set_id", allSetIds)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("submissions")
+      .select("id, created_at, score, max_score, problem_set_id, problem_sets(title)")
+      .in("problem_set_id", allSetIds)
+      .order("created_at", { ascending: false })
+      .limit(10),
+    supabase
+      .from("reviews")
+      .select("id, created_at, rating, body, problem_set_id, problem_sets(title)")
+      .in("problem_set_id", allSetIds)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
+
+  // Merge and sort activity
+  type ActivityItem = {
+    id: string;
+    type: "purchase" | "submission" | "review";
+    createdAt: string;
+    setTitle: string;
+    detail: string;
+  };
+
+  const activities: ActivityItem[] = [];
+
+  for (const p of recentPurchases ?? []) {
+    const title = (p.problem_sets as unknown as { title: string } | null)?.title ?? "---";
+    activities.push({
+      id: `purchase-${p.id}`,
+      type: "purchase",
+      createdAt: p.created_at,
+      setTitle: title,
+      detail:
+        p.amount_paid === 0
+          ? "無料取得"
+          : `¥${p.amount_paid.toLocaleString()}`,
+    });
+  }
+
+  for (const s of recentSubmissions ?? []) {
+    const title = (s.problem_sets as unknown as { title: string } | null)?.title ?? "---";
+    activities.push({
+      id: `submission-${s.id}`,
+      type: "submission",
+      createdAt: s.created_at,
+      setTitle: title,
+      detail:
+        s.score !== null && s.max_score !== null
+          ? `${s.score}/${s.max_score}点`
+          : "採点中",
+    });
+  }
+
+  for (const r of recentReviews ?? []) {
+    const title = (r.problem_sets as unknown as { title: string } | null)?.title ?? "---";
+    activities.push({
+      id: `review-${r.id}`,
+      type: "review",
+      createdAt: r.created_at,
+      setTitle: title,
+      detail: `${"★".repeat(r.rating)}${"☆".repeat(5 - r.rating)}`,
+    });
+  }
+
+  activities.sort(
+    (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+  );
+  const recentActivity = activities.slice(0, 10);
+
+  // Fetch latest 5 submissions for seller's problem sets
+  const { data: latestSubmissions } = await supabase
+    .from("submissions")
+    .select(
+      "id, created_at, score, max_score, problem_set_id, problem_sets(title), profiles(display_name)"
+    )
+    .in("problem_set_id", allSetIds)
+    .order("created_at", { ascending: false })
+    .limit(5);
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -63,7 +237,13 @@ export default async function SellerDashboardPage() {
                   ) : (
                     <Circle className="h-3.5 w-3.5 text-muted-foreground/40" />
                   )}
-                  <span className={profileComplete ? "text-success" : "text-muted-foreground"}>
+                  <span
+                    className={
+                      profileComplete
+                        ? "text-success"
+                        : "text-muted-foreground"
+                    }
+                  >
                     プロフィール
                   </span>
                 </span>
@@ -73,7 +253,11 @@ export default async function SellerDashboardPage() {
                   ) : (
                     <Circle className="h-3.5 w-3.5 text-muted-foreground/40" />
                   )}
-                  <span className={stripeComplete ? "text-success" : "text-muted-foreground"}>
+                  <span
+                    className={
+                      stripeComplete ? "text-success" : "text-muted-foreground"
+                    }
+                  >
                     支払い設定
                   </span>
                 </span>
@@ -81,7 +265,9 @@ export default async function SellerDashboardPage() {
             </div>
             <Button size="sm" asChild>
               <Link href="/sell/onboarding">
-                {!profileComplete ? "プロフィールを設定" : "支払い設定を完了"}
+                {!profileComplete
+                  ? "プロフィールを設定"
+                  : "支払い設定を完了"}
               </Link>
             </Button>
           </div>
@@ -97,61 +283,184 @@ export default async function SellerDashboardPage() {
             問題セットの管理・作成
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/sell/pool">問題プール</Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/sell/analytics">販売分析</Link>
-          </Button>
-          <Button variant="outline" size="sm" asChild>
-            <Link href="/sell/payouts">振込・収益</Link>
-          </Button>
-          <Button size="sm" asChild>
-            <Link href="/sell/new">新規作成</Link>
-          </Button>
-        </div>
       </div>
 
-      {/* Stats */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-3">
+      {/* Quick actions */}
+      <div className="mb-8 flex flex-wrap gap-2">
+        <Button size="sm" asChild>
+          <Link href="/sell/sets/new">
+            <PlusCircle className="mr-1.5 h-3.5 w-3.5" />
+            新規セット作成
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/sell/pool/import">
+            <FileUp className="mr-1.5 h-3.5 w-3.5" />
+            PDF取り込み
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/sell/pool">
+            <Eye className="mr-1.5 h-3.5 w-3.5" />
+            問題プール
+          </Link>
+        </Button>
+      </div>
+
+      {/* Stats with trend indicators */}
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              合計
+              公開中 / 合計
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">{sets.length}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              公開中
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-success">
-              {publishedCount}
+            <p className="text-3xl font-bold">
+              <span className="text-success">{publishedCount}</span>
+              <span className="text-lg text-muted-foreground"> / {sets.length}</span>
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              下書き {draftCount}件
             </p>
           </CardContent>
         </Card>
+        <StatCardWithTrend
+          label="売上（30日）"
+          value={`¥${currentRevenueTotal.toLocaleString()}`}
+          current={currentRevenueTotal}
+          previous={prevRevenueTotal}
+        />
+        <StatCardWithTrend
+          label="購入数（30日）"
+          value={String(currentPurchaseCount ?? 0)}
+          current={currentPurchaseCount ?? 0}
+          previous={prevPurchaseCount ?? 0}
+        />
+        <StatCardWithTrend
+          label="解答数（30日）"
+          value={String(currentSubmissionCount ?? 0)}
+          current={currentSubmissionCount ?? 0}
+          previous={prevSubmissionCount ?? 0}
+        />
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Recent activity feed */}
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              下書き
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">
+              最近のアクティビティ
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold text-muted-foreground">
-              {draftCount}
-            </p>
+            {recentActivity.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                まだアクティビティがありません
+              </p>
+            ) : (
+              <ul className="space-y-3">
+                {recentActivity.map((item) => (
+                  <li key={item.id} className="flex items-start gap-3">
+                    <div className="mt-0.5">
+                      <ActivityIcon type={item.type} />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm">
+                        <span className="font-medium">{item.setTitle}</span>
+                        <span className="ml-2 text-muted-foreground">
+                          {item.detail}
+                        </span>
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatRelativeTime(item.createdAt)}
+                      </p>
+                    </div>
+                    <ActivityBadge type={item.type} />
+                  </li>
+                ))}
+              </ul>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Recent submissions table */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">
+              最近の解答
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {!latestSubmissions || latestSubmissions.length === 0 ? (
+              <p className="py-6 text-center text-sm text-muted-foreground">
+                まだ解答がありません
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-xs text-muted-foreground">
+                      <th className="pb-2 font-medium">問題セット</th>
+                      <th className="pb-2 font-medium">回答者</th>
+                      <th className="pb-2 text-right font-medium">得点</th>
+                      <th className="pb-2 text-right font-medium">日時</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border">
+                    {latestSubmissions.map((sub) => {
+                      const setTitle =
+                        (sub.problem_sets as unknown as { title: string } | null)
+                          ?.title ?? "---";
+                      const displayName =
+                        (
+                          sub.profiles as unknown as {
+                            display_name: string | null;
+                          } | null
+                        )?.display_name ?? "匿名";
+                      return (
+                        <tr key={sub.id}>
+                          <td className="max-w-[140px] truncate py-2 font-medium">
+                            {setTitle}
+                          </td>
+                          <td className="py-2 text-muted-foreground">
+                            {displayName}
+                          </td>
+                          <td className="py-2 text-right">
+                            {sub.score !== null && sub.max_score !== null ? (
+                              <span>
+                                {sub.score}/{sub.max_score}
+                              </span>
+                            ) : (
+                              <span className="text-muted-foreground">
+                                採点中
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-2 text-right text-muted-foreground">
+                            {formatRelativeTime(sub.created_at)}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
+
+      <Separator className="my-8" />
 
       {/* Problem Set List */}
+      <div className="mb-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold">問題セット一覧</h2>
+        <Button size="sm" asChild>
+          <Link href="/sell/sets/new">新規作成</Link>
+        </Button>
+      </div>
+
       {sets.length === 0 ? (
         <Card>
           <CardContent className="py-12">
@@ -167,23 +476,29 @@ export default async function SellerDashboardPage() {
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                     <BookOpen className="h-5 w-5 text-foreground/60" />
                   </div>
-                  <span className="text-xs text-muted-foreground">問題作成</span>
+                  <span className="text-xs text-muted-foreground">
+                    問題作成
+                  </span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                     <Upload className="h-5 w-5 text-foreground/60" />
                   </div>
-                  <span className="text-xs text-muted-foreground">PDF入稿</span>
+                  <span className="text-xs text-muted-foreground">
+                    PDF入稿
+                  </span>
                 </div>
                 <div className="flex flex-col items-center gap-1.5">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
                     <BarChart3 className="h-5 w-5 text-foreground/60" />
                   </div>
-                  <span className="text-xs text-muted-foreground">販売分析</span>
+                  <span className="text-xs text-muted-foreground">
+                    販売分析
+                  </span>
                 </div>
               </div>
               <Button asChild>
-                <Link href="/sell/new">新規作成</Link>
+                <Link href="/sell/sets/new">新規作成</Link>
               </Button>
             </div>
           </CardContent>
@@ -211,7 +526,9 @@ export default async function SellerDashboardPage() {
                       {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
                     </span>
                     <span>
-                      {ps.price === 0 ? "無料" : `¥${ps.price.toLocaleString()}`}
+                      {ps.price === 0
+                        ? "無料"
+                        : `¥${ps.price.toLocaleString()}`}
                     </span>
                   </div>
                 </div>
@@ -232,9 +549,134 @@ export default async function SellerDashboardPage() {
   );
 }
 
+// --- Helper components ---
+
 function StatusBadge({ status }: { status: string }) {
   if (status === "published") {
     return <Badge variant="default">公開中</Badge>;
   }
   return <Badge variant="secondary">下書き</Badge>;
+}
+
+function StatCardWithTrend({
+  label,
+  value,
+  current,
+  previous,
+}: {
+  label: string;
+  value: string;
+  current: number;
+  previous: number;
+}) {
+  const diff = previous === 0 ? (current > 0 ? 100 : 0) : Math.round(((current - previous) / previous) * 100);
+  const isUp = diff > 0;
+  const isDown = diff < 0;
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {label}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <p className="text-3xl font-bold">{value}</p>
+        <div className="mt-1 flex items-center gap-1 text-xs">
+          {isUp ? (
+            <>
+              <TrendingUp className="h-3 w-3 text-success" />
+              <span className="text-success">+{diff}%</span>
+            </>
+          ) : isDown ? (
+            <>
+              <TrendingDown className="h-3 w-3 text-destructive" />
+              <span className="text-destructive">{diff}%</span>
+            </>
+          ) : (
+            <>
+              <Minus className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">変動なし</span>
+            </>
+          )}
+          <span className="text-muted-foreground">前月比</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ActivityIcon({ type }: { type: ActivityItem["type"] }) {
+  switch (type) {
+    case "purchase":
+      return (
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-success/10">
+          <ShoppingCart className="h-3.5 w-3.5 text-success" />
+        </div>
+      );
+    case "submission":
+      return (
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+          <ClipboardList className="h-3.5 w-3.5 text-primary" />
+        </div>
+      );
+    case "review":
+      return (
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/10">
+          <Star className="h-3.5 w-3.5 text-amber-500" />
+        </div>
+      );
+  }
+}
+
+type ActivityItem = {
+  id: string;
+  type: "purchase" | "submission" | "review";
+  createdAt: string;
+  setTitle: string;
+  detail: string;
+};
+
+function ActivityBadge({ type }: { type: ActivityItem["type"] }) {
+  switch (type) {
+    case "purchase":
+      return (
+        <Badge variant="secondary" className="shrink-0 text-[10px]">
+          購入
+        </Badge>
+      );
+    case "submission":
+      return (
+        <Badge variant="secondary" className="shrink-0 text-[10px]">
+          解答
+        </Badge>
+      );
+    case "review":
+      return (
+        <Badge variant="secondary" className="shrink-0 text-[10px]">
+          レビュー
+        </Badge>
+      );
+  }
+}
+
+function formatRelativeTime(dateStr: string): string {
+  const now = Date.now();
+  const date = new Date(dateStr).getTime();
+  const diffMs = now - date;
+  const diffMin = Math.floor(diffMs / 60_000);
+
+  if (diffMin < 1) return "たった今";
+  if (diffMin < 60) return `${diffMin}分前`;
+
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours < 24) return `${diffHours}時間前`;
+
+  const diffDays = Math.floor(diffHours / 24);
+  if (diffDays < 30) return `${diffDays}日前`;
+
+  return new Date(dateStr).toLocaleDateString("ja-JP", {
+    month: "short",
+    day: "numeric",
+  });
 }

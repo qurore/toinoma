@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeSubmission } from "@/lib/ai/grading-engine";
 import { getSubscriptionState } from "@/lib/subscription";
+import { notifyGrading } from "@/lib/notifications";
 import { problemSetRubricSchema, type QuestionAnswer } from "@toinoma/shared/schemas";
 import type { Json } from "@/types/database";
 
@@ -59,10 +60,10 @@ export async function POST(request: Request) {
     );
   }
 
-  // Fetch problem set rubric
+  // Fetch problem set rubric and title
   const { data: problemSet } = await supabase
     .from("problem_sets")
-    .select("rubric")
+    .select("rubric, title")
     .eq("id", problemSetId)
     .single();
 
@@ -118,6 +119,17 @@ export async function POST(request: Request) {
     tokens_used: result.tokensUsed ?? 0,
     cost_usd: result.costUsd ?? 0,
     model: result.model ?? "gemini-2.0-flash",
+  });
+
+  // Notify user of grading completion (fire-and-forget)
+  notifyGrading(
+    user.id,
+    problemSet.title,
+    result.totalScore,
+    submission.id,
+    problemSetId
+  ).catch(() => {
+    // Non-critical — do not block response
   });
 
   return NextResponse.json({

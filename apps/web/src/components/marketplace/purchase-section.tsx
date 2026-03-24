@@ -6,21 +6,33 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Loader2, BookOpen, ShoppingCart } from "lucide-react";
+import { CouponInput } from "@/components/marketplace/coupon-input";
+
+interface AppliedCoupon {
+  couponId: string;
+  code: string;
+  couponType: "percentage" | "fixed";
+  discountValue: number;
+  discountAmount: number;
+}
 
 export function PurchaseSection({
   problemSetId,
   price,
   hasPurchased,
   isLoggedIn,
+  sellerId,
 }: {
   problemSetId: string;
   price: number;
   hasPurchased: boolean;
   isLoggedIn: boolean;
+  sellerId?: string;
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
   if (hasPurchased) {
     return (
@@ -62,7 +74,10 @@ export function PurchaseSection({
       const res = await fetch("/api/purchase", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ problemSetId }),
+        body: JSON.stringify({
+          problemSetId,
+          ...(appliedCoupon ? { couponId: appliedCoupon.couponId } : {}),
+        }),
       });
 
       const data = await res.json();
@@ -83,12 +98,29 @@ export function PurchaseSection({
     }
   };
 
+  const effectivePrice = appliedCoupon
+    ? Math.max(0, price - appliedCoupon.discountAmount)
+    : price;
+
   return (
     <Card>
       <CardContent className="p-6 text-center">
         <p className="mb-2 text-3xl font-bold text-primary">
-          {price === 0 ? "無料" : `¥${price.toLocaleString()}`}
+          {effectivePrice === 0 ? "無料" : `¥${effectivePrice.toLocaleString()}`}
         </p>
+
+        {/* Coupon input for paid problem sets */}
+        {price > 0 && sellerId && (
+          <div className="mx-auto mb-4 max-w-xs">
+            <CouponInput
+              problemSetId={problemSetId}
+              sellerId={sellerId}
+              originalPrice={price}
+              onCouponApplied={setAppliedCoupon}
+            />
+          </div>
+        )}
+
         {error && (
           <p className="mb-3 text-sm text-destructive">{error}</p>
         )}

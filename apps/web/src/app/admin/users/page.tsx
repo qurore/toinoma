@@ -1,128 +1,149 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Metadata } from "next";
+import { AdminUsersClient } from "./admin-users-client";
 
 export const metadata: Metadata = {
   title: "ユーザー管理 - 問の間",
 };
 
-export default async function AdminUsersPage() {
+// Shared type for the user row passed to the client component
+export interface AdminUserRow {
+  id: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  created_at: string;
+  banned_at: string | null;
+  suspended_until: string | null;
+  ban_reason: string | null;
+  is_seller: boolean;
+  tier: string;
+}
+
+export default async function AdminUsersPage(props: {
+  searchParams: Promise<{
+    q?: string;
+    role?: string;
+    status?: string;
+    page?: string;
+  }>;
+}) {
   const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  const { data: users } = await supabase
+  if (!user) redirect("/login");
+
+  // Admin guard (layout already checks, but defense in depth)
+  const { data: profile } = await supabase
     .from("profiles")
-    .select("id, display_name, avatar_url, created_at")
-    .order("created_at", { ascending: false })
-    .limit(50);
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
 
-  // Fetch seller status for each user
+  if (!profile?.is_admin) redirect("/");
+
+  const searchParams = await props.searchParams;
+  const query = searchParams.q ?? "";
+  const roleFilter = searchParams.role ?? "all";
+  const statusFilter = searchParams.status ?? "all";
+  const page = Math.max(1, parseInt(searchParams.page ?? "1", 10));
+  const perPage = 20;
+
+  // Use admin client for full access to all profiles
+  const admin = createAdminClient();
+
+  // Build query
+  let dbQuery = admin
+    .from("profiles")
+    .select("id, display_name, avatar_url, created_at, banned_at, suspended_until, ban_reason", {
+      count: "exact",
+    })
+    .order("created_at", { ascending: false });
+
+  // Search by display_name (ilike)
+  if (query) {
+    dbQuery = dbQuery.ilike("display_name", `%${query}%`);
+  }
+
+  // Status filter
+  if (statusFilter === "banned") {
+    dbQuery = dbQuery.not("banned_at", "is", null);
+  } else if (statusFilter === "suspended") {
+    dbQuery = dbQuery.not("suspended_until", "is", null).is("banned_at", null);
+  } else if (statusFilter === "active") {
+    dbQuery = dbQuery.is("banned_at", null).is("suspended_until", null);
+  }
+
+  // Pagination
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+  dbQuery = dbQuery.range(from, to);
+
+  const { data: users, count: totalCount } = await dbQuery;
+
   const userIds = (users ?? []).map((u) => u.id);
-  const { data: sellers } = userIds.length > 0
-    ? await supabase
-        .from("seller_profiles")
-        .select("id, tos_accepted_at, stripe_account_id")
-        .in("id", userIds)
-    : { data: [] };
 
-  const sellerMap = new Map(
-    (sellers ?? []).map((s) => [s.id, s])
+  // Fetch seller & subscription status in parallel
+  const [sellersResult, subsResult] =
+    userIds.length > 0
+      ? await Promise.all([
+          admin
+            .from("seller_profiles")
+            .select("id, tos_accepted_at, stripe_account_id")
+            .in("id", userIds),
+          admin
+            .from("user_subscriptions")
+            .select("user_id, tier")
+            .in("user_id", userIds),
+        ])
+      : [{ data: [] }, { data: [] }];
+
+  const sellerSet = new Set(
+    (sellersResult.data ?? [])
+      .filter((s) => s.tos_accepted_at)
+      .map((s) => s.id)
   );
-
-  const { data: subs } = userIds.length > 0
-    ? await supabase
-        .from("user_subscriptions")
-        .select("user_id, tier")
-        .in("user_id", userIds)
-    : { data: [] };
-
   const subMap = new Map(
-    (subs ?? []).map((s) => [s.user_id, s.tier])
+    (subsResult.data ?? []).map((s) => [s.user_id, s.tier])
   );
+
+  // Build rows
+  const rows: AdminUserRow[] = (users ?? []).map((u) => ({
+    id: u.id,
+    display_name: u.display_name,
+    avatar_url: u.avatar_url,
+    created_at: u.created_at,
+    banned_at: u.banned_at,
+    suspended_until: u.suspended_until,
+    ban_reason: u.ban_reason,
+    is_seller: sellerSet.has(u.id),
+    tier: subMap.get(u.id) ?? "free",
+  }));
+
+  // Apply client-side role filter (sellers / subscribers)
+  let filteredRows = rows;
+  if (roleFilter === "sellers") {
+    filteredRows = rows.filter((r) => r.is_seller);
+  } else if (roleFilter === "subscribers") {
+    filteredRows = rows.filter(
+      (r) => r.tier === "basic" || r.tier === "pro"
+    );
+  }
+
+  const totalPages = Math.ceil((totalCount ?? 0) / perPage);
 
   return (
-    <div>
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">
-        ユーザー管理
-      </h1>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">
-            ユーザー一覧（直近50件）
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b text-left text-muted-foreground">
-                  <th className="pb-3 pr-4">ユーザー</th>
-                  <th className="pb-3 pr-4">プラン</th>
-                  <th className="pb-3 pr-4">出品者</th>
-                  <th className="pb-3">登録日</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y">
-                {(users ?? []).map((user) => {
-                  const seller = sellerMap.get(user.id);
-                  const tier = subMap.get(user.id) ?? "free";
-                  const initials = (user.display_name ?? "?")
-                    .slice(0, 2)
-                    .toUpperCase();
-
-                  return (
-                    <tr key={user.id}>
-                      <td className="py-3 pr-4">
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-7 w-7">
-                            <AvatarImage src={user.avatar_url ?? undefined} />
-                            <AvatarFallback className="bg-primary/10 text-xs text-primary">
-                              {initials}
-                            </AvatarFallback>
-                          </Avatar>
-                          <span className="font-medium">
-                            {user.display_name ?? "—"}
-                          </span>
-                        </div>
-                      </td>
-                      <td className="py-3 pr-4">
-                        <Badge
-                          variant={
-                            tier === "pro"
-                              ? "default"
-                              : tier === "basic"
-                                ? "secondary"
-                                : "outline"
-                          }
-                          className="text-xs"
-                        >
-                          {tier}
-                        </Badge>
-                      </td>
-                      <td className="py-3 pr-4">
-                        {seller?.tos_accepted_at ? (
-                          <Badge variant="secondary" className="text-xs">
-                            {seller.stripe_account_id
-                              ? "完了"
-                              : "未完了"}
-                          </Badge>
-                        ) : (
-                          <span className="text-muted-foreground">—</span>
-                        )}
-                      </td>
-                      <td className="py-3 text-muted-foreground">
-                        {new Date(user.created_at).toLocaleDateString("ja-JP")}
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <AdminUsersClient
+      users={filteredRows}
+      query={query}
+      roleFilter={roleFilter}
+      statusFilter={statusFilter}
+      currentPage={page}
+      totalPages={totalPages}
+      totalCount={totalCount ?? 0}
+    />
   );
 }

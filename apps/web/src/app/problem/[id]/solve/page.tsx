@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { problemSetRubricSchema } from "@toinoma/shared/schemas";
 import { SolveClient } from "@/components/grading/solve-client";
+import { AiAssistantDialog } from "@/components/ai-assistant/ai-assistant-dialog";
+import { getSubscriptionState } from "@/lib/subscription";
 
 export default async function ProblemSolvePage({
   params,
@@ -37,6 +39,10 @@ export default async function ProblemSolvePage({
     .single();
 
   if (!ps) notFound();
+
+  // Check subscription tier for AI assistant access
+  const subState = await getSubscriptionState(user.id);
+  const isPro = subState.tier === "pro";
 
   const rubricResult = problemSetRubricSchema.safeParse(ps.rubric);
   if (!rubricResult.success) {
@@ -79,6 +85,8 @@ export default async function ProblemSolvePage({
         problemSetId={id}
         rubric={rubricResult.data}
       />
+
+      <AiAssistantDialog problemSetId={id} isPro={isPro} />
     </main>
   );
 }

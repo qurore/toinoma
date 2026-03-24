@@ -2,6 +2,7 @@ import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { notifyPurchase, notifySale } from "@/lib/notifications";
 import type Stripe from "stripe";
 
 function mapPriceIdToTier(priceId: string | undefined): "free" | "basic" | "pro" {
@@ -79,6 +80,30 @@ export async function POST(request: Request) {
                 ? session.payment_intent
                 : session.payment_intent?.id ?? null,
           });
+
+          // Send purchase/sale notifications
+          const { data: problemSet } = await supabase
+            .from("problem_sets")
+            .select("title, seller_id")
+            .eq("id", problemSetId)
+            .single();
+
+          if (problemSet) {
+            const buyerName =
+              buyer.user_metadata?.display_name ??
+              buyer.user_metadata?.full_name ??
+              "ユーザー";
+
+            await Promise.all([
+              notifyPurchase(buyer.id, problemSet.title, problemSetId),
+              notifySale(
+                problemSet.seller_id,
+                buyerName,
+                problemSet.title,
+                problemSetId
+              ),
+            ]);
+          }
         }
       }
       break;

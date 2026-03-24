@@ -6,6 +6,10 @@ import { PdfDownloadButton } from "@/components/solving/pdf-download-button";
 import { ArrowLeft, History } from "lucide-react";
 import { gradingResultSchema } from "@toinoma/shared/schemas";
 import { GradingResultDisplay } from "@/components/grading/grading-result";
+import { AiAssistantDialog } from "@/components/ai-assistant/ai-assistant-dialog";
+import { VideoPlayer } from "@/components/solving/video-player";
+import { ScoreComparisonSection } from "./score-comparison-section";
+import { getSubscriptionState } from "@/lib/subscription";
 
 export default async function GradingResultPage({
   params,
@@ -30,12 +34,42 @@ export default async function GradingResultPage({
   if (!submission) notFound();
   if (submission.problem_set_id !== id) notFound();
 
-  // Fetch problem set title
-  const { data: ps } = await supabase
-    .from("problem_sets")
-    .select("title")
-    .eq("id", id)
-    .single();
+  // Fetch problem set title and subscription state in parallel
+  const [{ data: ps }, subState] = await Promise.all([
+    supabase.from("problem_sets").select("title").eq("id", id).single(),
+    getSubscriptionState(user.id),
+  ]);
+  const isPro = subState.tier === "pro";
+
+  // Fetch video URLs from questions linked to this problem set
+  const { data: junctionRows } = await supabase
+    .from("problem_set_questions")
+    .select("question_id, position")
+    .eq("problem_set_id", id)
+    .order("section_number", { ascending: true })
+    .order("position", { ascending: true });
+
+  const videos: { url: string; title: string }[] = [];
+  if (junctionRows && junctionRows.length > 0) {
+    const questionIds = junctionRows.map((j) => j.question_id);
+    const { data: questionsRaw } = await supabase.from("questions")
+      .select("id, video_urls, question_text")
+      .in("id", questionIds);
+
+    if (questionsRaw) {
+      for (const q of questionsRaw as Array<{ id: string; video_urls: unknown; question_text: string }>) {
+        const urls = Array.isArray(q.video_urls) ? q.video_urls : [];
+        for (const entry of urls) {
+          if (typeof entry === "string" && entry) {
+            videos.push({ url: entry, title: q.question_text.slice(0, 40) });
+          } else if (entry && typeof entry === "object" && "url" in entry) {
+            const obj = entry as { url: string; title?: string };
+            videos.push({ url: obj.url, title: obj.title ?? q.question_text.slice(0, 40) });
+          }
+        }
+      }
+    }
+  }
 
   // Parse feedback as GradingResult
   const parseResult = gradingResultSchema.safeParse(submission.feedback);
@@ -78,6 +112,20 @@ export default async function GradingResultPage({
       </div>
 
       <GradingResultDisplay result={parseResult.data} />
+
+      {/* Score comparison with other submissions */}
+      <div className="mt-6">
+        <ScoreComparisonSection problemSetId={id} userId={user.id} />
+      </div>
+
+      {/* Explanation videos (if any questions have video_urls) */}
+      {videos.length > 0 && (
+        <div className="mt-6">
+          <VideoPlayer videos={videos} />
+        </div>
+      )}
+
+      <AiAssistantDialog problemSetId={id} isPro={isPro} />
     </main>
   );
 }

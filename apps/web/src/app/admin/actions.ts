@@ -1,0 +1,295 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import type { Database } from "@/types/database";
+
+type AdminActionType = Database["public"]["Enums"]["admin_action_type"];
+type ReportStatus = Database["public"]["Enums"]["report_status"];
+
+// --- Helpers ---
+
+async function requireAdmin(): Promise<{ adminId: string } | { error: string }> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) return { error: "認証が必要です" };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("is_admin")
+    .eq("id", user.id)
+    .single();
+
+  if (!profile?.is_admin) return { error: "管理者権限が必要です" };
+
+  return { adminId: user.id };
+}
+
+/**
+ * Log an admin action to admin_audit_logs.
+ */
+async function createAuditLog(params: {
+  adminId: string;
+  action: AdminActionType;
+  targetType: string;
+  targetId: string;
+  details?: Record<string, unknown>;
+}) {
+  const admin = createAdminClient();
+  await admin.from("admin_audit_logs").insert({
+    admin_id: params.adminId,
+    action: params.action,
+    target_type: params.targetType,
+    target_id: params.targetId,
+    details: (params.details ?? {}) as Database["public"]["Tables"]["admin_audit_logs"]["Insert"]["details"],
+  });
+}
+
+// --- User actions ---
+
+/**
+ * Ban a user permanently.
+ */
+export async function banUser(
+  targetUserId: string,
+  reason: string
+): Promise<{ success?: boolean; error?: string }> {
+  const authResult = await requireAdmin();
+  if ("error" in authResult) return { error: authResult.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      banned_at: new Date().toISOString(),
+      ban_reason: reason,
+      suspended_until: null,
+    })
+    .eq("id", targetUserId);
+
+  if (error) return { error: "ユーザーのBANに失敗しました" };
+
+  await createAuditLog({
+    adminId: authResult.adminId,
+    action: "user_banned",
+    targetType: "user",
+    targetId: targetUserId,
+    details: { reason },
+  });
+
+  revalidatePath("/admin/users");
+  return { success: true };
+}
+
+/**
+ * Suspend a user for a specified number of days.
+ */
+export async function suspendUser(
+  targetUserId: string,
+  reason: string,
+  durationDays: number
+): Promise<{ success?: boolean; error?: string }> {
+  const authResult = await requireAdmin();
+  if ("error" in authResult) return { error: authResult.error };
+
+  if (durationDays < 1 || durationDays > 365) {
+    return { error: "停止期間は1日から365日の間で指定してください" };
+  }
+
+  const suspendedUntil = new Date(
+    Date.now() + durationDays * 24 * 60 * 60 * 1000
+  ).toISOString();
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      suspended_until: suspendedUntil,
+      ban_reason: reason,
+      banned_at: null,
+    })
+    .eq("id", targetUserId);
+
+  if (error) return { error: "ユーザーの一時停止に失敗しました" };
+
+  await createAuditLog({
+    adminId: authResult.adminId,
+    action: "user_suspended",
+    targetType: "user",
+    targetId: targetUserId,
+    details: { reason, duration_days: durationDays, suspended_until: suspendedUntil },
+  });
+
+  revalidatePath("/admin/users");
+  return { success: true };
+}
+
+/**
+ * Warn a user (logged but no state change on the profile).
+ */
+export async function warnUser(
+  targetUserId: string,
+  reason: string
+): Promise<{ success?: boolean; error?: string }> {
+  const authResult = await requireAdmin();
+  if ("error" in authResult) return { error: authResult.error };
+
+  await createAuditLog({
+    adminId: authResult.adminId,
+    action: "user_warned",
+    targetType: "user",
+    targetId: targetUserId,
+    details: { reason },
+  });
+
+  revalidatePath("/admin/users");
+  return { success: true };
+}
+
+/**
+ * Unban / unsuspend a user.
+ */
+export async function unbanUser(
+  targetUserId: string
+): Promise<{ success?: boolean; error?: string }> {
+  const authResult = await requireAdmin();
+  if ("error" in authResult) return { error: authResult.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("profiles")
+    .update({
+      banned_at: null,
+      suspended_until: null,
+      ban_reason: null,
+    })
+    .eq("id", targetUserId);
+
+  if (error) return { error: "ユーザーの解除に失敗しました" };
+
+  await createAuditLog({
+    adminId: authResult.adminId,
+    action: "user_warned", // reuse closest action type
+    targetType: "user",
+    targetId: targetUserId,
+    details: { action: "unbanned" },
+  });
+
+  revalidatePath("/admin/users");
+  return { success: true };
+}
+
+// --- Report actions ---
+
+/**
+ * Update a report's status with admin notes.
+ */
+export async function updateReportStatus(
+  reportId: string,
+  status: ReportStatus,
+  notes?: string
+): Promise<{ success?: boolean; error?: string }> {
+  const authResult = await requireAdmin();
+  if ("error" in authResult) return { error: authResult.error };
+
+  const admin = createAdminClient();
+  const { error } = await admin
+    .from("reports")
+    .update({
+      status,
+      reviewed_by: authResult.adminId,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq("id", reportId);
+
+  if (error) return { error: "報告のステータス更新に失敗しました" };
+
+  const action: AdminActionType =
+    status === "dismissed" ? "report_dismissed" : "report_reviewed";
+
+  await createAuditLog({
+    adminId: authResult.adminId,
+    action,
+    targetType: "report",
+    targetId: reportId,
+    details: { status, notes: notes ?? null },
+  });
+
+  revalidatePath("/admin/reports");
+  return { success: true };
+}
+
+/**
+ * Take action on a report: remove content and warn the user.
+ */
+export async function takeReportAction(
+  reportId: string,
+  notes: string
+): Promise<{ success?: boolean; error?: string }> {
+  const authResult = await requireAdmin();
+  if ("error" in authResult) return { error: authResult.error };
+
+  const admin = createAdminClient();
+
+  // Fetch the report to identify the target content
+  const { data: report } = await admin
+    .from("reports")
+    .select("problem_set_id, review_id, qa_question_id, reporter_id")
+    .eq("id", reportId)
+    .single();
+
+  if (!report) return { error: "報告が見つかりません" };
+
+  // Remove the reported content
+  if (report.problem_set_id) {
+    await admin
+      .from("problem_sets")
+      .update({ status: "draft" as Database["public"]["Enums"]["problem_set_status"] })
+      .eq("id", report.problem_set_id);
+
+    await createAuditLog({
+      adminId: authResult.adminId,
+      action: "content_removed",
+      targetType: "problem_set",
+      targetId: report.problem_set_id,
+      details: { report_id: reportId, notes },
+    });
+  } else if (report.review_id) {
+    await admin.from("reviews").delete().eq("id", report.review_id);
+
+    await createAuditLog({
+      adminId: authResult.adminId,
+      action: "content_removed",
+      targetType: "review",
+      targetId: report.review_id,
+      details: { report_id: reportId, notes },
+    });
+  } else if (report.qa_question_id) {
+    await admin.from("qa_questions").delete().eq("id", report.qa_question_id);
+
+    await createAuditLog({
+      adminId: authResult.adminId,
+      action: "content_removed",
+      targetType: "qa_question",
+      targetId: report.qa_question_id,
+      details: { report_id: reportId, notes },
+    });
+  }
+
+  // Update report status
+  await admin
+    .from("reports")
+    .update({
+      status: "action_taken" as ReportStatus,
+      reviewed_by: authResult.adminId,
+      reviewed_at: new Date().toISOString(),
+    })
+    .eq("id", reportId);
+
+  revalidatePath("/admin/reports");
+  return { success: true };
+}

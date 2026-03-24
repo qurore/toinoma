@@ -8,4 +8,8 @@ export type {
   SubscriptionTier,
   SubscriptionInterval,
   AnswerType,
+  AdminActionType,
+  NotificationType,
+  ReportReason,
+  ReportStatus,
 } from "@toinoma/shared/types";

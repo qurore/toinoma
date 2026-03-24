@@ -1,5 +1,5 @@
 // Database types matching the Supabase schema
-// Source of truth: supabase/migrations/20260213080238_remote_schema.sql
+// Source of truth: supabase/migrations/*
 
 export type Json =
   | string
@@ -27,6 +27,35 @@ export type ProblemSetStatus = "draft" | "published";
 export type SubscriptionTier = "free" | "basic" | "pro";
 export type SubscriptionInterval = "monthly" | "annual";
 
+export type AnswerType =
+  | "essay"
+  | "mark_sheet"
+  | "fill_in_blank"
+  | "multiple_choice";
+
+export type NotificationType =
+  | "purchase"
+  | "grading"
+  | "review"
+  | "announcement"
+  | "subscription"
+  | "system";
+
+export type ReportReason = "copyright" | "inappropriate" | "spam" | "other";
+export type ReportStatus = "pending" | "reviewed" | "action_taken" | "dismissed";
+
+export type CouponType = "percentage" | "fixed";
+
+export type AdminActionType =
+  | "user_banned"
+  | "user_suspended"
+  | "user_warned"
+  | "content_removed"
+  | "report_reviewed"
+  | "report_dismissed"
+  | "announcement_created"
+  | "seller_verified";
+
 export interface Database {
   public: {
     Tables: {
@@ -35,6 +64,12 @@ export interface Database {
           id: string;
           display_name: string | null;
           avatar_url: string | null;
+          is_admin: boolean;
+          preferred_subjects: Subject[];
+          study_goal: string | null;
+          banned_at: string | null;
+          suspended_until: string | null;
+          ban_reason: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -42,12 +77,24 @@ export interface Database {
           id: string;
           display_name?: string | null;
           avatar_url?: string | null;
+          is_admin?: boolean;
+          preferred_subjects?: Subject[];
+          study_goal?: string | null;
+          banned_at?: string | null;
+          suspended_until?: string | null;
+          ban_reason?: string | null;
           created_at?: string;
           updated_at?: string;
         };
         Update: {
           display_name?: string | null;
           avatar_url?: string | null;
+          is_admin?: boolean;
+          preferred_subjects?: Subject[];
+          study_goal?: string | null;
+          banned_at?: string | null;
+          suspended_until?: string | null;
+          ban_reason?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -108,6 +155,10 @@ export interface Database {
           problem_pdf_url: string | null;
           solution_pdf_url: string | null;
           rubric: Json;
+          cover_image_url: string | null;
+          time_limit_minutes: number | null;
+          total_points: number;
+          preview_question_ids: string[];
           created_at: string;
           updated_at: string;
         };
@@ -124,6 +175,10 @@ export interface Database {
           problem_pdf_url?: string | null;
           solution_pdf_url?: string | null;
           rubric?: Json;
+          cover_image_url?: string | null;
+          time_limit_minutes?: number | null;
+          total_points?: number;
+          preview_question_ids?: string[];
           created_at?: string;
           updated_at?: string;
         };
@@ -138,6 +193,10 @@ export interface Database {
           problem_pdf_url?: string | null;
           solution_pdf_url?: string | null;
           rubric?: Json;
+          cover_image_url?: string | null;
+          time_limit_minutes?: number | null;
+          total_points?: number;
+          preview_question_ids?: string[];
           updated_at?: string;
         };
         Relationships: [
@@ -150,6 +209,115 @@ export interface Database {
           },
         ];
       };
+      questions: {
+        Row: {
+          id: string;
+          seller_id: string;
+          question_type: AnswerType;
+          question_text: string;
+          question_images: Json;
+          rubric: Json;
+          model_answer: string | null;
+          model_answer_images: Json;
+          subject: Subject;
+          topic_tags: string[];
+          difficulty: Difficulty;
+          estimated_minutes: number | null;
+          points: number;
+          video_urls: Json;
+          vertical_text: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          seller_id: string;
+          question_type: AnswerType;
+          question_text: string;
+          question_images?: Json;
+          rubric?: Json;
+          model_answer?: string | null;
+          model_answer_images?: Json;
+          subject: Subject;
+          topic_tags?: string[];
+          difficulty?: Difficulty;
+          estimated_minutes?: number | null;
+          points?: number;
+          video_urls?: Json;
+          vertical_text?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          question_type?: AnswerType;
+          question_text?: string;
+          question_images?: Json;
+          rubric?: Json;
+          model_answer?: string | null;
+          model_answer_images?: Json;
+          subject?: Subject;
+          topic_tags?: string[];
+          difficulty?: Difficulty;
+          estimated_minutes?: number | null;
+          points?: number;
+          video_urls?: Json;
+          vertical_text?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "questions_seller_id_fkey";
+            columns: ["seller_id"];
+            isOneToOne: false;
+            referencedRelation: "seller_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      problem_set_questions: {
+        Row: {
+          id: string;
+          problem_set_id: string;
+          question_id: string;
+          section_number: number;
+          section_title: string | null;
+          position: number;
+          points_override: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          problem_set_id: string;
+          question_id: string;
+          section_number?: number;
+          section_title?: string | null;
+          position?: number;
+          points_override?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          section_number?: number;
+          section_title?: string | null;
+          position?: number;
+          points_override?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "problem_set_questions_problem_set_id_fkey";
+            columns: ["problem_set_id"];
+            isOneToOne: false;
+            referencedRelation: "problem_sets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "problem_set_questions_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       purchases: {
         Row: {
           id: string;
@@ -157,6 +325,8 @@ export interface Database {
           problem_set_id: string;
           stripe_payment_intent_id: string | null;
           amount_paid: number;
+          coupon_id: string | null;
+          discount_amount: number;
           created_at: string;
         };
         Insert: {
@@ -165,10 +335,14 @@ export interface Database {
           problem_set_id: string;
           stripe_payment_intent_id?: string | null;
           amount_paid: number;
+          coupon_id?: string | null;
+          discount_amount?: number;
           created_at?: string;
         };
         Update: {
           stripe_payment_intent_id?: string | null;
+          coupon_id?: string | null;
+          discount_amount?: number;
         };
         Relationships: [
           {
@@ -398,6 +572,425 @@ export interface Database {
           },
         ];
       };
+      reviews: {
+        Row: {
+          id: string;
+          user_id: string;
+          problem_set_id: string;
+          rating: number;
+          body: string | null;
+          seller_response: string | null;
+          seller_responded_at: string | null;
+          helpful_count: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          problem_set_id: string;
+          rating: number;
+          body?: string | null;
+          seller_response?: string | null;
+          seller_responded_at?: string | null;
+          helpful_count?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          rating?: number;
+          body?: string | null;
+          seller_response?: string | null;
+          seller_responded_at?: string | null;
+          helpful_count?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "reviews_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "reviews_problem_set_id_fkey";
+            columns: ["problem_set_id"];
+            isOneToOne: false;
+            referencedRelation: "problem_sets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      review_votes: {
+        Row: {
+          id: string;
+          review_id: string;
+          user_id: string;
+          helpful: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          review_id: string;
+          user_id: string;
+          helpful: boolean;
+          created_at?: string;
+        };
+        Update: {
+          helpful?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "review_votes_review_id_fkey";
+            columns: ["review_id"];
+            isOneToOne: false;
+            referencedRelation: "reviews";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      notifications: {
+        Row: {
+          id: string;
+          user_id: string;
+          type: NotificationType;
+          title: string;
+          body: string;
+          link: string | null;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          type: NotificationType;
+          title: string;
+          body: string;
+          link?: string | null;
+          read_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          read_at?: string | null;
+        };
+        Relationships: [];
+      };
+      notification_preferences: {
+        Row: {
+          id: string;
+          user_id: string;
+          email_purchase: boolean;
+          email_grading: boolean;
+          email_review: boolean;
+          email_announcement: boolean;
+          email_subscription: boolean;
+          email_qa: boolean;
+          email_marketing: boolean;
+          inapp_purchase: boolean;
+          inapp_grading: boolean;
+          inapp_review: boolean;
+          inapp_announcement: boolean;
+          inapp_subscription: boolean;
+          inapp_qa: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          email_purchase?: boolean;
+          email_grading?: boolean;
+          email_review?: boolean;
+          email_announcement?: boolean;
+          email_subscription?: boolean;
+          email_qa?: boolean;
+          email_marketing?: boolean;
+          inapp_purchase?: boolean;
+          inapp_grading?: boolean;
+          inapp_review?: boolean;
+          inapp_announcement?: boolean;
+          inapp_subscription?: boolean;
+          inapp_qa?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          email_purchase?: boolean;
+          email_grading?: boolean;
+          email_review?: boolean;
+          email_announcement?: boolean;
+          email_subscription?: boolean;
+          email_qa?: boolean;
+          email_marketing?: boolean;
+          inapp_purchase?: boolean;
+          inapp_grading?: boolean;
+          inapp_review?: boolean;
+          inapp_announcement?: boolean;
+          inapp_subscription?: boolean;
+          inapp_qa?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      qa_questions: {
+        Row: {
+          id: string;
+          problem_set_id: string;
+          user_id: string;
+          question_id: string | null;
+          title: string;
+          body: string;
+          pinned: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          problem_set_id: string;
+          user_id: string;
+          question_id?: string | null;
+          title: string;
+          body: string;
+          pinned?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          title?: string;
+          body?: string;
+          pinned?: boolean;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "qa_questions_problem_set_id_fkey";
+            columns: ["problem_set_id"];
+            isOneToOne: false;
+            referencedRelation: "problem_sets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "qa_questions_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      qa_answers: {
+        Row: {
+          id: string;
+          qa_question_id: string;
+          user_id: string;
+          body: string;
+          is_accepted: boolean;
+          upvotes: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          qa_question_id: string;
+          user_id: string;
+          body: string;
+          is_accepted?: boolean;
+          upvotes?: number;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          body?: string;
+          is_accepted?: boolean;
+          upvotes?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "qa_answers_qa_question_id_fkey";
+            columns: ["qa_question_id"];
+            isOneToOne: false;
+            referencedRelation: "qa_questions";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      reports: {
+        Row: {
+          id: string;
+          reporter_id: string;
+          reason: ReportReason;
+          description: string | null;
+          status: ReportStatus;
+          problem_set_id: string | null;
+          review_id: string | null;
+          qa_question_id: string | null;
+          reviewed_by: string | null;
+          reviewed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          reporter_id: string;
+          reason: ReportReason;
+          description?: string | null;
+          status?: ReportStatus;
+          problem_set_id?: string | null;
+          review_id?: string | null;
+          qa_question_id?: string | null;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          status?: ReportStatus;
+          reviewed_by?: string | null;
+          reviewed_at?: string | null;
+        };
+        Relationships: [];
+      };
+      coupons: {
+        Row: {
+          id: string;
+          seller_id: string;
+          code: string;
+          coupon_type: CouponType;
+          discount_value: number;
+          min_purchase: number;
+          max_uses: number | null;
+          current_uses: number;
+          problem_set_id: string | null;
+          applies_to_all: boolean;
+          starts_at: string;
+          expires_at: string | null;
+          active: boolean;
+          stripe_coupon_id: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          seller_id: string;
+          code: string;
+          coupon_type: CouponType;
+          discount_value: number;
+          min_purchase?: number;
+          max_uses?: number | null;
+          current_uses?: number;
+          problem_set_id?: string | null;
+          applies_to_all?: boolean;
+          starts_at?: string;
+          expires_at?: string | null;
+          active?: boolean;
+          stripe_coupon_id?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          code?: string;
+          coupon_type?: CouponType;
+          discount_value?: number;
+          min_purchase?: number;
+          max_uses?: number | null;
+          current_uses?: number;
+          problem_set_id?: string | null;
+          applies_to_all?: boolean;
+          starts_at?: string;
+          expires_at?: string | null;
+          active?: boolean;
+          stripe_coupon_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "coupons_seller_id_fkey";
+            columns: ["seller_id"];
+            isOneToOne: false;
+            referencedRelation: "seller_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      announcements: {
+        Row: {
+          id: string;
+          admin_id: string;
+          title: string;
+          body: string;
+          target: string;
+          published: boolean;
+          published_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          admin_id: string;
+          title: string;
+          body: string;
+          target?: string;
+          published?: boolean;
+          published_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          title?: string;
+          body?: string;
+          target?: string;
+          published?: boolean;
+          published_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      admin_audit_logs: {
+        Row: {
+          id: string;
+          admin_id: string;
+          action: AdminActionType;
+          target_type: string;
+          target_id: string;
+          details: Json;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          admin_id: string;
+          action: AdminActionType;
+          target_type: string;
+          target_id: string;
+          details?: Json;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      qa_upvotes: {
+        Row: {
+          id: string;
+          qa_answer_id: string;
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          qa_answer_id: string;
+          user_id: string;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [
+          {
+            foreignKeyName: "qa_upvotes_qa_answer_id_fkey";
+            columns: ["qa_answer_id"];
+            isOneToOne: false;
+            referencedRelation: "qa_answers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: Record<string, never>;
     Functions: Record<string, never>;
@@ -407,6 +1000,12 @@ export interface Database {
       problem_set_status: ProblemSetStatus;
       subscription_tier: SubscriptionTier;
       subscription_interval: SubscriptionInterval;
+      answer_type: AnswerType;
+      notification_type: NotificationType;
+      report_reason: ReportReason;
+      report_status: ReportStatus;
+      coupon_type: CouponType;
+      admin_action_type: AdminActionType;
     };
   };
 }

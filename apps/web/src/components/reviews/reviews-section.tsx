@@ -1,15 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { RatingSummary } from "./star-rating";
 import { ReviewList, type ReviewData } from "./review-list";
 import { ReviewForm } from "./review-form";
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fromUntyped(supabase: SupabaseClient<any>, table: string) {
-  return supabase.from(table);
-}
 
 interface ReviewsSectionProps {
   problemSetId: string;
@@ -23,7 +17,7 @@ export async function ReviewsSection({
   const supabase = await createClient();
 
   // Fetch reviews
-  const { data: reviews } = await fromUntyped(supabase, "reviews")
+  const { data: reviews } = await supabase.from("reviews")
     .select("id, rating, body, helpful_count, created_at, seller_response, seller_responded_at, user_id")
     .eq("problem_set_id", problemSetId)
     .order("created_at", { ascending: false });
@@ -106,7 +100,7 @@ export async function ReviewsSection({
       (r) => r.id && reviewData.some((rd) => rd === r)
     );
     // Check if user already has a review
-    const { data: userReview } = await fromUntyped(supabase, "reviews")
+    const { data: userReview } = await supabase.from("reviews")
       .select("id, rating, body")
       .eq("user_id", userId)
       .eq("problem_set_id", problemSetId)

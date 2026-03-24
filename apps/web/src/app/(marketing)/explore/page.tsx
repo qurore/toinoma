@@ -1,135 +1,451 @@
-import Link from "next/link";
+import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { SUBJECT_LABELS, DIFFICULTY_LABELS, SUBJECTS, DIFFICULTIES } from "@toinoma/shared/constants";
+import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { SiteFooter } from "@/components/navigation/site-footer";
+import {
+  ProblemSetCard,
+  type ProblemSetCardData,
+} from "@/components/marketplace/problem-set-card";
+import {
+  ExploreFiltersSidebar,
+  ExploreFiltersMobile,
+  ExploreSortDropdown,
+  type SortOption,
+} from "@/components/marketplace/explore-filters";
+import { generatePageMetadata } from "@/lib/metadata";
+import { SUBJECTS, DIFFICULTIES } from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = generatePageMetadata(
+  "問題を探す",
+  "大学入試対策の問題セットを探そう。科目・難易度・大学別に検索できるAI採点付き問題マーケットプレイス。",
+  { pathname: "/explore" }
+);
+
+// ──────────────────────────────────────────────
+// Constants
+// ──────────────────────────────────────────────
+
+const PAGE_SIZE = 20;
+
+// ──────────────────────────────────────────────
+// Pagination component (server)
+// ──────────────────────────────────────────────
+
+function Pagination({
+  currentPage,
+  totalPages,
+  buildHref,
+}: {
+  currentPage: number;
+  totalPages: number;
+  buildHref: (page: number) => string;
+}) {
+  if (totalPages <= 1) return null;
+
+  // Build page number array with ellipsis
+  const pages: (number | "ellipsis")[] = [];
+  const delta = 2;
+
+  for (let i = 1; i <= totalPages; i++) {
+    if (
+      i === 1 ||
+      i === totalPages ||
+      (i >= currentPage - delta && i <= currentPage + delta)
+    ) {
+      pages.push(i);
+    } else if (pages[pages.length - 1] !== "ellipsis") {
+      pages.push("ellipsis");
+    }
+  }
+
+  return (
+    <nav aria-label="ページナビゲーション" className="flex justify-center">
+      <ul className="flex items-center gap-1">
+        {/* Previous */}
+        {currentPage > 1 && (
+          <li>
+            <a
+              href={buildHref(currentPage - 1)}
+              className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
+              aria-label="前のページ"
+            >
+              前へ
+            </a>
+          </li>
+        )}
+
+        {pages.map((page, idx) =>
+          page === "ellipsis" ? (
+            <li key={`e-${idx}`} aria-hidden="true">
+              <span className="flex h-9 items-center px-2 text-sm text-muted-foreground">
+                ...
+              </span>
+            </li>
+          ) : (
+            <li key={page}>
+              <a
+                href={buildHref(page)}
+                aria-current={page === currentPage ? "page" : undefined}
+                className={
+                  page === currentPage
+                    ? "flex h-9 min-w-9 items-center justify-center rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground"
+                    : "flex h-9 min-w-9 items-center justify-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
+                }
+              >
+                {page}
+              </a>
+            </li>
+          )
+        )}
+
+        {/* Next */}
+        {currentPage < totalPages && (
+          <li>
+            <a
+              href={buildHref(currentPage + 1)}
+              className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
+              aria-label="次のページ"
+            >
+              次へ
+            </a>
+          </li>
+        )}
+      </ul>
+    </nav>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Page
+// ──────────────────────────────────────────────
 
 export default async function ExplorePage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    q?: string;
-    subject?: string;
-    difficulty?: string;
-  }>;
+  searchParams: Promise<Record<string, string | undefined>>;
 }) {
-  const { q, subject, difficulty } = await searchParams;
+  const params = await searchParams;
+  const q = params.q ?? "";
+  const subjectParam = params.subject ?? "";
+  const difficultyParam = params.difficulty ?? "";
+  const freeOnly = params.free === "1";
+  const priceMin = params.price_min ? parseInt(params.price_min, 10) : null;
+  const priceMax = params.price_max ? parseInt(params.price_max, 10) : null;
+  const minRating = params.min_rating
+    ? parseInt(params.min_rating, 10)
+    : 0;
+  const sort = (params.sort as SortOption) || "newest";
+  const page = Math.max(1, parseInt(params.page ?? "1", 10) || 1);
+
+  // Parse multi-value subject/difficulty
+  const subjects = subjectParam
+    ? (subjectParam
+        .split(",")
+        .filter((s) => (SUBJECTS as readonly string[]).includes(s)) as Subject[])
+    : [];
+  const difficulties = difficultyParam
+    ? (difficultyParam
+        .split(",")
+        .filter((d) =>
+          (DIFFICULTIES as readonly string[]).includes(d)
+        ) as Difficulty[])
+    : [];
+
+  // Fetch navbar data + query data in parallel
   const supabase = await createClient();
+  const [navbarData, { data: userData }] = await Promise.all([
+    getNavbarData(),
+    supabase.auth.getUser(),
+  ]);
+  const userId = userData?.user?.id ?? null;
 
-  let query = supabase
+  // Build query — fetch count first for pagination
+  let countQuery = supabase
     .from("problem_sets")
-    .select(
-      "id, title, description, subject, university, difficulty, price, seller_id, created_at"
-    )
-    .eq("status", "published")
-    .order("created_at", { ascending: false });
+    .select("id", { count: "exact", head: true })
+    .eq("status", "published");
 
-  if (subject && (SUBJECTS as readonly string[]).includes(subject)) {
-    query = query.eq("subject", subject as Subject);
+  if (subjects.length === 1) {
+    countQuery = countQuery.eq("subject", subjects[0]);
+  } else if (subjects.length > 1) {
+    countQuery = countQuery.in("subject", subjects);
   }
-  if (difficulty && (DIFFICULTIES as readonly string[]).includes(difficulty)) {
-    query = query.eq("difficulty", difficulty as Difficulty);
+  if (difficulties.length === 1) {
+    countQuery = countQuery.eq("difficulty", difficulties[0]);
+  } else if (difficulties.length > 1) {
+    countQuery = countQuery.in("difficulty", difficulties);
   }
   if (q) {
-    query = query.ilike("title", `%${q}%`);
+    countQuery = countQuery.or(
+      `title.ilike.%${q}%,description.ilike.%${q}%`
+    );
+  }
+  if (freeOnly) {
+    countQuery = countQuery.eq("price", 0);
+  } else {
+    if (priceMin != null && !isNaN(priceMin)) {
+      countQuery = countQuery.gte("price", priceMin);
+    }
+    if (priceMax != null && !isNaN(priceMax)) {
+      countQuery = countQuery.lte("price", priceMax);
+    }
   }
 
-  const { data: problemSets } = await query;
-  const sets = problemSets ?? [];
+  const { count: totalCount } = await countQuery;
+  const total = totalCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages);
+  const offset = (safePage - 1) * PAGE_SIZE;
+
+  // Build data query
+  let dataQuery = supabase
+    .from("problem_sets")
+    .select(
+      "id, title, subject, university, difficulty, price, cover_image_url, seller_id, created_at"
+    )
+    .eq("status", "published");
+
+  if (subjects.length === 1) {
+    dataQuery = dataQuery.eq("subject", subjects[0]);
+  } else if (subjects.length > 1) {
+    dataQuery = dataQuery.in("subject", subjects);
+  }
+  if (difficulties.length === 1) {
+    dataQuery = dataQuery.eq("difficulty", difficulties[0]);
+  } else if (difficulties.length > 1) {
+    dataQuery = dataQuery.in("difficulty", difficulties);
+  }
+  if (q) {
+    dataQuery = dataQuery.or(
+      `title.ilike.%${q}%,description.ilike.%${q}%`
+    );
+  }
+  if (freeOnly) {
+    dataQuery = dataQuery.eq("price", 0);
+  } else {
+    if (priceMin != null && !isNaN(priceMin)) {
+      dataQuery = dataQuery.gte("price", priceMin);
+    }
+    if (priceMax != null && !isNaN(priceMax)) {
+      dataQuery = dataQuery.lte("price", priceMax);
+    }
+  }
+
+  // Sort
+  switch (sort) {
+    case "price_asc":
+      dataQuery = dataQuery.order("price", { ascending: true });
+      break;
+    case "price_desc":
+      dataQuery = dataQuery.order("price", { ascending: false });
+      break;
+    case "newest":
+    default:
+      dataQuery = dataQuery.order("created_at", { ascending: false });
+      break;
+    // popular and highest_rated will be sorted client-side after join
+  }
+
+  dataQuery = dataQuery.range(offset, offset + PAGE_SIZE - 1);
+  const { data: rawSets } = await dataQuery;
+  const sets = rawSets ?? [];
+
+  // Fetch reviews aggregate + seller names + favorites in parallel
+  const setIds = sets.map((s) => s.id);
+  const sellerIds = [...new Set(sets.map((s) => s.seller_id))];
+
+  const [reviewsResult, sellersResult, favoritesResult, purchasesResult] =
+    await Promise.all([
+      setIds.length > 0
+        ? supabase
+            .from("reviews")
+            .select("problem_set_id, rating")
+            .in("problem_set_id", setIds)
+        : Promise.resolve({ data: [] }),
+      sellerIds.length > 0
+        ? supabase
+            .from("seller_profiles")
+            .select("id, seller_display_name")
+            .in("id", sellerIds)
+        : Promise.resolve({ data: [] }),
+      userId && setIds.length > 0
+        ? supabase
+            .from("favorites")
+            .select("problem_set_id")
+            .eq("user_id", userId)
+            .in("problem_set_id", setIds)
+        : Promise.resolve({ data: [] }),
+      // Purchase counts for popular sort
+      sort === "popular" && setIds.length > 0
+        ? supabase
+            .from("purchases")
+            .select("problem_set_id")
+            .in("problem_set_id", setIds)
+        : Promise.resolve({ data: [] }),
+    ]);
+
+  // Build lookup maps
+  const reviewAggregates: Record<
+    string,
+    { avg: number; count: number }
+  > = {};
+  for (const r of reviewsResult.data ?? []) {
+    const key = r.problem_set_id;
+    if (!reviewAggregates[key]) {
+      reviewAggregates[key] = { avg: 0, count: 0 };
+    }
+    reviewAggregates[key].count++;
+    reviewAggregates[key].avg += r.rating;
+  }
+  for (const key of Object.keys(reviewAggregates)) {
+    const agg = reviewAggregates[key];
+    agg.avg = agg.avg / agg.count;
+  }
+
+  const sellerMap: Record<string, string> = {};
+  for (const s of sellersResult.data ?? []) {
+    sellerMap[s.id] = s.seller_display_name;
+  }
+
+  const favoritedIds = new Set(
+    (favoritesResult.data ?? []).map(
+      (f: { problem_set_id: string }) => f.problem_set_id
+    )
+  );
+
+  // Build card data
+  let cardData: (ProblemSetCardData & { _purchaseCount?: number })[] =
+    sets.map((ps) => ({
+      id: ps.id,
+      title: ps.title,
+      subject: ps.subject as Subject,
+      difficulty: ps.difficulty as Difficulty,
+      price: ps.price,
+      cover_image_url: ps.cover_image_url,
+      university: ps.university,
+      seller_display_name: sellerMap[ps.seller_id] ?? null,
+      avg_rating: reviewAggregates[ps.id]?.avg ?? null,
+      review_count: reviewAggregates[ps.id]?.count ?? null,
+    }));
+
+  // Client-side sort for popular/highest_rated
+  if (sort === "popular") {
+    const purchaseCounts: Record<string, number> = {};
+    for (const p of purchasesResult.data ?? []) {
+      const key = (p as { problem_set_id: string }).problem_set_id;
+      purchaseCounts[key] = (purchaseCounts[key] ?? 0) + 1;
+    }
+    cardData = cardData
+      .map((c) => ({
+        ...c,
+        _purchaseCount: purchaseCounts[c.id] ?? 0,
+      }))
+      .sort((a, b) => (b._purchaseCount ?? 0) - (a._purchaseCount ?? 0));
+  }
+  if (sort === "highest_rated") {
+    cardData.sort((a, b) => (b.avg_rating ?? 0) - (a.avg_rating ?? 0));
+  }
+
+  // Filter by min rating (post-query since reviews are a separate table)
+  const filteredCards =
+    minRating > 0
+      ? cardData.filter(
+          (c) => c.avg_rating != null && c.avg_rating >= minRating
+        )
+      : cardData;
+
+  // Build href helper for pagination
+  function buildPageHref(p: number): string {
+    const sp = new URLSearchParams();
+    if (q) sp.set("q", q);
+    if (subjectParam) sp.set("subject", subjectParam);
+    if (difficultyParam) sp.set("difficulty", difficultyParam);
+    if (freeOnly) sp.set("free", "1");
+    if (priceMin != null) sp.set("price_min", String(priceMin));
+    if (priceMax != null) sp.set("price_max", String(priceMax));
+    if (minRating > 0) sp.set("min_rating", String(minRating));
+    if (sort !== "newest") sp.set("sort", sort);
+    if (p > 1) sp.set("page", String(p));
+    const qs = sp.toString();
+    return qs ? `/explore?${qs}` : "/explore";
+  }
 
   return (
-    <main className="container mx-auto px-4 py-8">
-      <h1 className="mb-2 text-3xl font-bold tracking-tight">問題を探す</h1>
-      <p className="mb-8 text-muted-foreground">
-        大学入試対策の問題セットを見つけよう
-      </p>
-
-      {/* Filters */}
-      <form className="mb-8 flex flex-wrap items-center gap-3">
-        <Input
-          name="q"
-          defaultValue={q ?? ""}
-          placeholder="キーワードで検索..."
-          className="w-full sm:max-w-xs"
-        />
-        <select
-          name="subject"
-          defaultValue={subject ?? ""}
-          className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">すべての教科</option>
-          {SUBJECTS.map((s) => (
-            <option key={s} value={s}>
-              {SUBJECT_LABELS[s]}
-            </option>
-          ))}
-        </select>
-        <select
-          name="difficulty"
-          defaultValue={difficulty ?? ""}
-          className="rounded-md border border-border bg-background px-3 py-2 text-sm"
-        >
-          <option value="">すべての難易度</option>
-          {DIFFICULTIES.map((d) => (
-            <option key={d} value={d}>
-              {DIFFICULTY_LABELS[d]}
-            </option>
-          ))}
-        </select>
-        <button
-          type="submit"
-          className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-        >
-          検索
-        </button>
-      </form>
-
-      {/* Results */}
-      {sets.length === 0 ? (
-        <div className="py-16 text-center text-muted-foreground">
-          <p className="text-lg">該当する問題セットが見つかりませんでした</p>
-          <p className="mt-1 text-sm">検索条件を変えてお試しください</p>
+    <>
+      <AppNavbar {...navbarData} />
+      <main className="mx-auto max-w-7xl px-4 pb-12 pt-20 sm:px-6">
+        {/* Page header */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            問題を探す
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            大学入試対策の問題セットを見つけよう
+          </p>
         </div>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {sets.map((ps) => (
-            <Link key={ps.id} href={`/problem/${ps.id}`}>
-              <Card className="h-full transition-shadow hover:shadow-md">
-                <CardContent className="p-5">
-                  <h2 className="mb-2 line-clamp-2 font-semibold">
-                    {ps.title}
-                  </h2>
-                  {ps.description && (
-                    <p className="mb-3 line-clamp-2 text-sm text-muted-foreground">
-                      {ps.description}
-                    </p>
-                  )}
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline">
-                      {SUBJECT_LABELS[ps.subject as Subject]}
-                    </Badge>
-                    <Badge variant="outline">
-                      {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-                    </Badge>
-                    {ps.university && (
-                      <Badge variant="secondary">{ps.university}</Badge>
-                    )}
-                  </div>
-                  <div className="mt-3 text-right">
-                    <span className="text-lg font-bold text-primary">
-                      {ps.price === 0
-                        ? "無料"
-                        : `¥${ps.price.toLocaleString()}`}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </Link>
-          ))}
+
+        <div className="flex gap-8">
+          {/* Desktop filter sidebar */}
+          <Suspense fallback={null}>
+            <ExploreFiltersSidebar />
+          </Suspense>
+
+          {/* Main content */}
+          <div className="min-w-0 flex-1">
+            {/* Toolbar: mobile filter + sort + result count */}
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Suspense fallback={null}>
+                  <ExploreFiltersMobile />
+                </Suspense>
+                <p className="text-sm text-muted-foreground">
+                  {total.toLocaleString()}件の問題セット
+                </p>
+              </div>
+              <Suspense fallback={null}>
+                <ExploreSortDropdown />
+              </Suspense>
+            </div>
+
+            {/* Results grid */}
+            {filteredCards.length === 0 ? (
+              <div className="py-20 text-center text-muted-foreground">
+                <p className="text-lg">
+                  該当する問題セットが見つかりませんでした
+                </p>
+                <p className="mt-1 text-sm">
+                  検索条件を変えてお試しください
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {filteredCards.map((ps) => (
+                    <ProblemSetCard
+                      key={ps.id}
+                      data={ps}
+                      isFavorited={favoritedIds.has(ps.id)}
+                      userId={userId}
+                    />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                <div className="mt-8">
+                  <Pagination
+                    currentPage={safePage}
+                    totalPages={totalPages}
+                    buildHref={buildPageHref}
+                  />
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      )}
-    </main>
+      </main>
+      <SiteFooter />
+    </>
   );
 }

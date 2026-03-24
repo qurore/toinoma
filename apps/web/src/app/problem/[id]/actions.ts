@@ -2,13 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
-import type { SupabaseClient } from "@supabase/supabase-js";
-
-// Type-safe helper for tables not yet in generated types
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fromUntyped(supabase: SupabaseClient<any>, table: string) {
-  return supabase.from(table);
-}
+import { notifyReview } from "@/lib/notifications";
 
 interface SubmitReviewInput {
   problemSetId: string;
@@ -60,7 +54,7 @@ export async function submitReview({ problemSetId, rating, body }: SubmitReviewI
   }
 
   // Upsert review (one per user per set)
-  const { error } = await fromUntyped(supabase, "reviews").upsert(
+  const { error } = await supabase.from("reviews").upsert(
     {
       user_id: user.id,
       problem_set_id: problemSetId,
@@ -72,6 +66,26 @@ export async function submitReview({ problemSetId, rating, body }: SubmitReviewI
 
   if (error) {
     return { error: "レビューの投稿に失敗しました" };
+  }
+
+  // Notify seller of new review (fire-and-forget)
+  const { data: ps } = await supabase
+    .from("problem_sets")
+    .select("seller_id")
+    .eq("id", problemSetId)
+    .single();
+
+  if (ps && ps.seller_id !== user.id) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("display_name")
+      .eq("id", user.id)
+      .single();
+
+    const reviewerName = profile?.display_name ?? "ユーザー";
+    notifyReview(ps.seller_id, reviewerName, rating, problemSetId).catch(
+      () => {}
+    );
   }
 
   revalidatePath(`/problem/${problemSetId}`);
@@ -93,7 +107,7 @@ export async function submitSellerResponse(reviewId: string, response: string) {
   }
 
   // Verify the review belongs to the seller's problem set
-  const { data: review } = await fromUntyped(supabase, "reviews")
+  const { data: review } = await supabase.from("reviews")
     .select("problem_set_id")
     .eq("id", reviewId)
     .single();
@@ -113,7 +127,7 @@ export async function submitSellerResponse(reviewId: string, response: string) {
     return { error: "自分の問題セットのレビューにのみ返信できます" };
   }
 
-  const { error } = await fromUntyped(supabase, "reviews")
+  const { error } = await supabase.from("reviews")
     .update({
       seller_response: response,
       seller_responded_at: new Date().toISOString(),
