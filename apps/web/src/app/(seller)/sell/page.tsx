@@ -189,14 +189,6 @@ export default async function SellerDashboardPage() {
   );
 
   // Merge and sort activity
-  type ActivityItem = {
-    id: string;
-    type: "purchase" | "submission" | "review";
-    createdAt: string;
-    setTitle: string;
-    detail: string;
-  };
-
   const activities: ActivityItem[] = [];
 
   for (const p of recentPurchases ?? []) {

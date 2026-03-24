@@ -5,6 +5,25 @@ import { PrintHeader } from "@/components/print/print-header";
 import { PrintQuestion } from "@/components/print/print-question";
 import { PrintClient } from "./print-client";
 import type { Database } from "@/types/database";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: ps } = await supabase
+    .from("problem_sets")
+    .select("title")
+    .eq("id", id)
+    .single();
+
+  return {
+    title: ps ? `印刷 - ${ps.title} | 問の間` : "印刷 | 問の間",
+  };
+}
 
 type PrintMode = "problems" | "answers" | "combined";
 type MarginPreset = "narrow" | "normal" | "wide";

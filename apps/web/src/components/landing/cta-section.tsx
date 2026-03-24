@@ -6,8 +6,8 @@ export function CTASection() {
   return (
     <section className="relative overflow-hidden bg-hero py-24 sm:py-32">
       {/* Background effects */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(142_71%_38%/0.2),transparent_60%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(235_60%_52%/0.1),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(142_71%_38%/0.2),transparent_60%)]" aria-hidden="true" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(235_60%_52%/0.1),transparent_50%)]" aria-hidden="true" />
       {/* Floating decorative orb */}
       <div
         className="absolute -right-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-green/15 blur-3xl animate-float"
@@ -43,7 +43,7 @@ export function CTASection() {
         {/* CTA buttons */}
         <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Button variant="hero" size="lg" className="group" asChild>
-            <Link href="/login">
+            <Link href="/signup">
               無料で始める
               <ArrowRight className="ml-1 h-4 w-4 transition-transform group-hover:translate-x-0.5" />
             </Link>

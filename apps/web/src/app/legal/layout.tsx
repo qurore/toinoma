@@ -21,11 +21,11 @@ export default async function LegalLayout({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <div className="pt-14">
+      <div className="pt-16">
         <div className="container mx-auto px-4 py-8 lg:grid lg:grid-cols-[220px_1fr] lg:gap-8">
           {/* Sidebar — desktop only */}
           <aside className="hidden lg:block">
-            <nav className="sticky top-20">
+            <nav className="sticky top-24">
               <h2 className="mb-3 text-sm font-semibold text-foreground/60">
                 法的情報
               </h2>
@@ -44,7 +44,7 @@ export default async function LegalLayout({
             </nav>
           </aside>
           {/* Content */}
-          <main className="prose prose-sm prose-gray max-w-none">
+          <main className="prose prose-sm prose-gray dark:prose-invert max-w-none">
             {children}
           </main>
         </div>

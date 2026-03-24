@@ -99,7 +99,7 @@ export default function ForgotPasswordPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <p className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
+            <p role="alert" className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
               {error}
             </p>
           )}
@@ -114,6 +114,7 @@ export default function ForgotPasswordPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
                 autoComplete="email"
               />
             </div>

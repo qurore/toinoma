@@ -447,8 +447,8 @@
     -webkit-backdrop-filter: blur(24px);
   }
 
-  /* Motion-safe utility: only apply animations when user has no reduced-motion preference */
-  .motion-safe {
+  /* Motion-reduce utility: disable animations for users who prefer reduced motion */
+  .motion-reduce {
     animation: none !important;
     transition: none !important;
   }

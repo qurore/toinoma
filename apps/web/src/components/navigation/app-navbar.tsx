@@ -177,7 +177,7 @@ export function AppNavbar({
                 <Link href="/login">ログイン</Link>
               </Button>
               <Button size="sm" asChild>
-                <Link href="/login">無料で始める</Link>
+                <Link href="/signup">無料で始める</Link>
               </Button>
               {/* Mobile hamburger menu for unauthenticated users */}
               <MobileNavMenu user={null} isSeller={false} />

@@ -131,7 +131,7 @@ export function UserDropdown({
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/help/guide" className="flex cursor-pointer items-center gap-2">
+          <Link href="/help" className="flex cursor-pointer items-center gap-2">
             <BookOpen className="h-4 w-4" />
             ご利用ガイド
           </Link>

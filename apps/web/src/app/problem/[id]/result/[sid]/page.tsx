@@ -8,7 +8,6 @@ import {
   Star,
   RotateCcw,
   FolderPlus,
-  ChevronRight,
 } from "lucide-react";
 import { gradingResultSchema } from "@toinoma/shared/schemas";
 import { GradingResultDisplay } from "@/components/grading/grading-result";
@@ -18,6 +17,7 @@ import { ScoreComparisonSection } from "./score-comparison-section";
 import { getSubscriptionState } from "@/lib/subscription";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -153,139 +153,120 @@ export default async function GradingResultPage({
     <>
       <AppNavbar {...navbarData} />
       <main className="container mx-auto max-w-3xl px-4 pb-12 pt-24">
-      {/* Breadcrumb navigation */}
-      <nav aria-label="パンくずリスト" className="mb-6">
-        <ol className="flex items-center gap-1 text-sm text-muted-foreground">
-          <li>
-            <Link href="/" className="transition-colors hover:text-foreground">
-              ホーム
-            </Link>
-          </li>
-          <li aria-hidden="true">
-            <ChevronRight className="h-3.5 w-3.5" />
-          </li>
-          <li>
-            <Link
-              href={`/problem/${id}`}
-              className="transition-colors hover:text-foreground"
-            >
-              {ps?.title ?? "問題詳細"}
-            </Link>
-          </li>
-          <li aria-hidden="true">
-            <ChevronRight className="h-3.5 w-3.5" />
-          </li>
-          <li className="text-foreground" aria-current="page">
-            採点結果
-          </li>
-        </ol>
-      </nav>
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: ps?.title ?? "問題詳細", href: `/problem/${id}` },
+            { label: "採点結果" },
+          ]}
+          className="mb-6"
+        />
 
-      {/* Page header with actions */}
-      <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">採点結果</h1>
-          {ps && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              {ps.title} - {submittedDate}
-            </p>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <PdfDownloadButton problemSetId={id} />
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/problem/${id}/history`}>
-              <History className="mr-1 h-3.5 w-3.5" />
-              履歴
-            </Link>
-          </Button>
-        </div>
-      </div>
-
-      {/* Full grading result display (score hero + feedback + section breakdown) */}
-      <GradingResultDisplay result={result} />
-
-      {/* Score comparison with other submissions */}
-      <div className="mt-6">
-        <ScoreComparisonSection problemSetId={id} userId={user.id} />
-      </div>
-
-      {/* Explanation videos (if any questions have video_urls) */}
-      {videos.length > 0 && (
-        <div className="mt-6">
-          <VideoPlayer videos={videos} />
-        </div>
-      )}
-
-      {/* Action buttons */}
-      <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-        <Button className="flex-1" asChild>
-          <Link href={`/problem/${id}/solve`}>
-            <RotateCcw className="mr-1.5 h-4 w-4" />
-            もう一度解く
-          </Link>
-        </Button>
-        <Button variant="outline" className="flex-1" asChild>
-          <Link href={`/problem/${id}/history`}>
-            <History className="mr-1.5 h-4 w-4" />
-            履歴を見る
-          </Link>
-        </Button>
-        <Button variant="outline" className="flex-1" asChild>
-          <Link href={`/problem/${id}#collections`}>
-            <FolderPlus className="mr-1.5 h-4 w-4" />
-            コレクションに追加
-          </Link>
-        </Button>
-      </div>
-
-      {/* Review prompt (after 3+ submissions) */}
-      {showReviewPrompt && (
-        <div className="mt-6 rounded-lg border border-border bg-muted/30 p-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-sm font-medium">
-                この問題セットを評価しませんか？
+        {/* Page header with actions */}
+        <div className="mb-6 flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">採点結果</h1>
+            {ps && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {ps.title} - {submittedDate}
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                レビューは他の学生の参考になります
-              </p>
-            </div>
+            )}
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <PdfDownloadButton problemSetId={id} />
             <Button variant="outline" size="sm" asChild>
-              <Link href={`/problem/${id}#reviews`}>
-                <Star className="mr-1.5 h-3.5 w-3.5" />
-                レビューを書く
+              <Link href={`/problem/${id}/history`}>
+                <History className="mr-1 h-3.5 w-3.5" />
+                履歴
               </Link>
             </Button>
           </div>
         </div>
-      )}
 
-      {/* Score-based encouragement message */}
-      <div className="mt-8 rounded-lg border border-border bg-muted/30 p-4 text-center">
-        {scorePercent >= 80 ? (
-          <p className="text-sm font-medium text-success">
-            素晴らしい結果です！この調子で頑張りましょう。
-          </p>
-        ) : scorePercent >= 50 ? (
-          <p className="text-sm font-medium text-foreground">
-            よく頑張りました。弱点を確認して、もう一度挑戦してみましょう。
-          </p>
-        ) : (
-          <p className="text-sm font-medium text-foreground">
-            まだ伸びしろがあります。解説を確認して、基礎を固めましょう。
-          </p>
+        {/* Full grading result display (score hero + feedback + section breakdown) */}
+        <GradingResultDisplay result={result} />
+
+        {/* Score comparison with other submissions */}
+        <div className="mt-6">
+          <ScoreComparisonSection problemSetId={id} userId={user.id} />
+        </div>
+
+        {/* Explanation videos (if any questions have video_urls) */}
+        {videos.length > 0 && (
+          <div className="mt-6">
+            <VideoPlayer videos={videos} />
+          </div>
         )}
-      </div>
 
-      {/* Grading disclaimer */}
-      <p className="mt-4 text-center text-xs text-muted-foreground">
-        ※ AI採点は参考スコアです。最終的な判断はご自身でお願いいたします。
-      </p>
+        {/* Action buttons */}
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+          <Button className="flex-1" asChild>
+            <Link href={`/problem/${id}/solve`}>
+              <RotateCcw className="mr-1.5 h-4 w-4" />
+              もう一度解く
+            </Link>
+          </Button>
+          <Button variant="outline" className="flex-1" asChild>
+            <Link href={`/problem/${id}/history`}>
+              <History className="mr-1.5 h-4 w-4" />
+              履歴を見る
+            </Link>
+          </Button>
+          <Button variant="outline" className="flex-1" asChild>
+            <Link href={`/problem/${id}#collections`}>
+              <FolderPlus className="mr-1.5 h-4 w-4" />
+              コレクションに追加
+            </Link>
+          </Button>
+        </div>
 
-      <AiAssistantDialog problemSetId={id} isPro={isPro} />
-    </main>
-    <SiteFooter />
+        {/* Review prompt (after 3+ submissions) */}
+        {showReviewPrompt && (
+          <div className="mt-6 rounded-lg border border-border bg-muted/30 p-4">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium">
+                  この問題セットを評価しませんか？
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  レビューは他の学生の参考になります
+                </p>
+              </div>
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/problem/${id}#reviews`}>
+                  <Star className="mr-1.5 h-3.5 w-3.5" />
+                  レビューを書く
+                </Link>
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Score-based encouragement message */}
+        <div className="mt-8 rounded-lg border border-border bg-muted/30 p-4 text-center">
+          {scorePercent >= 80 ? (
+            <p className="text-sm font-medium text-success">
+              素晴らしい結果です！この調子で頑張りましょう。
+            </p>
+          ) : scorePercent >= 50 ? (
+            <p className="text-sm font-medium text-foreground">
+              よく頑張りました。弱点を確認して、もう一度挑戦してみましょう。
+            </p>
+          ) : (
+            <p className="text-sm font-medium text-foreground">
+              まだ伸びしろがあります。解説を確認して、基礎を固めましょう。
+            </p>
+          )}
+        </div>
+
+        {/* Grading disclaimer */}
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          ※ AI採点は参考スコアです。最終的な判断はご自身でお願いいたします。
+        </p>
+
+        <AiAssistantDialog problemSetId={id} isPro={isPro} />
+      </main>
+      <SiteFooter />
     </>
   );
 }

@@ -14,6 +14,7 @@ import {
   ExploreSortDropdown,
   type SortOption,
 } from "@/components/marketplace/explore-filters";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { generatePageMetadata } from "@/lib/metadata";
 import {
   SUBJECTS,
@@ -94,13 +95,13 @@ function Pagination({
       <ul className="flex items-center gap-1">
         {currentPage > 1 && (
           <li>
-            <a
+            <Link
               href={buildHref(currentPage - 1)}
               className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
               aria-label="前のページ"
             >
               前へ
-            </a>
+            </Link>
           </li>
         )}
 
@@ -113,7 +114,7 @@ function Pagination({
             </li>
           ) : (
             <li key={page}>
-              <a
+              <Link
                 href={buildHref(page)}
                 aria-current={page === currentPage ? "page" : undefined}
                 className={
@@ -123,20 +124,20 @@ function Pagination({
                 }
               >
                 {page}
-              </a>
+              </Link>
             </li>
           )
         )}
 
         {currentPage < totalPages && (
           <li>
-            <a
+            <Link
               href={buildHref(currentPage + 1)}
               className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
               aria-label="次のページ"
             >
               次へ
-            </a>
+            </Link>
           </li>
         )}
       </ul>
@@ -388,33 +389,14 @@ export default async function SubjectExplorePage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-7xl px-4 pb-12 pt-20 sm:px-6">
-        {/* Breadcrumb */}
-        <nav aria-label="パンくずリスト" className="mb-4">
-          <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <li>
-              <Link
-                href="/"
-                className="transition-colors hover:text-foreground"
-              >
-                ホーム
-              </Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li>
-              <Link
-                href="/explore"
-                className="transition-colors hover:text-foreground"
-              >
-                探す
-              </Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li aria-current="page" className="font-medium text-foreground">
-              {subjectLabel}
-            </li>
-          </ol>
-        </nav>
+      <main className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 md:pb-12">
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "探す", href: "/explore" },
+            { label: subjectLabel },
+          ]}
+        />
 
         {/* Page header */}
         <div className="mb-6">

@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { SiteFooter } from "@/components/navigation/site-footer";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -10,9 +11,23 @@ import { RotateCcw, TrendingUp, Trophy, ChevronRight, BookOpen } from "lucide-re
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
-export const metadata: Metadata = {
-  title: "解答履歴 - 問の間",
-};
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: ps } = await supabase
+    .from("problem_sets")
+    .select("title")
+    .eq("id", id)
+    .single();
+
+  return {
+    title: ps ? `解答履歴 - ${ps.title} | 問の間` : "解答履歴 | 問の間",
+  };
+}
 
 export default async function ProblemHistoryPage({
   params,
@@ -84,7 +99,7 @@ export default async function ProblemHistoryPage({
         <Breadcrumbs
           items={[
             { label: "ホーム", href: "/" },
-            { label: "マイページ", href: "/dashboard" },
+            { label: ps.title, href: `/problem/${id}` },
             { label: "解答履歴" },
           ]}
           className="mb-6"
@@ -251,6 +266,7 @@ export default async function ProblemHistoryPage({
           </div>
         )}
       </main>
+      <SiteFooter />
     </>
   );
 }

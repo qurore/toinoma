@@ -10,6 +10,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { generatePageMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 
@@ -103,6 +104,11 @@ const HELP_CATEGORIES = [
 export default function HelpPage() {
   return (
       <div className="mx-auto max-w-4xl px-4 pb-16 pt-4 sm:px-6">
+        <Breadcrumbs items={[
+          { label: "ホーム", href: "/" },
+          { label: "ヘルプセンター" },
+        ]} />
+
         {/* Hero */}
         <div className="mb-10 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">

@@ -38,7 +38,7 @@ export function AdminMobileSidebar({ navItems }: AdminMobileSidebarProps) {
         onClick={() => setOpen(true)}
         aria-label="管理者メニューを開く"
         aria-expanded={open}
-        className="fixed left-3 top-[3.75rem] z-30 h-10 w-10 rounded-lg border border-border bg-background p-0 shadow-sm"
+        className="fixed left-3 top-[4.25rem] z-30 h-10 w-10 rounded-lg border border-border bg-background p-0 shadow-sm"
       >
         <Menu className="h-5 w-5" />
       </Button>

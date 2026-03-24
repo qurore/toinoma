@@ -15,7 +15,10 @@ import {
   type ScoreComparisonData,
   type ScoreComparisonAttempt,
 } from "@/components/solving/score-comparison";
+import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import { BarChart3, Search } from "lucide-react";
+import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "学習分析 - 問の間",
@@ -206,7 +209,7 @@ export default async function DashboardAnalyticsPage() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="p-4 md:p-6">
+    <main className="container mx-auto px-4 py-8">
       <Breadcrumbs
         items={[
           { label: "ホーム", href: "/" },
@@ -217,14 +220,26 @@ export default async function DashboardAnalyticsPage() {
       <h1 className="mb-6 text-2xl font-bold tracking-tight">学習分析</h1>
 
       {totalAttempts < 3 ? (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <p className="mb-2 text-lg font-medium">
+        <Card className="border-dashed">
+          <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+              <BarChart3 className="h-7 w-7 text-muted-foreground" />
+            </div>
+            <h2 className="mb-2 text-lg font-semibold">
               もっと問題を解いて、分析データを蓄積しましょう
+            </h2>
+            <p className="mb-2 max-w-md text-sm text-muted-foreground">
+              3回以上の採点結果があると、科目別の正答率やスコア推移、得意・苦手分野の分析が表示されます。
             </p>
-            <p className="text-sm text-muted-foreground">
-              3回以上の採点結果があると、詳細な分析が表示されます
+            <p className="mb-8 max-w-md text-sm text-muted-foreground">
+              問題を解けば解くほど、より精度の高い分析が利用できます。
             </p>
+            <Button asChild>
+              <Link href="/explore">
+                <Search className="mr-1.5 h-4 w-4" />
+                問題を探す
+              </Link>
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -333,6 +348,6 @@ export default async function DashboardAnalyticsPage() {
           </Card>
         </div>
       )}
-    </div>
+    </main>
   );
 }

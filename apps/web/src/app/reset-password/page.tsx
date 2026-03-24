@@ -95,9 +95,17 @@ export default function ResetPasswordPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <p className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
-              {error}
-            </p>
+            <div role="alert" className="space-y-2 rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
+              <p>{error}</p>
+              {error.includes("有効期限") && (
+                <Link
+                  href="/forgot-password"
+                  className="inline-block text-xs font-medium text-primary hover:underline"
+                >
+                  パスワードリセットを再リクエスト
+                </Link>
+              )}
+            </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -110,6 +118,7 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
                 minLength={8}
                 autoComplete="new-password"
               />
@@ -125,6 +134,7 @@ export default function ResetPasswordPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                disabled={isLoading}
                 minLength={8}
                 autoComplete="new-password"
               />

@@ -35,10 +35,10 @@ export default async function AdminLayout({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <div className="pt-14 lg:grid lg:grid-cols-[220px_1fr]">
+      <div className="pt-16 lg:grid lg:grid-cols-[220px_1fr]">
         {/* Desktop sidebar */}
         <aside className="hidden border-r border-border lg:block">
-          <nav className="sticky top-14 px-3 py-4">
+          <nav className="sticky top-16 px-3 py-4">
             <h2 className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               管理者メニュー
             </h2>
@@ -61,7 +61,16 @@ export default async function AdminLayout({
         {/* Mobile sidebar (Sheet-based) */}
         <AdminMobileSidebar navItems={[...ADMIN_NAV]} />
 
-        <main className="min-h-[calc(100vh-3.5rem)] p-4 md:p-6">{children}</main>
+        <main className="min-h-[calc(100vh-4rem)] p-4 md:p-6">
+          {children}
+          <footer className="mt-12 border-t border-border py-6">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+              <a href="/legal/terms" className="hover:text-foreground transition-colors">利用規約</a>
+              <a href="/legal/privacy" className="hover:text-foreground transition-colors">プライバシー</a>
+              <span className="ml-auto">&copy; {new Date().getFullYear()} Toinoma</span>
+            </div>
+          </footer>
+        </main>
       </div>
     </>
   );

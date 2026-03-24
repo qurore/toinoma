@@ -10,6 +10,7 @@ import {
   BarChart3,
   Settings,
   Sparkles,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -38,6 +39,12 @@ export const NAV_ITEMS = [
     href: "/dashboard/collections",
     label: "コレクション",
     icon: FolderOpen,
+    exact: false,
+  },
+  {
+    href: "/dashboard/recently-viewed",
+    label: "最近の閲覧",
+    icon: Clock,
     exact: false,
   },
   {

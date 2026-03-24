@@ -12,6 +12,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { SiteFooter } from "@/components/navigation/site-footer";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -267,6 +268,7 @@ export default async function PurchaseSuccessPage({
           </div>
         </div>
       </main>
+      <SiteFooter />
     </>
   );
 }

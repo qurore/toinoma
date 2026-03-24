@@ -15,6 +15,7 @@ import {
   type SortOption,
 } from "@/components/marketplace/explore-filters";
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { generatePageMetadata } from "@/lib/metadata";
 import { SUBJECTS, DIFFICULTIES, SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
@@ -69,13 +70,13 @@ function Pagination({
         {/* Previous -- always rendered, disabled on page 1 for layout stability */}
         <li>
           {currentPage > 1 ? (
-            <a
+            <Link
               href={buildHref(currentPage - 1)}
               className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
               aria-label="前のページ"
             >
               前へ
-            </a>
+            </Link>
           ) : (
             <span
               className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground/40"
@@ -95,7 +96,7 @@ function Pagination({
             </li>
           ) : (
             <li key={page}>
-              <a
+              <Link
                 href={buildHref(page)}
                 aria-current={page === currentPage ? "page" : undefined}
                 className={
@@ -105,7 +106,7 @@ function Pagination({
                 }
               >
                 {page}
-              </a>
+              </Link>
             </li>
           )
         )}
@@ -113,13 +114,13 @@ function Pagination({
         {/* Next -- always rendered, disabled on last page for layout stability */}
         <li>
           {currentPage < totalPages ? (
-            <a
+            <Link
               href={buildHref(currentPage + 1)}
               className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
               aria-label="次のページ"
             >
               次へ
-            </a>
+            </Link>
           ) : (
             <span
               className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground/40"
@@ -465,7 +466,15 @@ export default async function ExplorePage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-7xl px-4 pb-12 pt-16 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 md:pb-12">
+        {/* Breadcrumb */}
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "探す" },
+          ]}
+        />
+
         {/* Page header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">

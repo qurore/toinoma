@@ -113,7 +113,7 @@ export default function SignupPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <p className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
+            <p role="alert" className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
               {error}
             </p>
           )}
@@ -128,6 +128,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
                 autoComplete="email"
               />
             </div>
@@ -140,6 +141,7 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
                 minLength={8}
                 autoComplete="new-password"
               />
@@ -153,6 +155,7 @@ export default function SignupPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
+                disabled={isLoading}
                 minLength={8}
                 autoComplete="new-password"
               />
@@ -177,13 +180,13 @@ export default function SignupPage() {
 
           <p className="text-center text-xs text-muted-foreground">
             登録することで、
-            <a href="/terms" className="underline hover:text-foreground">
+            <Link href="/legal/terms" className="underline hover:text-foreground">
               利用規約
-            </a>
+            </Link>
             と
-            <a href="/privacy" className="underline hover:text-foreground">
+            <Link href="/legal/privacy" className="underline hover:text-foreground">
               プライバシーポリシー
-            </a>
+            </Link>
             に同意したことになります。
           </p>
         </CardContent>

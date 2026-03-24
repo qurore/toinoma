@@ -83,7 +83,7 @@ export function Navbar() {
             <Link href="/login">ログイン</Link>
           </Button>
           <Button size="sm" asChild>
-            <Link href="/login">無料で始める</Link>
+            <Link href="/signup">無料で始める</Link>
           </Button>
         </div>
 
@@ -162,7 +162,7 @@ export function Navbar() {
                     </Link>
                   </Button>
                   <Button size="sm" asChild className="justify-center">
-                    <Link href="/login" onClick={() => setMobileOpen(false)}>
+                    <Link href="/signup" onClick={() => setMobileOpen(false)}>
                       無料で始める
                     </Link>
                   </Button>

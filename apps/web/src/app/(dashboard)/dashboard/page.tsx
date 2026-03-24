@@ -364,7 +364,7 @@ export default async function DashboardPage() {
             </h2>
             <Button variant="ghost" size="sm" asChild>
               <Link
-                href={`/explore?subjects=${preferredSubjects.join(",")}`}
+                href={`/explore?subject=${preferredSubjects.join(",")}`}
               >
                 もっと見る
                 <ChevronRight className="ml-1 h-3.5 w-3.5" />

@@ -13,8 +13,8 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-hero">
       {/* Background pattern — layered radial gradients for depth */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(142_71%_38%/0.15),transparent_70%)]" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(235_60%_52%/0.1),transparent_50%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(142_71%_38%/0.15),transparent_70%)]" aria-hidden="true" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(235_60%_52%/0.1),transparent_50%)]" aria-hidden="true" />
       {/* Subtle dot grid pattern for texture */}
       <div
         className="absolute inset-0 opacity-[0.03]"

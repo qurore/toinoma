@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { FileText, Shield, Store, Scale, BookOpen, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 
 export const metadata: Metadata = {
   title: "法的情報 - 問の間",
@@ -50,6 +51,10 @@ const LEGAL_PAGES = [
 export default function LegalIndexPage() {
   return (
     <div>
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "法的情報" },
+      ]} />
       <h1 className="mb-2 text-2xl font-bold tracking-tight">法的情報</h1>
       <p className="mb-8 text-muted-foreground">
         問の間の利用に関する法的情報をご確認ください。
