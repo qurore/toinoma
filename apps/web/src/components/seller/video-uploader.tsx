@@ -31,7 +31,7 @@ import {
   removeVideo,
   reorderVideos,
   updateVideoTitle,
-} from "@/app/(seller)/sell/pool/[qid]/edit/actions";
+} from "@/app/(seller)/seller/pool/[qid]/edit/actions";
 
 // ─── Types ────────────────────────────────────────────────────────────
 

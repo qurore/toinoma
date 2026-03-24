@@ -103,13 +103,13 @@ describe("requireSellerTos", () => {
     mockEq.mockReturnValue({ single: mockSingle });
   });
 
-  it("redirects to /sell when ToS not accepted", async () => {
+  it("redirects to /seller when ToS not accepted", async () => {
     const user = { id: "user-1", email: "test@test.com" };
     mockGetUser.mockResolvedValue({ data: { user } });
     mockSingle.mockResolvedValue({ data: null });
 
-    await expect(requireSellerTos()).rejects.toThrow("REDIRECT:/sell");
-    expect(mockRedirect).toHaveBeenCalledWith("/sell");
+    await expect(requireSellerTos()).rejects.toThrow("REDIRECT:/seller");
+    expect(mockRedirect).toHaveBeenCalledWith("/seller");
   });
 
   it("returns user and profile when ToS is accepted", async () => {
@@ -136,7 +136,7 @@ describe("requireCompleteSeller", () => {
     mockEq.mockReturnValue({ single: mockSingle });
   });
 
-  it("redirects to /sell/onboarding when Stripe not complete", async () => {
+  it("redirects to /seller/onboarding when Stripe not complete", async () => {
     const user = { id: "user-1", email: "test@test.com" };
     mockGetUser.mockResolvedValue({ data: { user } });
     mockSingle.mockResolvedValue({
@@ -148,7 +148,7 @@ describe("requireCompleteSeller", () => {
     });
 
     await expect(requireCompleteSeller()).rejects.toThrow(
-      "REDIRECT:/sell/onboarding"
+      "REDIRECT:/seller/onboarding"
     );
   });
 

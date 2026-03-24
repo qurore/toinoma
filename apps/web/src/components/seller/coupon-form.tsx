@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Loader2, Sparkles, Save } from "lucide-react";
-import { createCoupon } from "@/app/(seller)/sell/coupons/actions";
+import { createCoupon } from "@/app/(seller)/seller/coupons/actions";
 import { toast } from "sonner";
 
 interface CouponFormProps {

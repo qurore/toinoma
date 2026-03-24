@@ -30,7 +30,7 @@ import {
 import { cn } from "@/lib/utils";
 // Constants imported for type labels in the type tab configuration
 import type { ProblemSetRubric } from "@toinoma/shared/schemas";
-import { saveRubric } from "@/app/(seller)/sell/actions";
+import { saveRubric } from "@/app/(seller)/seller/actions";
 
 type AnswerType = "essay" | "mark_sheet" | "fill_in_blank" | "multiple_choice";
 

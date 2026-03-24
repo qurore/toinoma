@@ -213,7 +213,7 @@ CREATE TABLE coupons (
 
 ## 9. Transaction History — Seller (PAY-015)
 
-### `/sell/transactions`
+### `/seller/transactions`
 - All sales transactions: date, problem set, buyer (anonymized), amount, platform fee, net
 - Refunds shown as negative entries
 - CSV export for accounting

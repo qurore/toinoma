@@ -29,7 +29,7 @@ import { toast } from "sonner";
 import {
   toggleCouponActive,
   deleteCoupon,
-} from "@/app/(seller)/sell/coupons/actions";
+} from "@/app/(seller)/seller/coupons/actions";
 import { CouponForm } from "@/components/seller/coupon-form";
 import type { Database } from "@/types/database";
 

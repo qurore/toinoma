@@ -123,7 +123,7 @@ Verify: filters, form values, scroll position, selected tabs, URL parameters.
 - At least 1 purchased problem set (for `/problem/[id]/solve`)
 - At least 1 completed submission (for `/problem/[id]/result/[sid]`)
 - At least 1 collection with items (for `/dashboard/collections/[id]`)
-- Seller onboarding completed for test account (for `/sell/*`)
+- Seller onboarding completed for test account (for `/seller/*`)
 - At least 1 notification (for `/notifications`)
 
 ### 1.3 Dynamic ID Discovery
@@ -158,16 +158,16 @@ Before running dynamic-route tests, discover valid IDs:
 | # | Action | Expected |
 |---|--------|----------|
 | 1 | Navigate to `/settings/profile` | Loads without redirect to `/login` |
-| 2 | Navigate to `/sell` | Loads without redirect to `/login` |
+| 2 | Navigate to `/seller` | Loads without redirect to `/login` |
 | 3 | Refresh page | Session persists |
-| 4 | Navigate to `/dashboard` → `/explore` → back → `/sell` → back | All pages load, back-nav preserves state |
+| 4 | Navigate to `/dashboard` → `/explore` → back → `/seller` → back | All pages load, back-nav preserves state |
 
 ### 2.3 Protected Route Redirect (Unauthenticated)
 
 | # | Action | Expected |
 |---|--------|----------|
 | 1 | Fresh context, navigate to `/dashboard` | Redirect to `/login?next=/dashboard` |
-| 2 | Navigate to `/sell` | Redirect to `/login?next=/sell` |
+| 2 | Navigate to `/seller` | Redirect to `/login?next=/seller` |
 | 3 | Navigate to `/settings/profile` | Redirect to `/login?next=/settings/profile` |
 | 4 | Navigate to `/notifications` | Redirect to `/login?next=/notifications` |
 
@@ -360,26 +360,26 @@ Before running dynamic-route tests, discover valid IDs:
 
 | # | Action | Expected | Protocol |
 |---|--------|----------|----------|
-| 1 | Navigate to `/sell` | Seller dashboard loads | A |
-| 2 | **Click "ダッシュボード"** in sidebar | `/sell` loads, no 404 | B |
-| 3 | **Back to `/sell`** | Dashboard preserved | D |
-| 4 | **Click "問題プール"** in sidebar | `/sell/pool` loads, no 404 | B |
-| 5 | **Back to `/sell`** | Dashboard preserved | D |
-| 6 | **Click "問題セット"** in sidebar | `/sell/sets` loads, no 404 | B |
-| 7 | **Back to `/sell`** | Dashboard preserved | D |
-| 8 | **Click "分析"** in sidebar | `/sell/analytics` loads, no 404 | B |
-| 9 | **Back to `/sell`** | Dashboard preserved | D |
-| 10 | **Click "取引履歴"** in sidebar | `/sell/transactions` loads, no 404 | B |
-| 11 | **Back to `/sell`** | Dashboard preserved | D |
-| 12 | **Click "クーポン"** in sidebar | `/sell/coupons` loads, no 404 | B |
-| 13 | **Back to `/sell`** | Dashboard preserved | D |
-| 14 | **Click "振込・収益"** in sidebar | `/sell/payouts` loads, no 404 | B |
-| 15 | **Back to `/sell`** | Dashboard preserved | D |
-| 16 | **Click "設定"** in sidebar | `/sell/settings` loads, no 404 | B |
-| 17 | **Back to `/sell`** | Dashboard preserved | D |
+| 1 | Navigate to `/seller` | Seller dashboard loads | A |
+| 2 | **Click "ダッシュボード"** in sidebar | `/seller` loads, no 404 | B |
+| 3 | **Back to `/seller`** | Dashboard preserved | D |
+| 4 | **Click "問題プール"** in sidebar | `/seller/pool` loads, no 404 | B |
+| 5 | **Back to `/seller`** | Dashboard preserved | D |
+| 6 | **Click "問題セット"** in sidebar | `/seller/sets` loads, no 404 | B |
+| 7 | **Back to `/seller`** | Dashboard preserved | D |
+| 8 | **Click "分析"** in sidebar | `/seller/analytics` loads, no 404 | B |
+| 9 | **Back to `/seller`** | Dashboard preserved | D |
+| 10 | **Click "取引履歴"** in sidebar | `/seller/transactions` loads, no 404 | B |
+| 11 | **Back to `/seller`** | Dashboard preserved | D |
+| 12 | **Click "クーポン"** in sidebar | `/seller/coupons` loads, no 404 | B |
+| 13 | **Back to `/seller`** | Dashboard preserved | D |
+| 14 | **Click "振込・収益"** in sidebar | `/seller/payouts` loads, no 404 | B |
+| 15 | **Back to `/seller`** | Dashboard preserved | D |
+| 16 | **Click "設定"** in sidebar | `/seller/settings` loads, no 404 | B |
+| 17 | **Back to `/seller`** | Dashboard preserved | D |
 | 18 | Verify active sidebar item matches current page | Correct item highlighted on each page | E |
 
-### 5.1 Seller Dashboard — `/sell`
+### 5.1 Seller Dashboard — `/seller`
 
 | # | Action | Expected | Protocol |
 |---|--------|----------|----------|
@@ -388,16 +388,16 @@ Before running dynamic-route tests, discover valid IDs:
 | 3 | **Click edit on a problem set** | Navigate to edit page | B |
 | 4 | **Click rubric link** | Navigate to rubric page | B |
 | 5 | **Read all price values** | `¥` character, not `\u00A5` | A |
-| 6 | `/sell` → edit → back → rubric → back | State preserved | D |
+| 6 | `/seller` → edit → back → rubric → back | State preserved | D |
 
-### 5.2 Problem Pool — `/sell/pool`
+### 5.2 Problem Pool — `/seller/pool`
 
 | # | Action | Expected | Protocol |
 |---|--------|----------|----------|
-| 1 | Navigate to `/sell/pool` | Breadcrumbs, question list | A |
-| 2 | **Click "PDFインポート" button** | Navigate to `/sell/pool/import` | B |
+| 1 | Navigate to `/seller/pool` | Breadcrumbs, question list | A |
+| 2 | **Click "PDFインポート" button** | Navigate to `/seller/pool/import` | B |
 | 3 | **Back** | Pool page preserved | D |
-| 4 | **Click "問題を作成" button** | Navigate to `/sell/pool/new` | B |
+| 4 | **Click "問題を作成" button** | Navigate to `/seller/pool/new` | B |
 | 5 | **Back** | Pool page preserved | D |
 | 6 | **Open subject filter dropdown** | All subjects listed | C |
 | 7 | **Select a subject** | List filters | C |
@@ -406,19 +406,19 @@ Before running dynamic-route tests, discover valid IDs:
 | 10 | **Type in search field** | Results filter | C |
 | 11 | **Click a question** | Navigate to edit page | B |
 
-### 5.3 Problem Sets — `/sell/sets`
+### 5.3 Problem Sets — `/seller/sets`
 
 | # | Action | Expected | Protocol |
 |---|--------|----------|----------|
-| 1 | Navigate to `/sell/sets` | Page loads (NOT 404), breadcrumbs visible | A |
+| 1 | Navigate to `/seller/sets` | Page loads (NOT 404), breadcrumbs visible | A |
 | 2 | **Read subtitle** | Shows "N件 公開中 / M件 下書き" or "問題セットはまだありません" | A |
-| 3 | **Click "新規作成" button** | Navigate to `/sell/sets/new` | B |
+| 3 | **Click "新規作成" button** | Navigate to `/seller/sets/new` | B |
 | 4 | **Back** | Sets page preserved | D |
 | 5 | If sets exist: **click select-all checkbox** | All items selected | C |
 | 6 | **Click bulk delete button** | Confirmation dialog opens | C |
 | 7 | **Cancel dialog** | Dialog closes, no action taken | C |
 
-### 5.4 Create/Edit Problem Set — `/sell/new`, `/sell/[id]/edit`
+### 5.4 Create/Edit Problem Set — `/seller/new`, `/seller/[id]/edit`
 
 | # | Action | Expected | Protocol |
 |---|--------|----------|----------|
@@ -433,17 +433,17 @@ Before running dynamic-route tests, discover valid IDs:
 | 9 | **Submit empty form** | Validation errors shown | C |
 | 10 | **Submit valid form** | Success, redirect | C |
 
-### 5.5 Analytics — `/sell/analytics`
+### 5.5 Analytics — `/seller/analytics`
 
 | # | Action | Expected | Protocol |
 |---|--------|----------|----------|
-| 1 | Navigate to `/sell/analytics` | Charts/data visible | A |
+| 1 | Navigate to `/seller/analytics` | Charts/data visible | A |
 | 2 | **Interact with period selector** (if any) | Chart updates | C |
 | 3 | **Read revenue values** | `¥` character, not `\u00A5` | A |
 
 ### 5.6 Other Seller Pages
 
-For `/sell/transactions`, `/sell/coupons`, `/sell/payouts`, `/sell/settings`:
+For `/seller/transactions`, `/seller/coupons`, `/seller/payouts`, `/seller/settings`:
 
 | # | Action | Expected | Protocol |
 |---|--------|----------|----------|

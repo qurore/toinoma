@@ -123,12 +123,12 @@ tsconfig.base.json                   # Shared TypeScript config
 /dashboard/history          Submission history
 /dashboard/favorites        Saved problems
 
-/sell                       Seller dashboard (requires seller_profiles)
-/sell/new                   Create new problem set
-/sell/[id]/edit             Edit problem set
-/sell/[id]/rubric           Rubric editor
-/sell/analytics             Sales analytics
-/sell/onboarding            Seller onboarding (ToS → profile → Stripe Connect)
+/seller                       Seller dashboard (requires seller_profiles)
+/seller/new                   Create new problem set
+/seller/[id]/edit             Edit problem set
+/seller/[id]/rubric           Rubric editor
+/seller/analytics             Sales analytics
+/seller/onboarding            Seller onboarding (ToS → profile → Stripe Connect)
 
 /settings                   Account settings
 ```

@@ -112,7 +112,7 @@ export function UserDropdown({
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
           <Link
-            href="/sell"
+            href="/seller"
             className="flex cursor-pointer items-center gap-2"
             data-testid="seller-link"
           >

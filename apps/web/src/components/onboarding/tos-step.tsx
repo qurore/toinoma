@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { acceptTos } from "@/app/(seller)/sell/onboarding/actions";
+import { acceptTos } from "@/app/(seller)/seller/onboarding/actions";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";

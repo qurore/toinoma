@@ -9,7 +9,7 @@ The seller system enables any authenticated user to become a problem creator (se
 ## 2. Seller Mode Toggle (SLR-001)
 
 ### Description
-A prominent button in the main navigation bar, visible to ALL authenticated users (not just existing sellers). Clicking it navigates to `/sell`.
+A prominent button in the main navigation bar, visible to ALL authenticated users (not just existing sellers). Clicking it navigates to `/seller`.
 
 ### UI Specification
 - **Location:** Right side of navbar, before the user avatar/dropdown
@@ -17,7 +17,7 @@ A prominent button in the main navigation bar, visible to ALL authenticated user
 - **Mobile:** Icon-only button in the mobile bottom nav or navbar
 - **Style:** `variant="ghost"` with subtle border or background to distinguish from regular nav items
 - **State:** Always visible when authenticated. No conditional rendering.
-- **Behavior:** `<Link href="/sell">` — simple navigation
+- **Behavior:** `<Link href="/seller">` — simple navigation
 
 ### Reference: Udemy's Instructor Toggle
 Udemy shows "Instructor" as a text link in the header for all logged-in users. Clicking it takes you to the instructor dashboard. If you're not yet an instructor, Udemy shows an onboarding page. Toinoma mirrors this but gates on ToS acceptance instead of onboarding.
@@ -25,7 +25,7 @@ Udemy shows "Instructor" as a text link in the header for all logged-in users. C
 ### Acceptance Criteria
 - [ ] Button visible in navbar for all authenticated users
 - [ ] Button NOT visible for unauthenticated visitors
-- [ ] Clicking button navigates to `/sell`
+- [ ] Clicking button navigates to `/seller`
 - [ ] Button uses Store icon + "出品者モード" text (desktop)
 - [ ] Button is icon-only on mobile (< md breakpoint)
 - [ ] Button styled distinctly from regular nav items (not same as nav links)
@@ -35,7 +35,7 @@ Udemy shows "Instructor" as a text link in the header for all logged-in users. C
 ## 3. Seller ToS Acceptance Modal (SLR-002)
 
 ### Description
-When a user navigates to `/sell` without having accepted the seller Terms of Service, a non-dismissable modal dialog appears. The user must read the ToS, check a confirmation checkbox, and click "Accept" to proceed. This creates or updates the `seller_profiles` record with `tos_accepted_at`.
+When a user navigates to `/seller` without having accepted the seller Terms of Service, a non-dismissable modal dialog appears. The user must read the ToS, check a confirmation checkbox, and click "Accept" to proceed. This creates or updates the `seller_profiles` record with `tos_accepted_at`.
 
 ### UI Specification
 - **Modal type:** `Dialog` (Radix) with `modal={true}` — no click-outside dismiss, no Escape key dismiss
@@ -65,11 +65,11 @@ The modal embeds the ToS content inline (not a link to a separate page). Content
 //   id: user.id
 //   seller_display_name: "__pending__"
 //   tos_accepted_at: new Date().toISOString()
-// After success: revalidatePath("/sell") + redirect to /sell
+// After success: revalidatePath("/seller") + redirect to /seller
 ```
 
 ### Acceptance Criteria
-- [ ] Modal appears when navigating to `/sell` without ToS acceptance
+- [ ] Modal appears when navigating to `/seller` without ToS acceptance
 - [ ] Modal is non-dismissable (no X, no click-outside, no Escape)
 - [ ] ToS content is scrollable within the modal
 - [ ] Checkbox must be checked before accept button is enabled
@@ -83,19 +83,19 @@ The modal embeds the ToS content inline (not a link to a separate page). Content
 ## 4. Seller ToS Redirect Gate (SLR-003)
 
 ### Description
-All seller sub-routes (`/sell/new`, `/sell/[id]/edit`, `/sell/[id]/rubric`, `/sell/analytics`, etc.) redirect to `/sell` if the user has not accepted the seller ToS. The `/sell` page itself does NOT redirect — it shows the ToS modal instead.
+All seller sub-routes (`/seller/new`, `/seller/[id]/edit`, `/seller/[id]/rubric`, `/seller/analytics`, etc.) redirect to `/seller` if the user has not accepted the seller ToS. The `/seller` page itself does NOT redirect — it shows the ToS modal instead.
 
 ### Implementation
 - **Layout level:** `(seller)/layout.tsx` checks auth only (redirects to `/login` if not authenticated)
-- **Page level:** Each seller sub-page calls `requireSellerTos()` which redirects to `/sell` if no ToS
-- **`/sell` page:** Checks ToS status server-side and passes boolean to client component that renders the modal
+- **Page level:** Each seller sub-page calls `requireSellerTos()` which redirects to `/seller` if no ToS
+- **`/seller` page:** Checks ToS status server-side and passes boolean to client component that renders the modal
 
 ### New Auth Utility
 ```typescript
 // lib/auth/require-seller.ts
 export async function requireSellerTos() {
   // Returns { user, tosAccepted, sellerProfile }
-  // Redirects to /sell if tosAccepted === false
+  // Redirects to /seller if tosAccepted === false
   // Does NOT require full seller completion (Stripe)
 }
 
@@ -103,13 +103,13 @@ export async function requireSellerTos() {
 ```
 
 ### Acceptance Criteria
-- [ ] Unauthenticated users on any `/sell/*` route → redirect to `/login`
-- [ ] Authenticated users without ToS on `/sell/new` → redirect to `/sell`
-- [ ] Authenticated users without ToS on `/sell/[id]/edit` → redirect to `/sell`
-- [ ] Authenticated users without ToS on `/sell/analytics` → redirect to `/sell`
-- [ ] Authenticated users without ToS on `/sell` → show ToS modal (no redirect)
+- [ ] Unauthenticated users on any `/seller/*` route → redirect to `/login`
+- [ ] Authenticated users without ToS on `/seller/new` → redirect to `/seller`
+- [ ] Authenticated users without ToS on `/seller/[id]/edit` → redirect to `/seller`
+- [ ] Authenticated users without ToS on `/seller/analytics` → redirect to `/seller`
+- [ ] Authenticated users without ToS on `/seller` → show ToS modal (no redirect)
 - [ ] Authenticated users WITH ToS → all seller routes accessible
-- [ ] `/sell/onboarding` skips Step 1 (ToS) if already accepted
+- [ ] `/seller/onboarding` skips Step 1 (ToS) if already accepted
 
 ---
 
@@ -162,7 +162,7 @@ Sellers must complete Stripe Connect onboarding to receive payouts for paid prob
 ## 7. Seller Dashboard Overview (SLR-006)
 
 ### Description
-The main seller dashboard at `/sell`. Shows key metrics, recent activity, and quick actions.
+The main seller dashboard at `/seller`. Shows key metrics, recent activity, and quick actions.
 
 ### UI Layout
 ```
@@ -232,7 +232,7 @@ Full list of seller's problem sets with management actions.
 - [ ] Responsive: table on desktop, cards on mobile
 - [ ] Filter by status works
 - [ ] Sort options work
-- [ ] Edit links to `/sell/[id]/edit`
+- [ ] Edit links to `/seller/[id]/edit`
 - [ ] Delete requires confirmation dialog
 - [ ] Publish validates completeness before allowing
 - [ ] Pagination for > 20 sets
@@ -242,7 +242,7 @@ Full list of seller's problem sets with management actions.
 ## 9. Revenue Dashboard (SLR-008)
 
 ### Description
-`/sell/analytics` — comprehensive revenue and sales analytics.
+`/seller/analytics` — comprehensive revenue and sales analytics.
 
 ### Visualizations
 1. **Revenue over time:** Line chart (daily/weekly/monthly toggle)
@@ -317,18 +317,18 @@ CREATE TABLE seller_profiles (
 ## 12. Route Structure
 
 ```
-/sell                          Seller dashboard (ToS modal if not accepted)
-/sell/pool                     Problem pool management
-/sell/pool/new                 Create new question
-/sell/pool/[qid]/edit          Edit question
-/sell/sets/new                 Compose new problem set from pool
-/sell/[id]/edit                Edit problem set metadata
-/sell/[id]/rubric              Edit rubrics for set's questions
-/sell/[id]/submissions         View submissions for this set
-/sell/analytics                Revenue and sales analytics
-/sell/payouts                  Payout history
-/sell/settings                 Seller-specific settings
-/sell/onboarding               Complete onboarding (profile + Stripe)
+/seller                          Seller dashboard (ToS modal if not accepted)
+/seller/pool                     Problem pool management
+/seller/pool/new                 Create new question
+/seller/pool/[qid]/edit          Edit question
+/seller/sets/new                 Compose new problem set from pool
+/seller/[id]/edit                Edit problem set metadata
+/seller/[id]/rubric              Edit rubrics for set's questions
+/seller/[id]/submissions         View submissions for this set
+/seller/analytics                Revenue and sales analytics
+/seller/payouts                  Payout history
+/seller/settings                 Seller-specific settings
+/seller/onboarding               Complete onboarding (profile + Stripe)
 
 /seller/[id]                   Public seller profile page
 /legal/seller-tos              Full seller ToS document

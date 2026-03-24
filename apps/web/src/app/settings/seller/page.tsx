@@ -54,7 +54,7 @@ export default async function SellerSettingsPage() {
               問題集を出品・販売するには出品者登録（利用規約同意・Stripe Connect設定）が必要です
             </p>
             <Button asChild>
-              <Link href="/sell/onboarding">出品者登録を始める</Link>
+              <Link href="/seller/onboarding">出品者登録を始める</Link>
             </Button>
           </CardContent>
         </Card>
@@ -129,13 +129,13 @@ export default async function SellerSettingsPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button asChild>
-          <Link href="/sell" className="flex items-center gap-2">
+          <Link href="/seller" className="flex items-center gap-2">
             <Store className="h-4 w-4" />
             出品者ダッシュボード
           </Link>
         </Button>
         <Button variant="outline" asChild>
-          <Link href="/sell/analytics" className="flex items-center gap-2">
+          <Link href="/seller/analytics" className="flex items-center gap-2">
             <ExternalLink className="h-4 w-4" />
             売上アナリティクス
           </Link>

@@ -33,20 +33,20 @@
 
 | ID | Feature | Priority | Status | Description |
 |----|---------|----------|--------|-------------|
-| SLR-001 | Seller mode toggle button | P0 | [ ] | Prominent button in navbar (like Udemy's "Instructor" toggle). Visible to ALL authenticated users. Navigates to `/sell`. |
-| SLR-002 | Seller ToS acceptance modal | P0 | [ ] | Non-dismissable modal at `/sell` for users who haven't accepted seller ToS. Checkbox + accept button. Stores `tos_accepted_at`. |
-| SLR-003 | Seller ToS redirect gate | P0 | [ ] | All `/sell/*` sub-routes redirect to `/sell` if seller ToS not accepted. Layout-level check. |
+| SLR-001 | Seller mode toggle button | P0 | [ ] | Prominent button in navbar (like Udemy's "Instructor" toggle). Visible to ALL authenticated users. Navigates to `/seller`. |
+| SLR-002 | Seller ToS acceptance modal | P0 | [ ] | Non-dismissable modal at `/seller` for users who haven't accepted seller ToS. Checkbox + accept button. Stores `tos_accepted_at`. |
+| SLR-003 | Seller ToS redirect gate | P0 | [ ] | All `/seller/*` sub-routes redirect to `/seller` if seller ToS not accepted. Layout-level check. |
 | SLR-004 | Seller profile creation | P0 | [~] | Display name, bio, university, circle name. Part of onboarding flow. |
 | SLR-005 | Stripe Connect onboarding | P0 | [~] | Express account creation + identity verification. Required before publishing paid content. |
-| SLR-006 | Seller dashboard overview | P0 | [~] | `/sell` — stats cards (total sets, published, drafts, revenue, submissions), recent activity. |
-| SLR-007 | Problem set management list | P0 | [~] | `/sell` — table/card list of all seller's problem sets with status, actions (edit, publish, delete). |
-| SLR-008 | Revenue dashboard | P1 | [ ] | `/sell/analytics` — revenue charts (daily/weekly/monthly), top-selling sets, conversion rates. |
-| SLR-009 | Sales analytics | P1 | [ ] | `/sell/analytics` — detailed analytics: sales by subject, by time period, buyer demographics. |
-| SLR-010 | Submission viewer | P1 | [ ] | `/sell/[id]/submissions` — view student submissions for own problem sets. Individual answers + scores. |
+| SLR-006 | Seller dashboard overview | P0 | [~] | `/seller` — stats cards (total sets, published, drafts, revenue, submissions), recent activity. |
+| SLR-007 | Problem set management list | P0 | [~] | `/seller` — table/card list of all seller's problem sets with status, actions (edit, publish, delete). |
+| SLR-008 | Revenue dashboard | P1 | [ ] | `/seller/analytics` — revenue charts (daily/weekly/monthly), top-selling sets, conversion rates. |
+| SLR-009 | Sales analytics | P1 | [ ] | `/seller/analytics` — detailed analytics: sales by subject, by time period, buyer demographics. |
+| SLR-010 | Submission viewer | P1 | [ ] | `/seller/[id]/submissions` — view student submissions for own problem sets. Individual answers + scores. |
 | SLR-011 | Student performance analytics | P2 | [ ] | Per-problem-set analytics: average score, score distribution, common mistakes, question-level breakdown. |
 | SLR-012 | Seller public profile page | P1 | [ ] | `/seller/[id]` — public profile: name, bio, university, circle, published sets, ratings, total students. |
 | SLR-013 | Seller settings page | P0 | [~] | `/settings/seller` — edit seller profile, view ToS acceptance, Stripe status. |
-| SLR-014 | Payout history | P1 | [ ] | `/sell/payouts` — list of Stripe payouts with amounts, dates, status. |
+| SLR-014 | Payout history | P1 | [ ] | `/seller/payouts` — list of Stripe payouts with amounts, dates, status. |
 | SLR-015 | Announcement system | P2 | [ ] | Seller can post announcements to all purchasers of a specific problem set. In-app + email notification. |
 | SLR-016 | Review response | P1 | [ ] | Seller can write a public response to student reviews on their problem sets. |
 | SLR-017 | Seller verification badge | P2 | [ ] | Visual badge for sellers who completed identity verification via Stripe Connect. |
@@ -64,7 +64,7 @@
 
 | ID | Feature | Priority | Status | Description |
 |----|---------|----------|--------|-------------|
-| ATH-001 | Problem pool page | P0 | [ ] | `/sell/pool` — grid/list of all individual questions owned by seller. Search, filter by subject/type/tag. |
+| ATH-001 | Problem pool page | P0 | [ ] | `/seller/pool` — grid/list of all individual questions owned by seller. Search, filter by subject/type/tag. |
 | ATH-002 | Essay question creation | P0 | [ ] | Create essay-type question: question text (rich text + images), model answer, rubric elements with point values. |
 | ATH-003 | Mark-sheet question creation | P0 | [ ] | Create mark-sheet (bubble) question: question text, choice set (A-E or 1-5), correct answer(s), grouped scoring option. |
 | ATH-004 | Fill-in-the-blank question creation | P0 | [ ] | Create fill-in-blank question: question text with blank placeholders, acceptable answers (exact match + variants). |
@@ -79,7 +79,7 @@
 | ATH-013 | Image upload for questions | P0 | [ ] | Upload images within question text. Inline display. Drag-and-drop + click-to-upload. |
 | ATH-014 | LaTeX/math formula support | P0 | [ ] | KaTeX rendering in question text, model answers, and rubric descriptions. Inline (`$...$`) and block (`$$...$$`). |
 | ATH-015 | Vertical text mode | P1 | [ ] | Toggle vertical writing (tategaki) for Japanese/kokugo questions. Affects question text, answer area, and PDF export. |
-| ATH-016 | Problem set composition | P0 | [ ] | `/sell/sets/new` — select questions from problem pool to compose a problem set. Drag-and-drop ordering. |
+| ATH-016 | Problem set composition | P0 | [ ] | `/seller/sets/new` — select questions from problem pool to compose a problem set. Drag-and-drop ordering. |
 | ATH-017 | Problem set sectioning | P0 | [ ] | Organize questions into numbered sections (大問1, 大問2, ...) with section titles and point allocations. |
 | ATH-018 | Problem set metadata | P0 | [ ] | Title, description (marketing text), subject, university target, difficulty, cover image. |
 | ATH-019 | Problem set pricing | P0 | [ ] | Set price in JPY (0 = free). Price validation: min 0, max 50,000. |
@@ -224,7 +224,7 @@
 | PAY-012 | Coupon system | P2 | [ ] | Seller creates coupons: percentage or fixed discount, expiry date, usage limit, specific sets or all sets. |
 | PAY-013 | Gift purchase | P3 | [ ] | Buy a problem set as a gift. Recipient receives access via email/link. |
 | PAY-014 | Payment method management | P2 | [ ] | Stripe Customer Portal: manage saved cards for subscriptions. |
-| PAY-015 | Transaction history (seller) | P1 | [ ] | `/sell/transactions` — all transactions: sales, refunds, payouts. CSV export. |
+| PAY-015 | Transaction history (seller) | P1 | [ ] | `/seller/transactions` — all transactions: sales, refunds, payouts. CSV export. |
 | PAY-016 | Stripe webhook handling | P0 | [ ] | `/api/webhooks/stripe` — handle: checkout.session.completed, payment_intent.succeeded, refund events. |
 
 ---

@@ -41,7 +41,7 @@ export function PoolFilterBar({
     if (subject && subject !== ALL) params.set("subject", subject);
     if (type && type !== ALL) params.set("type", type);
     const qs = params.toString();
-    router.push(qs ? `/sell/pool?${qs}` : "/sell/pool");
+    router.push(qs ? `/seller/pool?${qs}` : "/seller/pool");
   }
 
   return (
@@ -102,7 +102,7 @@ export function PoolFilterBar({
       {/* Clear filters link — only shown when filters are active */}
       {hasActiveFilters && (
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/sell/pool">クリア</Link>
+          <Link href="/seller/pool">クリア</Link>
         </Button>
       )}
     </form>

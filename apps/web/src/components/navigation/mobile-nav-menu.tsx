@@ -30,13 +30,13 @@ const NAV_ITEMS = [
 ];
 
 const SELLER_NAV_ITEMS = [
-  { href: "/sell", label: "出品者モード", icon: Store },
+  { href: "/seller", label: "出品者モード", icon: Store },
   { href: "/settings", label: "設定", icon: Settings },
   { href: "/help", label: "ヘルプ", icon: HelpCircle },
 ];
 
 const NON_SELLER_NAV_ITEMS = [
-  { href: "/sell/onboarding", label: "出品者になる", icon: UserPlus },
+  { href: "/seller/onboarding", label: "出品者になる", icon: UserPlus },
   { href: "/settings", label: "設定", icon: Settings },
   { href: "/help", label: "ヘルプ", icon: HelpCircle },
 ];

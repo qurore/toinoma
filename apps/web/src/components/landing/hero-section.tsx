@@ -76,7 +76,7 @@ export function HeroSection() {
                 </Link>
               </Button>
               <Button variant="heroOutline" size="lg" asChild>
-                <Link href="/sell">出品者になる</Link>
+                <Link href="/seller">出品者になる</Link>
               </Button>
             </div>
 

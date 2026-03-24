@@ -83,11 +83,11 @@ MCPテストを実行しましたが不十分でした。
 デザインとして最悪だったりします。
 
 
-  http://localhost:3000/sell/sets
+  http://localhost:3000/seller/sets
 
    ✓ Compiled /_not-found in 606ms (2856 modules)
-   GET /sell/sets 404 in 678ms
-   GET /sell/sets 404 in 114ms
+   GET /seller/sets 404 in 678ms
+   GET /seller/sets 404 in 114ms
   また、3枚目の画像のように、普通にリンクからクリック可能
   なところで普通に404が出たりします。
 こういう当たり前すら検知できていないという事実をまずは受け止めてください。抜本的に見直して、改善してください。論理性をチェックすることが絶対に必要です。
@@ -146,11 +146,11 @@ MCPテストを実行しましたが不十分でした。
 デザインとして最悪だったりします。
 
 
-  http://localhost:3000/sell/sets
+  http://localhost:3000/seller/sets
 
    ✓ Compiled /_not-found in 606ms (2856 modules)
-   GET /sell/sets 404 in 678ms
-   GET /sell/sets 404 in 114ms
+   GET /seller/sets 404 in 678ms
+   GET /seller/sets 404 in 114ms
   また、3枚目の画像のように、普通にリンクからクリック可能
   なところで普通に404が出たりします。
 こういう当たり前すら検知できていないという事実をまずは受け止めてください。抜本的に見直して、改善してください。論理性をチェックすることが絶対に必要です。

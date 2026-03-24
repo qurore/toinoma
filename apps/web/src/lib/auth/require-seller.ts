@@ -49,14 +49,14 @@ export async function getSellerTosStatus() {
 }
 
 /**
- * Require seller ToS acceptance. Redirects to /sell (ToS modal) if not accepted.
- * Used by seller sub-pages (/sell/new, /sell/[id]/edit, etc.)
+ * Require seller ToS acceptance. Redirects to /seller (ToS modal) if not accepted.
+ * Used by seller sub-pages (/seller/new, /seller/[id]/edit, etc.)
  */
 export async function requireSellerTos() {
   const { user, sellerProfile, tosAccepted } = await getSellerTosStatus();
 
   if (!tosAccepted) {
-    redirect("/sell");
+    redirect("/seller");
   }
 
   return { user, sellerProfile: sellerProfile! };
@@ -64,7 +64,7 @@ export async function requireSellerTos() {
 
 /**
  * Require full seller onboarding (ToS + profile + Stripe Connect).
- * Redirects to /sell/onboarding if not complete.
+ * Redirects to /seller/onboarding if not complete.
  * Used for publish-gated actions only.
  */
 export async function requireCompleteSeller() {
@@ -84,7 +84,7 @@ export async function requireCompleteSeller() {
     .single<SellerProfile>();
 
   if (!sellerProfile?.tos_accepted_at || !sellerProfile?.stripe_account_id) {
-    redirect("/sell/onboarding");
+    redirect("/seller/onboarding");
   }
 
   return { user, sellerProfile };

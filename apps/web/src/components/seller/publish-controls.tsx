@@ -29,7 +29,7 @@ import {
   publishProblemSet,
   unpublishProblemSet,
   deleteProblemSet,
-} from "@/app/(seller)/sell/actions";
+} from "@/app/(seller)/seller/actions";
 import { createClient } from "@/lib/supabase/client";
 
 interface ValidationCheck {

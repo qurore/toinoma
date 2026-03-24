@@ -22,7 +22,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { acceptSellerTos } from "@/app/(seller)/sell/actions";
+import { acceptSellerTos } from "@/app/(seller)/seller/actions";
 
 const VALUE_PROPS = [
   {

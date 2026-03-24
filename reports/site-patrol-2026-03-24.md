@@ -184,15 +184,15 @@
 
 | # | Page | Status | Tests | Findings | Screenshot |
 |---|------|--------|-------|----------|------------|
-| 28 | `/sell` | PASS | 9 | None | `6.1-sell-dashboard.png` |
-| 29 | `/sell/onboarding` | PASS | 6 | None | `6.2-sell-onboarding.png` |
-| 30 | `/sell/analytics` | PASS | 4 | None | `6.3-sell-analytics.png` |
-| 31 | `/sell/pool` | PASS | 3 | None | `6.13-sell-pool.png` |
-| 32 | `/sell/coupons` | PASS | 4 | None | `6.10-sell-coupons.png` |
-| 33 | `/sell/payouts` | PASS | 3 | None | (verified via snapshot) |
-| 34 | `/sell/transactions` | PASS | 3 | None | (verified via snapshot) |
-| 35 | `/sell/new` | NOT TESTED | — | — | — |
-| 36 | `/sell/settings` | NOT TESTED | — | — | — |
+| 28 | `/seller` | PASS | 9 | None | `6.1-sell-dashboard.png` |
+| 29 | `/seller/onboarding` | PASS | 6 | None | `6.2-sell-onboarding.png` |
+| 30 | `/seller/analytics` | PASS | 4 | None | `6.3-sell-analytics.png` |
+| 31 | `/seller/pool` | PASS | 3 | None | `6.13-sell-pool.png` |
+| 32 | `/seller/coupons` | PASS | 4 | None | `6.10-sell-coupons.png` |
+| 33 | `/seller/payouts` | PASS | 3 | None | (verified via snapshot) |
+| 34 | `/seller/transactions` | PASS | 3 | None | (verified via snapshot) |
+| 35 | `/seller/new` | NOT TESTED | — | — | — |
+| 36 | `/seller/settings` | NOT TESTED | — | — | — |
 
 ### Phase 7: Settings Pages
 
@@ -285,11 +285,11 @@ All screenshots saved to `reports/screenshots/`:
 | `5.3-dashboard-favorites.png` | `/dashboard/favorites` | Viewport, desktop |
 | `5.5-dashboard-analytics.png` | `/dashboard/analytics` | Viewport, desktop |
 | `5.6-dashboard-collections.png` | `/dashboard/collections` | Viewport, desktop |
-| `6.1-sell-dashboard.png` | `/sell` | Full page, desktop |
-| `6.2-sell-onboarding.png` | `/sell/onboarding` | Viewport, desktop |
-| `6.3-sell-analytics.png` | `/sell/analytics` | Viewport, desktop |
-| `6.10-sell-coupons.png` | `/sell/coupons` | Viewport, desktop |
-| `6.13-sell-pool.png` | `/sell/pool` | Viewport, desktop |
+| `6.1-sell-dashboard.png` | `/seller` | Full page, desktop |
+| `6.2-sell-onboarding.png` | `/seller/onboarding` | Viewport, desktop |
+| `6.3-sell-analytics.png` | `/seller/analytics` | Viewport, desktop |
+| `6.10-sell-coupons.png` | `/seller/coupons` | Viewport, desktop |
+| `6.13-sell-pool.png` | `/seller/pool` | Viewport, desktop |
 | `8.1-settings-index.png` | `/settings/profile` | Viewport, desktop |
 | `8.4-settings-subscription.png` | `/settings/subscription` | Viewport, desktop |
 | `9.1-notifications.png` | `/notifications` | Viewport, desktop |

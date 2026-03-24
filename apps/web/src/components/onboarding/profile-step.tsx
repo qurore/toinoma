@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { saveSellerProfile } from "@/app/(seller)/sell/onboarding/actions";
+import { saveSellerProfile } from "@/app/(seller)/seller/onboarding/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

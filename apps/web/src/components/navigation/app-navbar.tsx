@@ -102,7 +102,7 @@ export function AppNavbar({
   user, isSeller, displayName, avatarUrl, subscriptionTier,
   notificationCount, notifications,
 }: NavbarData) {
-  const createHref = isSeller ? "/sell/new" : "/sell/onboarding";
+  const createHref = isSeller ? "/seller/new" : "/seller/onboarding";
 
   return (
     <header className="fixed top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm">
@@ -139,7 +139,7 @@ export function AppNavbar({
                 className="hidden items-center gap-1.5 border-primary/20 text-primary hover:bg-primary/5 hover:text-primary sm:flex"
                 asChild
               >
-                <Link href="/sell" aria-label="出品者モード">
+                <Link href="/seller" aria-label="出品者モード">
                   <Store className="h-4 w-4" />
                   <span className="hidden lg:inline">出品者モード</span>
                 </Link>

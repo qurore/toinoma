@@ -143,7 +143,7 @@ export async function notifySale(
     "purchase",
     "新しい購入がありました",
     `${buyerName}さんが「${problemSetTitle}」を購入しました。`,
-    `/sell/${problemSetId}/edit`
+    `/seller/${problemSetId}/edit`
   );
 }
 

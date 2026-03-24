@@ -48,7 +48,7 @@ The marketplace is the discovery and purchase layer. Students browse, search, an
 ```
 
 ### Sections
-1. **Hero:** Tagline + CTAs ("問題を探す" → `/explore`, "出品者になる" → `/sell`)
+1. **Hero:** Tagline + CTAs ("問題を探す" → `/explore`, "出品者になる" → `/seller`)
 2. **Subject Navigation:** Horizontally scrollable subject pills/chips
 3. **Trending:** Top 8 by recent purchase volume (last 7 days)
 4. **New Arrivals:** Latest 8 published (last 7 days)
@@ -213,7 +213,7 @@ Filters are URL-based for shareability and SEO:
 | Not purchased, not authenticated | "ログインして購入" button → `/login?next=/problem/[id]` |
 | Not purchased, authenticated | "購入する" button → Stripe Checkout (or instant for free) |
 | Purchased | "解く" button → `/problem/[id]/solve` + "結果を見る" if has submissions |
-| Own problem set (seller) | "編集" button → `/sell/[id]/edit` |
+| Own problem set (seller) | "編集" button → `/seller/[id]/edit` |
 
 ### Tabs
 1. **概要 (Overview):** Seller's description, target info, problem count/points

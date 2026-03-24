@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { initStripeConnect } from "@/app/(seller)/sell/onboarding/actions";
+import { initStripeConnect } from "@/app/(seller)/seller/onboarding/actions";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CreditCard, Loader2, CheckCircle2 } from "lucide-react";
+import Link from "next/link";
 
 export function StripeStep({
   stripeReturn,
@@ -48,7 +49,7 @@ export function StripeStep({
             </Button>
           </form>
           <Button variant="ghost" size="sm" className="w-full" asChild>
-            <a href="/sell">後で設定する</a>
+            <Link href="/seller">後で設定する</Link>
           </Button>
         </CardFooter>
       </Card>
@@ -89,10 +90,10 @@ export function StripeStep({
         </CardContent>
         <CardFooter className="flex-col gap-2 pt-4">
           <Button className="w-full" size="lg" asChild>
-            <a href="/sell">ダッシュボードへ進む</a>
+            <Link href="/seller">ダッシュボードへ進む</Link>
           </Button>
           <Button variant="ghost" size="sm" className="w-full" asChild>
-            <a href="/sell/pool/new">最初の問題を作成する</a>
+            <Link href="/seller/pool/new">最初の問題を作成する</Link>
           </Button>
         </CardFooter>
       </Card>
@@ -147,7 +148,7 @@ export function StripeStep({
         </form>
         <p className="text-center text-[11px] text-muted-foreground">
           無料問題のみ出品する場合は、
-          <a href="/sell" className="text-primary hover:underline">スキップ</a>
+          <Link href="/seller" className="text-primary hover:underline">スキップ</Link>
           して後から設定できます
         </p>
       </CardFooter>

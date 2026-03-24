@@ -21,7 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { ExtractedQuestionCard } from "@/components/seller/extracted-question-card";
-import { confirmImport } from "@/app/(seller)/sell/pool/import/actions";
+import { confirmImport } from "@/app/(seller)/seller/pool/import/actions";
 import type { ExtractedQuestion } from "@/app/api/pdf-import/route";
 
 type QuestionWithAccepted = ExtractedQuestion & { accepted: boolean };
@@ -554,7 +554,7 @@ export function PdfImportWizard() {
                 <Upload className="mr-1.5 h-4 w-4" />
                 別のPDFをインポート
               </Button>
-              <Button onClick={() => router.push("/sell/pool")}>
+              <Button onClick={() => router.push("/seller/pool")}>
                 <ArrowRight className="mr-1.5 h-4 w-4" />
                 問題プールを表示
               </Button>

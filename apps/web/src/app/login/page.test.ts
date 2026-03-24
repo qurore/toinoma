@@ -75,7 +75,7 @@ describe("Login page: redirect validation", () => {
 
   it("passes through valid next values", () => {
     expect(getSafeRedirect("/dashboard/history")).toBe("/dashboard/history");
-    expect(getSafeRedirect("/sell")).toBe("/sell");
+    expect(getSafeRedirect("/seller")).toBe("/seller");
     expect(getSafeRedirect("/problem/123/solve")).toBe("/problem/123/solve");
   });
 });

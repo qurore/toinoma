@@ -15,8 +15,8 @@ const footerLinks = {
     title: "出品者向け",
     links: [
       { label: "出品者ガイド", href: "/help/seller-guide" },
-      { label: "出品者モード", href: "/sell" },
-      { label: "収益ダッシュボード", href: "/sell/analytics" },
+      { label: "出品者モード", href: "/seller" },
+      { label: "収益ダッシュボード", href: "/seller/analytics" },
     ],
   },
   legal: {

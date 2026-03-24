@@ -202,7 +202,7 @@ export default function SellerGuidePage() {
 
           <div className="mt-6 text-center">
             <Button asChild>
-              <Link href="/sell/onboarding">
+              <Link href="/seller/onboarding">
                 <Store className="h-4 w-4" />
                 出品者登録を始める
               </Link>
@@ -372,7 +372,7 @@ export default function SellerGuidePage() {
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button asChild>
-                <Link href="/sell/onboarding">
+                <Link href="/seller/onboarding">
                   <Store className="h-4 w-4" />
                   出品者登録を始める
                 </Link>

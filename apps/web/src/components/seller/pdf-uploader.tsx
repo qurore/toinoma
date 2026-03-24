@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Upload, FileText, Loader2, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { updateProblemPdfUrl } from "@/app/(seller)/sell/actions";
+import { updateProblemPdfUrl } from "@/app/(seller)/seller/actions";
 
 export function PdfUploader({
   problemSetId,

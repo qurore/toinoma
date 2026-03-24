@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 const NAV_LINKS = [
   { href: "/explore", label: "問題を探す" },
-  { href: "/sell/onboarding", label: "出題する" },
+  { href: "/seller/onboarding", label: "出題する" },
   { href: "/help", label: "ヘルプ" },
 ] as const;
 

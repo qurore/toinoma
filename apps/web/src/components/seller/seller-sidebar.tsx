@@ -33,7 +33,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: null,
     items: [
       {
-        href: "/sell",
+        href: "/seller",
         label: "ダッシュボード",
         icon: LayoutDashboard,
         exact: true,
@@ -44,13 +44,13 @@ const NAV_SECTIONS: NavSection[] = [
     label: "コンテンツ",
     items: [
       {
-        href: "/sell/pool",
+        href: "/seller/pool",
         label: "問題プール",
         icon: Database,
         exact: false,
       },
       {
-        href: "/sell/sets",
+        href: "/seller/sets",
         label: "問題セット",
         icon: Library,
         exact: false,
@@ -61,25 +61,25 @@ const NAV_SECTIONS: NavSection[] = [
     label: "収益・販売",
     items: [
       {
-        href: "/sell/analytics",
+        href: "/seller/analytics",
         label: "分析",
         icon: BarChart3,
         exact: false,
       },
       {
-        href: "/sell/transactions",
+        href: "/seller/transactions",
         label: "取引履歴",
         icon: Receipt,
         exact: false,
       },
       {
-        href: "/sell/coupons",
+        href: "/seller/coupons",
         label: "クーポン",
         icon: Tag,
         exact: false,
       },
       {
-        href: "/sell/payouts",
+        href: "/seller/payouts",
         label: "振込・収益",
         icon: Wallet,
         exact: false,
@@ -90,7 +90,7 @@ const NAV_SECTIONS: NavSection[] = [
     label: null,
     items: [
       {
-        href: "/sell/settings",
+        href: "/seller/settings",
         label: "設定",
         icon: Settings,
         exact: false,

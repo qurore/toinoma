@@ -47,7 +47,7 @@ import {
 } from "@/components/seller/set-metadata-form";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
-import { createProblemSetFromPool } from "@/app/(seller)/sell/sets/new/actions";
+import { createProblemSetFromPool } from "@/app/(seller)/seller/sets/new/actions";
 
 interface SetComposerProps {
   sellerId?: string;
