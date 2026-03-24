@@ -4,30 +4,25 @@ import { Button } from "@/components/ui/button";
 
 export function CTASection() {
   return (
-    <section className="px-6 py-24 md:py-32">
-      <div className="bg-hero relative mx-auto max-w-5xl overflow-hidden rounded-3xl p-12 text-center md:p-20">
-        {/* Glow */}
-        <div className="absolute left-1/2 top-0 h-64 w-64 -translate-x-1/2 rounded-full bg-green/20 blur-3xl" />
-
-        <div className="relative">
-          <h2 className="font-display text-3xl font-bold text-white md:text-5xl">
-            問いと答えが出会う場所
-          </h2>
-          <p className="mt-4 font-display text-lg text-white/60">
-            Where questions meet answers.
-          </p>
-
-          <div className="mt-10 flex flex-wrap justify-center gap-4">
-            <Button variant="hero" size="lg" asChild>
-              <Link href="/explore">
-                問題を探す
-                <ArrowRight className="ml-1 h-4 w-4" />
-              </Link>
-            </Button>
-            <Button variant="heroOutline" size="lg" asChild>
-              <Link href="/sell/onboarding">出題者になる</Link>
-            </Button>
-          </div>
+    <section className="relative overflow-hidden bg-hero py-20 sm:py-28">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(142_71%_38%/0.2),transparent_60%)]" />
+      <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
+        <h2 className="text-3xl font-bold text-white sm:text-4xl">
+          今すぐ、学習を始めよう
+        </h2>
+        <p className="mt-4 text-lg text-white/70">
+          無料で問題を解いて、AI採点の実力を体験してみませんか？
+        </p>
+        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+          <Button variant="hero" size="lg" asChild>
+            <Link href="/login">
+              無料で始める
+              <ArrowRight className="ml-1 h-4 w-4" />
+            </Link>
+          </Button>
+          <Button variant="heroOutline" size="lg" asChild>
+            <Link href="/explore">問題を見てみる</Link>
+          </Button>
         </div>
       </div>
     </section>

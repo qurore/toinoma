@@ -3,7 +3,7 @@ import { ChevronRight, Home } from "lucide-react";
 
 export interface BreadcrumbItem {
   label: string;
-  href: string;
+  href?: string;
 }
 
 interface BreadcrumbsProps {
@@ -23,7 +23,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
 
   return (
     <nav aria-label="パンくずリスト" className="mb-4">
-      <ol className="flex items-center gap-1 text-sm text-muted-foreground">
+      <ol className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
         {items.map((item, index) => {
           const isFirst = index === 0;
           const isLast = index === lastIndex;
@@ -34,7 +34,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
 
           return (
             <li
-              key={item.href}
+              key={`${item.href ?? item.label}-${index}`}
               className={`flex items-center gap-1${hideOnMobile ? " hidden md:flex" : ""}`}
             >
               {index > 0 && (
@@ -43,14 +43,7 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                   aria-hidden="true"
                 />
               )}
-              {isLast ? (
-                <span
-                  className="truncate font-medium text-foreground"
-                  aria-current="page"
-                >
-                  {item.label}
-                </span>
-              ) : (
+              {item.href && !isLast ? (
                 <Link
                   href={item.href}
                   className="flex items-center gap-1 truncate transition-colors hover:text-foreground"
@@ -62,6 +55,13 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
                     {item.label}
                   </span>
                 </Link>
+              ) : (
+                <span
+                  className="truncate font-medium text-foreground"
+                  aria-current="page"
+                >
+                  {item.label}
+                </span>
               )}
             </li>
           );

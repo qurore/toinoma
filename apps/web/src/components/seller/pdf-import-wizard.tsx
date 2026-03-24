@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useCallback } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Upload,
@@ -43,12 +43,32 @@ export function PdfImportWizard() {
   const [file, setFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [processingMessage, setProcessingMessage] = useState("");
+  const [processingProgress, setProcessingProgress] = useState(0);
   const [questions, setQuestions] = useState<QuestionWithAccepted[]>([]);
   const [isConfirming, setIsConfirming] = useState(false);
   const [importResult, setImportResult] = useState<{
     inserted: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  // Simulated progress during AI extraction
+  useEffect(() => {
+    if (currentStep !== 1) {
+      setProcessingProgress(0);
+      return;
+    }
+
+    const interval = setInterval(() => {
+      setProcessingProgress((prev) => {
+        // Asymptotic progress: gets slower as it approaches 90%
+        if (prev >= 90) return prev;
+        const increment = Math.max(0.5, (90 - prev) * 0.05);
+        return Math.min(90, prev + increment);
+      });
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [currentStep]);
 
   // File validation
   const validateFile = useCallback((f: File): string | null => {
@@ -117,6 +137,7 @@ export function PdfImportWizard() {
 
     setCurrentStep(1);
     setError(null);
+    setProcessingProgress(0);
     setProcessingMessage("PDFをアップロードしています...");
 
     try {
@@ -137,10 +158,15 @@ export function PdfImportWizard() {
         );
       }
 
+      // Jump progress to 100% on success
+      setProcessingProgress(100);
+
       const data = await response.json();
 
       if (!data.questions || data.questions.length === 0) {
-        setError("PDFから問題を抽出できませんでした。問題が含まれているPDFかご確認ください。");
+        setError(
+          "PDFから問題を抽出できませんでした。問題が含まれているPDFかご確認ください。"
+        );
         setCurrentStep(0);
         return;
       }
@@ -166,10 +192,7 @@ export function PdfImportWizard() {
 
   // Update a question
   const handleUpdateQuestion = useCallback(
-    (
-      tempId: string,
-      updates: Partial<QuestionWithAccepted>
-    ) => {
+    (tempId: string, updates: Partial<QuestionWithAccepted>) => {
       setQuestions((prev) =>
         prev.map((q) => (q.tempId === tempId ? { ...q, ...updates } : q))
       );
@@ -207,6 +230,19 @@ export function PdfImportWizard() {
     }
   }, [questions]);
 
+  // Reset entire wizard to step 1
+  const resetWizard = useCallback(() => {
+    setCurrentStep(0);
+    setFile(null);
+    setQuestions([]);
+    setImportResult(null);
+    setError(null);
+    setProcessingProgress(0);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  }, []);
+
   const acceptedCount = questions.filter((q) => q.accepted).length;
   const totalCount = questions.length;
 
@@ -235,7 +271,9 @@ export function PdfImportWizard() {
                     "flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-colors",
                     isActive && "bg-primary text-primary-foreground",
                     isComplete && "bg-primary/10 text-primary",
-                    !isActive && !isComplete && "bg-muted text-muted-foreground"
+                    !isActive &&
+                      !isComplete &&
+                      "bg-muted text-muted-foreground"
                   )}
                 >
                   {isComplete ? (
@@ -259,13 +297,13 @@ export function PdfImportWizard() {
         </div>
       )}
 
-      {/* Step 1: File upload */}
+      {/* ================================================================
+          Step 1: File upload (drag and drop)
+      ================================================================ */}
       {currentStep === 0 && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg">
-              PDFファイルを選択
-            </CardTitle>
+            <CardTitle className="text-lg">PDFファイルを選択</CardTitle>
           </CardHeader>
           <CardContent>
             <input
@@ -351,13 +389,15 @@ export function PdfImportWizard() {
         </Card>
       )}
 
-      {/* Step 2: Processing */}
+      {/* ================================================================
+          Step 2: AI extraction progress with progress bar
+      ================================================================ */}
       {currentStep === 1 && (
         <Card>
           <CardContent className="flex flex-col items-center gap-6 py-16">
             <div className="relative">
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-                <Sparkles className="h-10 w-10 text-primary animate-pulse" />
+                <Sparkles className="h-10 w-10 animate-pulse text-primary" />
               </div>
               <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-background shadow-sm ring-1 ring-border">
                 <Loader2 className="h-4 w-4 animate-spin text-primary" />
@@ -375,17 +415,55 @@ export function PdfImportWizard() {
               </p>
             </div>
 
-            {/* Animated progress bar */}
-            <div className="w-full max-w-xs">
-              <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                <div className="h-full animate-[progress_2s_ease-in-out_infinite] rounded-full bg-primary" />
+            {/* Real progress bar */}
+            <div className="w-full max-w-xs space-y-1">
+              <div className="h-2 overflow-hidden rounded-full bg-muted">
+                <div
+                  className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                  style={{ width: `${processingProgress}%` }}
+                />
               </div>
+              <p className="text-center text-xs text-muted-foreground">
+                {Math.round(processingProgress)}%
+              </p>
+            </div>
+
+            {/* Processing phases */}
+            <div className="flex w-full max-w-sm flex-col gap-2">
+              <ProcessingPhaseRow
+                label="PDFのアップロード"
+                done={processingProgress > 10}
+                active={processingProgress <= 10}
+              />
+              <ProcessingPhaseRow
+                label="テキスト抽出"
+                done={processingProgress > 30}
+                active={
+                  processingProgress > 10 && processingProgress <= 30
+                }
+              />
+              <ProcessingPhaseRow
+                label="問題構造の解析"
+                done={processingProgress > 60}
+                active={
+                  processingProgress > 30 && processingProgress <= 60
+                }
+              />
+              <ProcessingPhaseRow
+                label="ルーブリック生成"
+                done={processingProgress > 85}
+                active={
+                  processingProgress > 60 && processingProgress <= 85
+                }
+              />
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Step 3: Review extracted questions */}
+      {/* ================================================================
+          Step 3: Review extracted questions
+      ================================================================ */}
       {currentStep === 2 && (
         <>
           {/* Summary bar */}
@@ -420,7 +498,7 @@ export function PdfImportWizard() {
             </CardContent>
           </Card>
 
-          {/* Question list */}
+          {/* Question list with editing capability */}
           <div className="space-y-3">
             {questions.map((q, i) => (
               <ExtractedQuestionCard
@@ -435,18 +513,7 @@ export function PdfImportWizard() {
           {/* Navigation */}
           <Separator />
           <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={() => {
-                setCurrentStep(0);
-                setQuestions([]);
-                setFile(null);
-                setError(null);
-                if (fileInputRef.current) {
-                  fileInputRef.current.value = "";
-                }
-              }}
-            >
+            <Button variant="outline" onClick={resetWizard}>
               <ArrowLeft className="mr-1.5 h-4 w-4" />
               やり直す
             </Button>
@@ -465,7 +532,9 @@ export function PdfImportWizard() {
         </>
       )}
 
-      {/* Step 4: Success */}
+      {/* ================================================================
+          Step 4: Success confirmation
+      ================================================================ */}
       {currentStep === 3 && importResult && (
         <Card>
           <CardContent className="flex flex-col items-center gap-6 py-16">
@@ -481,19 +550,7 @@ export function PdfImportWizard() {
               </p>
             </div>
             <div className="flex items-center gap-3">
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setCurrentStep(0);
-                  setFile(null);
-                  setQuestions([]);
-                  setImportResult(null);
-                  setError(null);
-                  if (fileInputRef.current) {
-                    fileInputRef.current.value = "";
-                  }
-                }}
-              >
+              <Button variant="outline" onClick={resetWizard}>
                 <Upload className="mr-1.5 h-4 w-4" />
                 別のPDFをインポート
               </Button>
@@ -505,24 +562,43 @@ export function PdfImportWizard() {
           </CardContent>
         </Card>
       )}
+    </div>
+  );
+}
 
-      {/* Custom animation keyframe for progress bar */}
-      <style jsx global>{`
-        @keyframes progress {
-          0% {
-            width: 0%;
-            margin-left: 0%;
-          }
-          50% {
-            width: 60%;
-            margin-left: 20%;
-          }
-          100% {
-            width: 0%;
-            margin-left: 100%;
-          }
-        }
-      `}</style>
+// ========================================================================
+// Processing phase row indicator
+// ========================================================================
+function ProcessingPhaseRow({
+  label,
+  done,
+  active,
+}: {
+  label: string;
+  done: boolean;
+  active: boolean;
+}) {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex h-6 w-6 shrink-0 items-center justify-center">
+        {done ? (
+          <CheckCircle2 className="h-4 w-4 text-green-600" />
+        ) : active ? (
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+        ) : (
+          <div className="h-2 w-2 rounded-full bg-muted-foreground/30" />
+        )}
+      </div>
+      <span
+        className={cn(
+          "text-sm",
+          done && "text-green-700",
+          active && "font-medium text-foreground",
+          !done && !active && "text-muted-foreground"
+        )}
+      >
+        {label}
+      </span>
     </div>
   );
 }

@@ -1,10 +1,9 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import { SubmissionHistoryClient } from "./history-client";
+import { SUBJECT_LABELS } from "@toinoma/shared/constants";
+import type { Subject } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -18,13 +17,47 @@ export default async function SubmissionHistoryPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Fetch all submissions with problem set data
   const { data: submissions } = await supabase
     .from("submissions")
-    .select("id, problem_set_id, score, max_score, created_at, problem_sets(title)")
+    .select(
+      "id, problem_set_id, score, max_score, created_at, problem_sets(title, subject, difficulty)"
+    )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  const items = submissions ?? [];
+  const items = (submissions ?? []).map((s) => {
+    const ps = s.problem_sets as unknown as {
+      title: string;
+      subject: string;
+      difficulty: string;
+    } | null;
+
+    return {
+      id: s.id,
+      problemSetId: s.problem_set_id,
+      title: ps?.title ?? "Unknown",
+      subject: (ps?.subject ?? null) as Subject | null,
+      subjectLabel: ps?.subject
+        ? SUBJECT_LABELS[ps.subject as Subject] ?? ps.subject
+        : null,
+      score: s.score,
+      maxScore: s.max_score,
+      percentage:
+        s.max_score && s.max_score > 0
+          ? Math.round(((s.score ?? 0) / s.max_score) * 100)
+          : null,
+      createdAt: s.created_at,
+    };
+  });
+
+  // Derive available subjects for filter options
+  const subjectOptions = Array.from(
+    new Set(items.filter((i) => i.subject).map((i) => i.subject!))
+  ).map((s) => ({
+    value: s,
+    label: SUBJECT_LABELS[s] ?? s,
+  }));
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -35,66 +68,10 @@ export default async function SubmissionHistoryPage() {
           { label: "解答履歴", href: "/dashboard/history" },
         ]}
       />
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">解答履歴</h1>
-
-      {items.length === 0 ? (
-        <Card>
-          <CardContent className="py-16 text-center">
-            <p className="text-muted-foreground">
-              まだ解答履歴がありません
-            </p>
-            <Button className="mt-4" asChild>
-              <Link href="/explore">問題を探す</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="space-y-3">
-          {items.map((s) => {
-            const ps = s.problem_sets as unknown as { title: string } | null;
-            const percentage =
-              s.max_score && s.max_score > 0
-                ? Math.round(((s.score ?? 0) / s.max_score) * 100)
-                : null;
-            const date = new Date(s.created_at).toLocaleDateString("ja-JP");
-
-            return (
-              <Link key={s.id} href={`/problem/${s.problem_set_id}/result/${s.id}`}>
-                <Card className="transition-shadow hover:shadow-md">
-                  <CardContent className="flex items-center justify-between p-4">
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-medium">
-                        {ps?.title ?? "Unknown"}
-                      </p>
-                      <p className="text-sm text-muted-foreground">{date}</p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      {s.score !== null && s.max_score !== null && (
-                        <span className="text-sm font-semibold">
-                          {s.score} / {s.max_score}
-                        </span>
-                      )}
-                      {percentage !== null && (
-                        <Badge
-                          variant={
-                            percentage >= 80
-                              ? "default"
-                              : percentage >= 50
-                                ? "secondary"
-                                : "destructive"
-                          }
-                        >
-                          {percentage}%
-                        </Badge>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      <SubmissionHistoryClient
+        items={items}
+        subjectOptions={subjectOptions}
+      />
     </main>
   );
 }

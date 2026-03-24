@@ -4,6 +4,12 @@ import { StepIndicator } from "@/components/onboarding/step-indicator";
 import { TosStep } from "@/components/onboarding/tos-step";
 import { ProfileStep } from "@/components/onboarding/profile-step";
 import { StripeStep } from "@/components/onboarding/stripe-step";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "販売者登録 | 問の間",
+  description: "3つのステップで販売者登録を完了し、問題セットの販売を始めましょう。",
+};
 
 export default async function SellerOnboardingPage({
   searchParams,
@@ -45,14 +51,24 @@ export default async function SellerOnboardingPage({
   const requestedStep = params.step ? parseInt(params.step, 10) : currentStep;
   const step = Math.min(requestedStep, currentStep);
 
+  // Step descriptions for the progress area
+  const stepDescriptions = [
+    "出品者利用規約をご確認の上、同意してください。",
+    "購入者に表示される販売者情報を入力してください。",
+    "Stripeと連携して、収益の受け取りを設定します。",
+  ];
+
   return (
     <main className="container mx-auto max-w-3xl px-4 py-12">
       <div className="mb-10">
         <h1 className="mb-2 text-center text-2xl font-bold tracking-tight">
           販売者登録
         </h1>
-        <p className="mb-8 text-center text-sm text-muted-foreground">
+        <p className="mb-2 text-center text-sm text-muted-foreground">
           3つのステップで販売者登録を完了しましょう
+        </p>
+        <p className="mb-8 text-center text-xs text-muted-foreground">
+          {stepDescriptions[step - 1]}
         </p>
         <StepIndicator currentStep={step} />
       </div>

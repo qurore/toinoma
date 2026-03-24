@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Bell, Home, PlusCircle, Search, User } from "lucide-react";
+import { Home, Search, BookOpen, Store, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TabItem {
@@ -14,10 +14,10 @@ interface TabItem {
 }
 
 const TABS: TabItem[] = [
-  { href: "/dashboard", label: "ホーム", icon: Home, exact: true },
+  { href: "/", label: "ホーム", icon: Home, exact: true },
   { href: "/explore", label: "探す", icon: Search },
-  { href: "/sell", label: "出題", icon: PlusCircle },
-  { href: "/notifications", label: "通知", icon: Bell },
+  { href: "/dashboard", label: "学習", icon: BookOpen },
+  { href: "/sell", label: "出品", icon: Store },
   { href: "/settings", label: "マイページ", icon: User },
 ];
 
@@ -32,7 +32,7 @@ export function MobileAppTabBar() {
   return (
     <nav
       className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-white/95 backdrop-blur-sm md:hidden"
-      aria-label="アプリナビゲーション"
+      aria-label="モバイルナビゲーション"
     >
       <ul className="mx-auto flex h-14 max-w-lg items-stretch justify-around">
         {TABS.map((tab) => {
@@ -46,7 +46,7 @@ export function MobileAppTabBar() {
               <Link
                 href={tab.href}
                 className={cn(
-                  "flex min-h-[44px] w-full flex-col items-center justify-center gap-0.5 text-[10px] font-medium transition-colors",
+                  "flex min-h-[44px] w-full flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-1 text-[10px] font-medium transition-colors",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"

@@ -204,6 +204,54 @@ export default async function SellerDashboardPage() {
   );
   const recentActivity = activities.slice(0, 10);
 
+  // Fetch total unique students (purchasers)
+  const { data: allPurchasers } = await supabase
+    .from("purchases")
+    .select("user_id")
+    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"]);
+
+  const uniqueStudents = new Set(
+    (allPurchasers ?? []).map((p) => p.user_id)
+  ).size;
+
+  // Fetch total revenue across all time
+  const { data: totalRevenueData } = await supabase
+    .from("purchases")
+    .select("amount_paid")
+    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"]);
+
+  const totalRevenue = (totalRevenueData ?? []).reduce(
+    (sum, p) => sum + p.amount_paid,
+    0
+  );
+
+  // Aggregate last-30-day purchases by day for the revenue chart
+  const revenueByDay: Record<string, number> = {};
+
+  // Fetch daily purchase data for the chart
+  const { data: dailyPurchases } = await supabase
+    .from("purchases")
+    .select("amount_paid, created_at")
+    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
+    .gte("created_at", thirtyDaysAgo.toISOString())
+    .order("created_at", { ascending: true });
+
+  for (const p of dailyPurchases ?? []) {
+    const d = new Date(p.created_at);
+    const key = `${d.getMonth() + 1}/${d.getDate()}`;
+    revenueByDay[key] = (revenueByDay[key] ?? 0) + p.amount_paid;
+  }
+
+  // Populate daily chart data
+  const chartData: { date: string; revenue: number }[] = [];
+  for (let i = 29; i >= 0; i--) {
+    const dayStart = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    const label = `${dayStart.getMonth() + 1}/${dayStart.getDate()}`;
+    chartData.push({ date: label, revenue: revenueByDay[label] ?? 0 });
+  }
+
+  const chartMax = Math.max(...chartData.map((d) => d.revenue), 1);
+
   // Fetch latest 5 submissions for seller's problem sets
   const { data: latestSubmissions } = await supabase
     .from("submissions")
@@ -312,7 +360,7 @@ export default async function SellerDashboardPage() {
       </div>
 
       {/* Stats with trend indicators */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -329,6 +377,19 @@ export default async function SellerDashboardPage() {
             </p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              累計売上
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">¥{totalRevenue.toLocaleString()}</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              手取り ¥{Math.round(totalRevenue * 0.85).toLocaleString()}
+            </p>
+          </CardContent>
+        </Card>
         <StatCardWithTrend
           label="売上（30日）"
           value={`¥${currentRevenueTotal.toLocaleString()}`}
@@ -340,6 +401,7 @@ export default async function SellerDashboardPage() {
           value={String(currentPurchaseCount ?? 0)}
           current={currentPurchaseCount ?? 0}
           previous={prevPurchaseCount ?? 0}
+          subLabel={`累計 ${uniqueStudents}名`}
         />
         <StatCardWithTrend
           label="解答数（30日）"
@@ -348,6 +410,43 @@ export default async function SellerDashboardPage() {
           previous={prevSubmissionCount ?? 0}
         />
       </div>
+
+      {/* Revenue chart (30-day trend) */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle className="text-base font-semibold">
+            売上推移（直近30日間）
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex h-40 items-end gap-[2px]">
+            {chartData.map((d, i) => {
+              const heightPct = (d.revenue / chartMax) * 100;
+              return (
+                <div
+                  key={i}
+                  className="group relative flex flex-1 flex-col items-center"
+                >
+                  <div
+                    className="w-full rounded-t bg-primary/80 transition-colors group-hover:bg-primary"
+                    style={{ height: `${Math.max(heightPct, 1)}%` }}
+                  />
+                  {/* Tooltip on hover */}
+                  <div className="pointer-events-none absolute -top-10 left-1/2 z-10 hidden -translate-x-1/2 rounded bg-foreground px-2 py-1 text-[10px] text-background group-hover:block">
+                    {d.date}: ¥{d.revenue.toLocaleString()}
+                  </div>
+                  {/* Show every 5th label */}
+                  {i % 5 === 0 && (
+                    <span className="mt-1 text-[9px] text-muted-foreground">
+                      {d.date}
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent activity feed */}
@@ -521,11 +620,13 @@ function StatCardWithTrend({
   value,
   current,
   previous,
+  subLabel,
 }: {
   label: string;
   value: string;
   current: number;
   previous: number;
+  subLabel?: string;
 }) {
   const diff = previous === 0 ? (current > 0 ? 100 : 0) : Math.round(((current - previous) / previous) * 100);
   const isUp = diff > 0;
@@ -559,6 +660,9 @@ function StatCardWithTrend({
           )}
           <span className="text-muted-foreground">前月比</span>
         </div>
+        {subLabel && (
+          <p className="mt-0.5 text-xs text-muted-foreground">{subLabel}</p>
+        )}
       </CardContent>
     </Card>
   );

@@ -1,75 +1,68 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles, BookCheck, Award } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-
-const stats = [
-  { value: "9科目", label: "対応教科" },
-  { value: "AI採点", label: "自動フィードバック" },
-  { value: "15%", label: "手数料のみ" },
-];
 
 export function HeroSection() {
   return (
-    <section className="bg-hero relative flex min-h-[90dvh] items-center overflow-hidden pt-14">
-      {/* Glow effect */}
-      <div className="absolute left-1/2 top-1/4 h-96 w-96 -translate-x-1/2 rounded-full bg-green/10 blur-3xl" />
+    <section className="relative overflow-hidden bg-hero">
+      {/* Background pattern */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,hsl(142_71%_38%/0.15),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_80%,hsl(235_60%_52%/0.1),transparent_50%)]" />
 
-      <div className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
-        <div className="max-w-3xl">
+      <div className="relative mx-auto max-w-7xl px-4 py-24 sm:px-6 sm:py-32 lg:py-40">
+        <div className="mx-auto max-w-3xl text-center">
           {/* Badge */}
-          <div className="motion-safe:opacity-0 motion-safe:animate-fade-up">
-            <Badge className="mb-6 border-green/30 bg-green/10 px-4 py-1.5 text-sm font-medium text-green-light backdrop-blur-sm">
-              <Sparkles className="mr-1.5 h-3.5 w-3.5" />
-              AI採点で、学びが変わる
-            </Badge>
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm">
+            <Sparkles className="h-3.5 w-3.5 text-green-light" />
+            <span className="text-xs font-medium text-white/80">
+              AI採点で記述式の部分点を即座に判定
+            </span>
           </div>
 
-          {/* Title */}
-          <h1 className="motion-safe:opacity-0 motion-safe:animate-fade-up font-display text-5xl font-bold leading-tight tracking-tight md:text-7xl [animation-delay:100ms]">
-            <span className="text-white">問の間</span>
+          {/* Heading */}
+          <h1 className="text-4xl font-bold leading-tight tracking-tight text-white sm:text-5xl lg:text-6xl">
+            問いと答えが
             <br />
-            <span className="text-gradient-green">Toinoma</span>
+            <span className="text-gradient-green inline-block">出会う場所</span>
           </h1>
 
-          {/* Subtitle */}
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70 motion-safe:opacity-0 motion-safe:animate-fade-up [animation-delay:200ms]">
-            大学生が作るオリジナル入試問題を、
+          {/* Subheading */}
+          <p className="mt-6 text-lg leading-relaxed text-white/70 sm:text-xl">
+            大学受験生のための、AI採点付き問題マーケットプレイス。
             <br className="hidden sm:block" />
-            AIが即座に採点・フィードバック。
-            <br className="hidden sm:block" />
-            あなたの実力を、もっと伸ばせる場所。
+            大学生作問者がつくる本格入試問題で、実戦力を鍛えよう。
           </p>
 
-          {/* CTA */}
-          <div className="mt-10 flex flex-wrap gap-4 motion-safe:opacity-0 motion-safe:animate-fade-up [animation-delay:300ms]">
-            <Button variant="hero" size="lg" asChild className="focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-forest">
+          {/* CTAs */}
+          <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
+            <Button variant="hero" size="lg" asChild>
               <Link href="/explore">
                 問題を探す
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
-            <Button variant="heroOutline" size="lg" asChild className="focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-forest">
-              <Link href="/sell/onboarding">出題者になる</Link>
+            <Button variant="heroOutline" size="lg" asChild>
+              <Link href="/sell">出品者になる</Link>
             </Button>
           </div>
 
-          {/* Stats */}
-          <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3 motion-safe:opacity-0 motion-safe:animate-fade-up [animation-delay:400ms]">
-            {stats.map((stat) => (
-              <div key={stat.label}>
-                <div className="font-display text-2xl font-bold text-green-glow md:text-3xl">
-                  {stat.value}
-                </div>
-                <div className="mt-1 text-sm text-white/50">{stat.label}</div>
-              </div>
-            ))}
+          {/* Social proof */}
+          <div className="mt-12 flex items-center justify-center gap-8 text-white/50">
+            <div className="flex items-center gap-2">
+              <BookCheck className="h-4 w-4" />
+              <span className="text-sm">9科目対応</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              <span className="text-sm">AI部分点採点</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Award className="h-4 w-4" />
+              <span className="text-sm">無料問題あり</span>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Bottom gradient fade */}
-      <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-background to-transparent" />
     </section>
   );
 }

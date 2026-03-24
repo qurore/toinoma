@@ -40,11 +40,12 @@ const SUBJECT_ICONS: Record<Subject, string> = {
 };
 
 const STUDY_GOALS = [
-  { value: "entrance_exam", label: "\u5927\u5B66\u53D7\u9A13\u5BFE\u7B56" },
-  { value: "daily_study", label: "\u65E5\u5E38\u5B66\u7FD2" },
-  { value: "certification", label: "\u691C\u5B9A\u5BFE\u7B56" },
-  { value: "review", label: "\u5FA9\u7FD2\u30FB\u78BA\u8A8D" },
-  { value: "other", label: "\u305D\u306E\u4ED6" },
+  { value: "common_test", label: "共通テスト対策", description: "大学入学共通テストに向けた総合学習" },
+  { value: "national_secondary", label: "国公立二次対策", description: "国公立大学の二次試験・個別学力検査" },
+  { value: "private_general", label: "私立一般対策", description: "私立大学の一般入試・個別試験" },
+  { value: "entrance_exam", label: "総合型・推薦対策", description: "総合型選抜・学校推薦型選抜の対策" },
+  { value: "daily_study", label: "日常学習・定期テスト", description: "定期テストや日々の学習サポート" },
+  { value: "other", label: "その他", description: "上記に当てはまらない学習目的" },
 ] as const;
 
 // ──────────────────────────────────────────────
@@ -223,7 +224,7 @@ function StudyGoalStep({
             type="button"
             onClick={() => setSelectedGoal(goal.value)}
             className={cn(
-              "flex w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition-all duration-200",
+              "flex w-full items-center gap-3 rounded-xl border-2 px-4 py-3.5 text-left transition-all duration-200",
               selectedGoal === goal.value
                 ? "border-primary bg-primary/5 shadow-sm"
                 : "border-border hover:border-primary/30 hover:bg-muted/50"
@@ -241,16 +242,21 @@ function StudyGoalStep({
                 <Check className="h-3 w-3 text-primary-foreground" />
               )}
             </div>
-            <span
-              className={cn(
-                "text-sm font-medium",
-                selectedGoal === goal.value
-                  ? "text-primary"
-                  : "text-foreground"
-              )}
-            >
-              {goal.label}
-            </span>
+            <div className="min-w-0">
+              <span
+                className={cn(
+                  "block text-sm font-medium",
+                  selectedGoal === goal.value
+                    ? "text-primary"
+                    : "text-foreground"
+                )}
+              >
+                {goal.label}
+              </span>
+              <span className="block text-xs text-muted-foreground mt-0.5">
+                {goal.description}
+              </span>
+            </div>
           </button>
         ))}
       </div>

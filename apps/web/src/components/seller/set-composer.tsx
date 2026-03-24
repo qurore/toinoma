@@ -10,6 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -28,6 +29,8 @@ import {
   LayoutList,
   Settings2,
   AlertCircle,
+  CheckCircle2,
+  Eye,
 } from "lucide-react";
 import {
   QuestionPoolBrowser,
@@ -42,11 +45,18 @@ import {
   SetMetadataForm,
   type SetMetadata,
 } from "@/components/seller/set-metadata-form";
+import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
+import type { Subject, Difficulty } from "@/types/database";
 import { createProblemSetFromPool } from "@/app/(seller)/sell/sets/new/actions";
 
-export function SetComposer() {
+interface SetComposerProps {
+  sellerId?: string;
+}
+
+export function SetComposer({ sellerId }: SetComposerProps) {
   const [isPending, startTransition] = useTransition();
   const [metadataOpen, setMetadataOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [mobileTab, setMobileTab] = useState<string>("pool");
 
   // Metadata state
@@ -102,10 +112,9 @@ export function SetComposer() {
     [sections]
   );
 
-  // Add a question from the pool to the first section (or the last section with questions, or the first available)
+  // Add a question from the pool to the last section
   const handleAddQuestion = useCallback(
     (poolQuestion: PoolQuestion) => {
-      // Find the target section: last section, or create one if none exist
       if (sections.length === 0) {
         const newSection: ComposedSectionItem = {
           id: crypto.randomUUID(),
@@ -136,7 +145,7 @@ export function SetComposer() {
     [sections]
   );
 
-  // Validation
+  // Validation checks for publish readiness
   const validationErrors = useMemo(() => {
     const errors: string[] = [];
     if (!metadata.title.trim()) errors.push("タイトルを入力してください");
@@ -203,12 +212,63 @@ export function SetComposer() {
             {metadata.subject && (
               <>
                 <Separator orientation="vertical" className="h-3" />
-                <span>{metadata.subject}</span>
+                <span>
+                  {SUBJECT_LABELS[metadata.subject as Subject] ??
+                    metadata.subject}
+                </span>
+              </>
+            )}
+            {metadata.difficulty && (
+              <>
+                <Separator orientation="vertical" className="h-3" />
+                <span>
+                  {DIFFICULTY_LABELS[metadata.difficulty as Difficulty] ??
+                    metadata.difficulty}
+                </span>
+              </>
+            )}
+            {metadata.price > 0 && (
+              <>
+                <Separator orientation="vertical" className="h-3" />
+                <span>{metadata.price.toLocaleString()}円</span>
               </>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {/* Preview dialog */}
+          <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm" disabled={totalQuestions === 0}>
+                <Eye className="mr-1.5 h-3.5 w-3.5" />
+                プレビュー
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+              <DialogHeader>
+                <DialogTitle>問題セットプレビュー</DialogTitle>
+                <DialogDescription>
+                  学生に表示される問題セットのプレビュー
+                </DialogDescription>
+              </DialogHeader>
+              <SetPreview
+                metadata={metadata}
+                sections={sections}
+                totalPoints={totalPoints}
+                totalQuestions={totalQuestions}
+              />
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setPreviewOpen(false)}
+                >
+                  閉じる
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+          {/* Metadata dialog */}
           <Dialog open={metadataOpen} onOpenChange={setMetadataOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
@@ -226,6 +286,7 @@ export function SetComposer() {
               <SetMetadataForm
                 metadata={metadata}
                 onChange={setMetadata}
+                sellerId={sellerId}
               />
               <DialogFooter>
                 <Button
@@ -262,6 +323,14 @@ export function SetComposer() {
               <p key={err}>{err}</p>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Publish readiness indicator */}
+      {canSave && totalQuestions > 0 && (
+        <div className="mt-3 flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-xs text-green-700">
+          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+          <span>公開準備完了 — 保存後に公開できます</span>
         </div>
       )}
 
@@ -350,6 +419,96 @@ export function SetComposer() {
           </TabsContent>
         </Tabs>
       </div>
+    </div>
+  );
+}
+
+// ========================================================================
+// Set preview sub-component
+// ========================================================================
+function SetPreview({
+  metadata,
+  sections,
+  totalPoints,
+  totalQuestions,
+}: {
+  metadata: SetMetadata;
+  sections: ComposedSectionItem[];
+  totalPoints: number;
+  totalQuestions: number;
+}) {
+  return (
+    <div className="space-y-4">
+      {/* Header info */}
+      <div className="rounded-lg border border-border p-4">
+        <h3 className="text-lg font-bold">
+          {metadata.title || "（タイトル未設定）"}
+        </h3>
+        {metadata.description && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            {metadata.description}
+          </p>
+        )}
+        <div className="mt-3 flex flex-wrap gap-2">
+          {metadata.subject && (
+            <Badge variant="secondary">
+              {SUBJECT_LABELS[metadata.subject as Subject] ??
+                metadata.subject}
+            </Badge>
+          )}
+          {metadata.difficulty && (
+            <Badge variant="secondary">
+              {DIFFICULTY_LABELS[metadata.difficulty as Difficulty] ??
+                metadata.difficulty}
+            </Badge>
+          )}
+          <Badge variant="outline">{totalQuestions}問</Badge>
+          <Badge variant="outline">{totalPoints}点</Badge>
+          {metadata.timeLimitMinutes && (
+            <Badge variant="outline">
+              {metadata.timeLimitMinutes}分
+            </Badge>
+          )}
+          {metadata.price > 0 ? (
+            <Badge>{metadata.price.toLocaleString()}円</Badge>
+          ) : (
+            <Badge variant="secondary">無料</Badge>
+          )}
+        </div>
+      </div>
+
+      {/* Section previews */}
+      {sections.map((section) => (
+        <div key={section.id}>
+          <h4 className="mb-2 text-sm font-semibold">
+            {section.sectionTitle}
+          </h4>
+          <div className="space-y-1.5">
+            {section.questions.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic">
+                問題なし
+              </p>
+            ) : (
+              section.questions.map((q, idx) => (
+                <div
+                  key={q.questionId}
+                  className="flex items-center gap-2 rounded-md border border-border px-3 py-2"
+                >
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {idx + 1}.
+                  </span>
+                  <p className="flex-1 text-xs line-clamp-1">
+                    {q.questionText}
+                  </p>
+                  <span className="text-xs text-muted-foreground">
+                    {q.pointsOverride ?? q.originalPoints}点
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

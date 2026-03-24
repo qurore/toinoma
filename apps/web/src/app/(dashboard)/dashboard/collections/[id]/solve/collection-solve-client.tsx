@@ -388,30 +388,114 @@ export function CollectionSolveClient({
         </Card>
       ) : null}
 
-      {/* Completion screen */}
-      {allCompleted && (
-        <Card className="border-success/20 bg-success/5">
-          <CardContent className="flex flex-col items-center py-8">
-            <Trophy className="mb-3 h-10 w-10 text-success" />
-            <p className="mb-1 text-lg font-semibold">
-              全問完了しました！
-            </p>
-            <p className="mb-4 text-sm text-muted-foreground">
-              お疲れ様でした。結果をダッシュボードで確認しましょう。
-            </p>
-            <div className="flex gap-2">
-              <Button asChild>
-                <Link href="/dashboard/history">解答履歴を見る</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href={`/dashboard/collections/${collectionId}`}>
-                  コレクションに戻る
-                </Link>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
+      {/* Completion screen with aggregate score */}
+      {allCompleted && (() => {
+        const totalScore = problems.reduce((sum, p) => {
+          const state = states[p.id];
+          if (state?.status === "completed" && state.result) {
+            return sum + (state.result.totalScore ?? 0);
+          }
+          return sum;
+        }, 0);
+        const totalMaxScore = problems.reduce((sum, p) => {
+          const state = states[p.id];
+          if (state?.status === "completed" && state.result) {
+            return sum + (state.result.maxScore ?? 0);
+          }
+          return sum;
+        }, 0);
+        const percentage =
+          totalMaxScore > 0 ? Math.round((totalScore / totalMaxScore) * 100) : 0;
+
+        return (
+          <Card className="border-primary/20 bg-primary/5">
+            <CardContent className="flex flex-col items-center py-10">
+              <Trophy className="mb-4 h-12 w-12 text-primary" />
+              <p className="mb-2 text-xl font-bold">
+                全問完了しました！
+              </p>
+
+              {/* Aggregate score display */}
+              <div className="mb-4 flex items-baseline gap-1">
+                <span className="text-4xl font-bold text-primary">
+                  {totalScore}
+                </span>
+                <span className="text-lg text-muted-foreground">
+                  / {totalMaxScore}
+                </span>
+                <Badge
+                  className="ml-2"
+                  variant={
+                    percentage >= 80
+                      ? "default"
+                      : percentage >= 50
+                        ? "secondary"
+                        : "destructive"
+                  }
+                >
+                  {percentage}%
+                </Badge>
+              </div>
+
+              {/* Per-problem breakdown */}
+              <div className="mb-6 w-full max-w-md space-y-1.5">
+                {problems.map((p, i) => {
+                  const state = states[p.id];
+                  const score =
+                    state?.status === "completed"
+                      ? (state.result.totalScore ?? 0)
+                      : 0;
+                  const max =
+                    state?.status === "completed"
+                      ? (state.result.maxScore ?? 0)
+                      : 0;
+                  const pct = max > 0 ? Math.round((score / max) * 100) : 0;
+
+                  return (
+                    <div
+                      key={p.id}
+                      className="flex items-center justify-between rounded-md px-3 py-1.5 text-sm odd:bg-muted/30"
+                    >
+                      <span className="truncate font-medium">
+                        {i + 1}. {p.title}
+                      </span>
+                      <span className="shrink-0 tabular-nums text-muted-foreground">
+                        {score}/{max}{" "}
+                        <span
+                          className={cn(
+                            "font-semibold",
+                            pct >= 80
+                              ? "text-primary"
+                              : pct >= 50
+                                ? "text-amber-600"
+                                : "text-destructive"
+                          )}
+                        >
+                          ({pct}%)
+                        </span>
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <p className="mb-4 text-sm text-muted-foreground">
+                お疲れ様でした。解答履歴でさらに詳しい結果を確認できます。
+              </p>
+              <div className="flex gap-2">
+                <Button asChild>
+                  <Link href="/dashboard/history">解答履歴を見る</Link>
+                </Button>
+                <Button variant="outline" asChild>
+                  <Link href={`/dashboard/collections/${collectionId}`}>
+                    コレクションに戻る
+                  </Link>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })()}
     </div>
   );
 }

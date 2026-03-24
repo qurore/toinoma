@@ -1,17 +1,51 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { BookOpen, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+const NAV_LINKS = [
+  { href: "/explore", label: "問題を探す" },
+  { href: "/sell/onboarding", label: "出題する" },
+  { href: "/help", label: "ヘルプ" },
+] as const;
+
 export function Navbar() {
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
+  const handleScroll = useCallback(() => {
+    setScrolled(window.scrollY > 16);
+  }, []);
+
+  useEffect(() => {
+    // Set initial state in case of a mid-page load (e.g., back-nav)
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [handleScroll]);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-white/10 bg-forest/80 backdrop-blur-md">
+    <header
+      className={cn(
+        "fixed top-0 z-50 w-full transition-all duration-300",
+        scrolled
+          ? "border-b border-white/15 bg-forest/95 shadow-lg shadow-black/10 backdrop-blur-lg"
+          : "border-b border-transparent bg-forest/80 backdrop-blur-md"
+      )}
+    >
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
+        {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-green" />
           <div className="flex flex-col">
@@ -24,93 +58,119 @@ export function Navbar() {
           </div>
         </Link>
 
-        <nav className="hidden items-center gap-6 md:flex">
-          <Link
-            href="/explore"
-            className="text-sm font-medium text-white/70 transition-colors hover:text-white"
-          >
-            問題を探す
-          </Link>
-          <Link
-            href="/sell/onboarding"
-            className="text-sm font-medium text-white/70 transition-colors hover:text-white"
-          >
-            出題する
-          </Link>
+        {/* Desktop navigation */}
+        <nav className="hidden items-center gap-1 md:flex" aria-label="メインナビゲーション">
+          {NAV_LINKS.map((link) => {
+            const isActive = pathname.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={cn(
+                  "relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
+                  isActive
+                    ? "text-white"
+                    : "text-white/70 hover:text-white"
+                )}
+              >
+                {link.label}
+                {isActive && (
+                  <span className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-green" />
+                )}
+              </Link>
+            );
+          })}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <Button variant="ghost" size="sm" asChild className="hidden md:inline-flex">
-            <Link href="/login" className="text-white/80 hover:text-white">
-              ログイン
-            </Link>
+        {/* Desktop auth actions */}
+        <div className="hidden items-center gap-3 md:flex">
+          <Button variant="ghost" size="sm" asChild className="text-white/80 hover:bg-white/10 hover:text-white">
+            <Link href="/login">ログイン</Link>
           </Button>
-          <Button size="sm" asChild className="hidden md:inline-flex">
+          <Button size="sm" asChild>
             <Link href="/login">無料で始める</Link>
           </Button>
-
-          {/* Mobile hamburger toggle */}
-          <button
-            type="button"
-            className="inline-flex h-10 w-10 items-center justify-center rounded-md text-white/80 transition-colors hover:bg-white/10 hover:text-white md:hidden"
-            onClick={() => setMobileOpen((prev) => !prev)}
-            aria-label={mobileOpen ? "メニューを閉じる" : "メニューを開く"}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <Menu className="h-5 w-5" />
-            )}
-          </button>
         </div>
-      </div>
 
-      {/* Mobile slide-down panel */}
-      <div
-        className={cn(
-          "overflow-hidden border-t border-white/10 bg-forest/95 backdrop-blur-md transition-[max-height] duration-300 ease-in-out md:hidden",
-          mobileOpen ? "max-h-80" : "max-h-0 border-t-transparent"
-        )}
-      >
-        <nav className="flex flex-col px-6 py-4 space-y-1">
-          <Link
-            href="/explore"
-            onClick={() => setMobileOpen(false)}
-            className="flex h-11 items-center rounded-md px-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            問題を探す
-          </Link>
-          <Link
-            href="/sell/onboarding"
-            onClick={() => setMobileOpen(false)}
-            className="flex h-11 items-center rounded-md px-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            出題する
-          </Link>
-          <Link
-            href="/help"
-            onClick={() => setMobileOpen(false)}
-            className="flex h-11 items-center rounded-md px-3 text-sm font-medium text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-          >
-            ヘルプ
-          </Link>
-          <div className="my-2 border-t border-white/10" />
-          <Link
-            href="/login"
-            onClick={() => setMobileOpen(false)}
-            className="flex h-11 items-center rounded-md px-3 text-sm font-medium text-white transition-colors hover:bg-white/10"
-          >
-            ログイン
-          </Link>
-          <Link
-            href="/login"
-            onClick={() => setMobileOpen(false)}
-            className="flex h-11 items-center justify-center rounded-md bg-green px-3 text-sm font-semibold text-forest transition-colors hover:bg-green/90"
-          >
-            無料で始める
-          </Link>
-        </nav>
+        {/* Mobile menu (Radix Dialog as side-sheet) */}
+        <DialogPrimitive.Root open={mobileOpen} onOpenChange={setMobileOpen}>
+          <DialogPrimitive.Trigger asChild>
+            <button
+              type="button"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-md text-white/80 transition-colors hover:bg-white/10 hover:text-white md:hidden"
+              aria-label="メニューを開く"
+            >
+              <Menu className="h-5 w-5" />
+            </button>
+          </DialogPrimitive.Trigger>
+
+          <DialogPrimitive.Portal>
+            <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/60 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+            <DialogPrimitive.Content
+              className="fixed inset-y-0 right-0 z-50 flex w-72 flex-col bg-forest shadow-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right duration-300"
+              aria-describedby={undefined}
+            >
+              <DialogPrimitive.Title className="sr-only">
+                ナビゲーションメニュー
+              </DialogPrimitive.Title>
+
+              {/* Sheet header */}
+              <div className="flex h-14 items-center justify-between border-b border-white/10 px-6">
+                <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
+                  <BookOpen className="h-5 w-5 text-green" />
+                  <span className="font-display text-base font-bold text-white">問の間</span>
+                </Link>
+                <DialogPrimitive.Close asChild>
+                  <button
+                    type="button"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-md text-white/70 transition-colors hover:bg-white/10 hover:text-white"
+                    aria-label="メニューを閉じる"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </DialogPrimitive.Close>
+              </div>
+
+              {/* Sheet navigation links */}
+              <nav className="flex flex-1 flex-col gap-1 px-4 py-4">
+                {NAV_LINKS.map((link) => {
+                  const isActive = pathname.startsWith(link.href);
+                  return (
+                    <Link
+                      key={link.href}
+                      href={link.href}
+                      onClick={() => setMobileOpen(false)}
+                      className={cn(
+                        "flex h-11 items-center rounded-md px-3 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-white/10 text-white"
+                          : "text-white/80 hover:bg-white/10 hover:text-white"
+                      )}
+                    >
+                      {link.label}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Sheet auth actions */}
+              <div className="border-t border-white/10 px-4 py-4">
+                <div className="flex flex-col gap-2">
+                  <Button variant="ghost" size="sm" asChild className="justify-center text-white/80 hover:bg-white/10 hover:text-white">
+                    <Link href="/login" onClick={() => setMobileOpen(false)}>
+                      ログイン
+                    </Link>
+                  </Button>
+                  <Button size="sm" asChild className="justify-center">
+                    <Link href="/login" onClick={() => setMobileOpen(false)}>
+                      無料で始める
+                    </Link>
+                  </Button>
+                </div>
+              </div>
+            </DialogPrimitive.Content>
+          </DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
       </div>
     </header>
   );

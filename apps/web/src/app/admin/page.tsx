@@ -1,6 +1,18 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Users, Activity, ShoppingCart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  TrendingUp,
+  Users,
+  Activity,
+  ShoppingCart,
+  Flag,
+  UserCog,
+  Shield,
+  Store,
+} from "lucide-react";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -187,6 +199,7 @@ export default async function AdminDashboardPage() {
     recentUsersResult,
     recentPurchasesResult,
     activeSubmitters,
+    recentReportsResult,
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase
@@ -213,7 +226,24 @@ export default async function AdminDashboardPage() {
       .from("submissions")
       .select("user_id")
       .gte("created_at", sevenDaysAgo.toISOString()),
+    // Recent reports (most recent 5)
+    supabase
+      .from("reports")
+      .select("id, reason, status, created_at, problem_set_id, problem_sets(title)")
+      .order("created_at", { ascending: false })
+      .limit(5),
   ]);
+
+  // Type the reports data safely since the table may not be in generated types
+  interface ReportRow {
+    id: string;
+    reason: string;
+    status: string;
+    created_at: string;
+    problem_set_id: string;
+    problem_sets: { title: string } | null;
+  }
+  const recentReports = (recentReportsResult.data ?? []) as unknown as ReportRow[];
 
   const totalUsers = usersResult.count ?? 0;
   const totalSellers = sellersResult.count ?? 0;
@@ -308,8 +338,36 @@ export default async function AdminDashboardPage() {
         </Card>
       </div>
 
+      {/* Quick actions */}
+      <div className="mb-8 flex flex-wrap gap-2">
+        <Button size="sm" asChild>
+          <Link href="/admin/users">
+            <UserCog className="mr-1.5 h-3.5 w-3.5" />
+            ユーザー管理
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/reports">
+            <Flag className="mr-1.5 h-3.5 w-3.5" />
+            報告管理
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/sellers">
+            <Store className="mr-1.5 h-3.5 w-3.5" />
+            出品者管理
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/announcements">
+            <Shield className="mr-1.5 h-3.5 w-3.5" />
+            お知らせ管理
+          </Link>
+        </Button>
+      </div>
+
       {/* Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="mb-8 grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
@@ -342,6 +400,68 @@ export default async function AdminDashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Recent reports queue */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <Flag className="h-4 w-4 text-amber-600" />
+            最近の報告
+          </CardTitle>
+          <Button variant="ghost" size="sm" asChild>
+            <Link href="/admin/reports">すべて表示</Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {recentReports.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted-foreground">
+              未対応の報告はありません
+            </p>
+          ) : (
+            <div className="space-y-3">
+              {recentReports.map((report) => {
+                const setTitle =
+                  (report.problem_sets as unknown as { title: string } | null)
+                    ?.title ?? "---";
+                return (
+                  <div
+                    key={report.id}
+                    className="flex items-center justify-between rounded-md border border-border p-3"
+                  >
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium">{setTitle}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        {report.reason}
+                      </p>
+                    </div>
+                    <div className="ml-4 flex items-center gap-2">
+                      <Badge
+                        variant={
+                          report.status === "pending"
+                            ? "default"
+                            : report.status === "resolved"
+                              ? "secondary"
+                              : "destructive"
+                        }
+                        className="text-xs"
+                      >
+                        {report.status === "pending"
+                          ? "未対応"
+                          : report.status === "resolved"
+                            ? "解決済み"
+                            : report.status}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(report.created_at).toLocaleDateString("ja-JP")}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

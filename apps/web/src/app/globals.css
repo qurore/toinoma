@@ -59,12 +59,49 @@
   --radius-xl: 1rem;
   --radius-2xl: 1.5rem;
 
+  /* Primary scale — Wakaba Green */
+  --color-primary-50: hsl(138 60% 96%);
+  --color-primary-100: hsl(140 62% 90%);
+  --color-primary-200: hsl(141 64% 80%);
+  --color-primary-300: hsl(142 66% 66%);
+  --color-primary-400: hsl(142 69% 52%);
+  --color-primary-500: hsl(142 71% 38%);
+  --color-primary-600: hsl(142 76% 30%);
+  --color-primary-700: hsl(143 78% 24%);
+  --color-primary-800: hsl(144 80% 19%);
+  --color-primary-900: hsl(145 82% 14%);
+
+  /* Chart colors — for recharts and data visualization */
+  --color-chart-1: hsl(142 71% 38%);
+  --color-chart-2: hsl(235 60% 52%);
+  --color-chart-3: hsl(38 92% 50%);
+  --color-chart-4: hsl(210 80% 55%);
+  --color-chart-5: hsl(0 84% 60%);
+
+  /* Sidebar tokens */
+  --color-sidebar-background: hsl(0 0% 100%);
+  --color-sidebar-foreground: hsl(222 47% 11%);
+  --color-sidebar-border: hsl(220 16% 90%);
+  --color-sidebar-ring: hsl(142 71% 38%);
+  --color-sidebar-accent: hsl(142 71% 38% / 0.08);
+  --color-sidebar-accent-foreground: hsl(142 76% 30%);
+  --color-sidebar-primary: hsl(142 71% 38%);
+  --color-sidebar-primary-foreground: hsl(0 0% 100%);
+  --color-sidebar-muted: hsl(220 16% 93%);
+  --color-sidebar-muted-foreground: hsl(220 10% 46%);
+
   /* Animations */
   --animate-fade-up: fade-up 0.6s ease-out forwards;
   --animate-fade-in: fade-in 0.5s ease-out forwards;
   --animate-slide-in-left: slide-in-left 0.6s ease-out forwards;
   --animate-float: float 3s ease-in-out infinite;
   --animate-pulse-glow: pulse-glow 2s ease-in-out infinite;
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  --animate-slide-down-fade: slide-down-fade 0.25s ease-out;
+  --animate-slide-up-fade: slide-up-fade 0.25s ease-out;
+  --animate-scale-in: scale-in 0.2s ease-out;
+  --animate-spin-slow: spin-slow 3s linear infinite;
 }
 
 @layer base {
@@ -157,6 +194,66 @@
   }
 }
 
+@keyframes accordion-down {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+
+@keyframes accordion-up {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+@keyframes slide-down-fade {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-up-fade {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @layer utilities {
   .text-gradient-green {
     background-image: var(--gradient-green);
@@ -222,10 +319,71 @@
     }
   }
 
+  /* Thin scrollbar styling for overflow containers */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(220 16% 80%) transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background-color: hsl(220 16% 80%);
+    border-radius: 9999px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(220 16% 66%);
+  }
+
+  /* Line clamping utilities */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .line-clamp-3 {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Glass morphism effect for overlays and floating panels */
+  .glass {
+    background: hsl(0 0% 100% / 0.8);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
   /* Motion-safe utility: only apply animations when user has no reduced-motion preference */
   .motion-safe {
     animation: none !important;
     transition: none !important;
+  }
+}
+
+/* Focus-visible styles for all interactive elements */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  /* Remove default focus outline for mouse users */
+  :focus:not(:focus-visible) {
+    outline: none;
   }
 }
 

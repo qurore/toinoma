@@ -7,6 +7,25 @@ import { problemSetRubricSchema } from "@toinoma/shared/schemas";
 import { SolveClient } from "@/components/grading/solve-client";
 import { AiAssistantDialog } from "@/components/ai-assistant/ai-assistant-dialog";
 import { getSubscriptionState } from "@/lib/subscription";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: ps } = await supabase
+    .from("problem_sets")
+    .select("title")
+    .eq("id", id)
+    .single();
+
+  return {
+    title: ps ? `${ps.title} - 解答 | 問の間` : "解答 | 問の間",
+  };
+}
 
 export default async function ProblemSolvePage({
   params,
@@ -55,19 +74,35 @@ export default async function ProblemSolvePage({
     );
   }
 
+  // Count total questions for the progress indicator
+  const totalQuestions = rubricResult.data.sections.reduce(
+    (sum, s) => sum + s.questions.length,
+    0
+  );
+
   return (
     <>
       {/* Minimal exam-mode header bar */}
       <header className="fixed top-0 z-50 w-full border-b border-border bg-white/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+          {/* Left: Title */}
           <h1 className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
             {ps.title}
           </h1>
-          {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
-            <span className="mx-4 shrink-0 rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground tabular-nums">
-              {ps.time_limit_minutes}分
+
+          {/* Center: Progress indicator */}
+          <div className="mx-4 hidden shrink-0 items-center gap-3 sm:flex">
+            <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+              全{totalQuestions}問
             </span>
-          )}
+            {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
+              <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground tabular-nums">
+                制限時間 {ps.time_limit_minutes}分
+              </span>
+            )}
+          </div>
+
+          {/* Right: Exit button */}
           <Button variant="outline" size="sm" className="shrink-0" asChild>
             <Link href={`/problem/${id}`}>
               <LogOut className="mr-1.5 h-3.5 w-3.5" />
@@ -77,25 +112,17 @@ export default async function ProblemSolvePage({
         </div>
       </header>
 
-      <main className="container mx-auto max-w-3xl px-4 pb-8 pt-20">
+      <main className="mx-auto max-w-7xl px-4 pb-8 pt-20 sm:px-6">
         <p className="mb-6 text-sm text-muted-foreground">
           解答を入力してAI採点を受けましょう
         </p>
-
-        {ps.problem_pdf_url && (
-          <div className="mb-6">
-            <iframe
-              src={ps.problem_pdf_url}
-              className="h-[500px] w-full rounded-lg border border-border"
-              title="問題PDF"
-            />
-          </div>
-        )}
 
         <SolveClient
           problemSetId={id}
           rubric={rubricResult.data}
           userId={user.id}
+          problemPdfUrl={ps.problem_pdf_url}
+          timeLimitMinutes={ps.time_limit_minutes}
         />
 
         <AiAssistantDialog problemSetId={id} isPro={isPro} />

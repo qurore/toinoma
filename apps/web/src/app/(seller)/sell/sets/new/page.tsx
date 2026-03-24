@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 };
 
 export default async function CreateProblemSetFromPoolPage() {
-  await requireSellerTos();
+  const { user } = await requireSellerTos();
 
   return (
     <main className="container mx-auto flex h-[calc(100vh-3.5rem)] flex-col px-4 py-6">
@@ -34,7 +34,7 @@ export default async function CreateProblemSetFromPoolPage() {
       </div>
 
       <div className="min-h-0 flex-1">
-        <SetComposer />
+        <SetComposer sellerId={user.id} />
       </div>
     </main>
   );

@@ -4,15 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   User,
+  Bell,
   CreditCard,
-  ShoppingBag,
-  History,
-  Heart,
+  Receipt,
+  Monitor,
   Store,
   Trash2,
-  Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// ──────────────────────────────────────────────
+// Navigation item type
+// ──────────────────────────────────────────────
 
 interface NavItem {
   href: string;
@@ -20,32 +23,58 @@ interface NavItem {
   icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
   variant?: "default" | "destructive";
-  external?: boolean;
 }
+
+// ──────────────────────────────────────────────
+// Settings navigation items
+// ──────────────────────────────────────────────
 
 const BASE_NAV_ITEMS: NavItem[] = [
   { href: "/settings/profile", label: "プロフィール", icon: User, exact: false },
-  { href: "/settings/subscription", label: "サブスクリプション", icon: CreditCard, exact: false },
-  { href: "/settings/sessions", label: "セッション管理", icon: Monitor, exact: false },
-  { href: "/dashboard", label: "購入済み問題", icon: ShoppingBag, exact: true, external: true },
-  { href: "/dashboard/history", label: "解答履歴", icon: History, exact: false, external: true },
-  { href: "/dashboard/favorites", label: "お気に入り", icon: Heart, exact: false, external: true },
+  {
+    href: "/settings/notifications",
+    label: "通知設定",
+    icon: Bell,
+    exact: false,
+  },
+  {
+    href: "/settings/subscription",
+    label: "サブスクリプション",
+    icon: CreditCard,
+    exact: false,
+  },
+  {
+    href: "/settings/billing",
+    label: "請求情報",
+    icon: Receipt,
+    exact: false,
+  },
+  {
+    href: "/settings/sessions",
+    label: "セッション",
+    icon: Monitor,
+    exact: false,
+  },
 ];
 
 const SELLER_NAV_ITEM: NavItem = {
   href: "/settings/seller",
-  label: "出品者情報",
+  label: "出品者設定",
   icon: Store,
   exact: false,
 };
 
 const DELETE_NAV_ITEM: NavItem = {
   href: "/settings/delete-account",
-  label: "退会",
+  label: "アカウント削除",
   icon: Trash2,
   exact: false,
   variant: "destructive",
 };
+
+// ──────────────────────────────────────────────
+// Sidebar component
+// ──────────────────────────────────────────────
 
 interface SettingsSidebarProps {
   isSeller: boolean;
@@ -53,7 +82,10 @@ interface SettingsSidebarProps {
   horizontal?: boolean;
 }
 
-export function SettingsSidebar({ isSeller, horizontal = false }: SettingsSidebarProps) {
+export function SettingsSidebar({
+  isSeller,
+  horizontal = false,
+}: SettingsSidebarProps) {
   const pathname = usePathname();
 
   const navItems: NavItem[] = [
@@ -62,14 +94,18 @@ export function SettingsSidebar({ isSeller, horizontal = false }: SettingsSideba
     DELETE_NAV_ITEM,
   ];
 
+  // Horizontal tab bar for mobile
   if (horizontal) {
     return (
-      <nav aria-label="設定ナビゲーション" className="overflow-x-auto">
+      <nav
+        aria-label="設定ナビゲーション"
+        className="overflow-x-auto scrollbar-thin"
+      >
         <ul className="flex gap-1 pb-1">
           {navItems.map((item) => {
-            const isActive = !item.external && (
-              item.exact ? pathname === item.href : pathname.startsWith(item.href)
-            );
+            const isActive = item.exact
+              ? pathname === item.href
+              : pathname.startsWith(item.href);
             const isDestructive = item.variant === "destructive";
 
             return (
@@ -95,13 +131,14 @@ export function SettingsSidebar({ isSeller, horizontal = false }: SettingsSideba
     );
   }
 
+  // Desktop sidebar
   return (
     <nav aria-label="設定ナビゲーション">
       <ul className="space-y-0.5">
         {navItems.map((item) => {
-          const isActive = !item.external && (
-            item.exact ? pathname === item.href : pathname.startsWith(item.href)
-          );
+          const isActive = item.exact
+            ? pathname === item.href
+            : pathname.startsWith(item.href);
           const Icon = item.icon;
           const isDestructive = item.variant === "destructive";
 

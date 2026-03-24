@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Loader2, Mail, Bell } from "lucide-react";
+import { Loader2, Mail, Bell, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -17,6 +17,10 @@ import {
   updateNotificationPreferences,
   type NotificationPreferences,
 } from "./actions";
+
+// ──────────────────────────────────────────────
+// Notification category definitions
+// ──────────────────────────────────────────────
 
 interface Category {
   id: string;
@@ -36,7 +40,7 @@ const CATEGORIES: Category[] = [
   },
   {
     id: "grading",
-    label: "採点通知",
+    label: "採点完了通知",
     description: "AI採点の完了通知と結果概要",
     emailKey: "email_grading",
     inappKey: "inapp_grading",
@@ -50,21 +54,21 @@ const CATEGORIES: Category[] = [
   },
   {
     id: "announcement",
-    label: "お知らせ",
-    description: "プラットフォームからのお知らせ",
+    label: "お知らせ通知",
+    description: "プラットフォームからの重要なお知らせ",
     emailKey: "email_announcement",
     inappKey: "inapp_announcement",
   },
   {
     id: "subscription",
-    label: "サブスクリプション",
-    description: "プラン更新や支払いリマインダー",
+    label: "サブスクリプション通知",
+    description: "プラン更新・支払いリマインダー・請求書",
     emailKey: "email_subscription",
     inappKey: "inapp_subscription",
   },
   {
     id: "qa",
-    label: "Q&A",
+    label: "Q&A通知",
     description: "Q&Aの回答や返信の通知",
     emailKey: "email_qa",
     inappKey: "inapp_qa",
@@ -74,9 +78,13 @@ const CATEGORIES: Category[] = [
     label: "マーケティング",
     description: "新機能やキャンペーンのお知らせ",
     emailKey: "email_marketing",
-    inappKey: null, // email only
+    inappKey: null,
   },
 ];
+
+// ──────────────────────────────────────────────
+// Form component
+// ──────────────────────────────────────────────
 
 interface NotificationSettingsFormProps {
   initialPreferences: NotificationPreferences;
@@ -113,7 +121,7 @@ export function NotificationSettingsForm({
         <CardHeader>
           <CardTitle className="text-base">通知カテゴリ</CardTitle>
           <CardDescription>
-            カテゴリごとに通知のオン/オフを切り替えられます
+            カテゴリごとにメール通知とアプリ内通知のオン/オフを切り替えられます
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -137,9 +145,9 @@ export function NotificationSettingsForm({
                 key={cat.id}
                 className="flex items-center gap-4 border-b border-border/50 py-4 last:border-b-0"
               >
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <Label className="text-sm font-medium">{cat.label}</Label>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     {cat.description}
                   </p>
                 </div>
@@ -166,7 +174,7 @@ export function NotificationSettingsForm({
                       aria-label={`${cat.label}のアプリ通知`}
                     />
                   ) : (
-                    <span className="text-xs text-muted-foreground">—</span>
+                    <span className="text-xs text-muted-foreground">---</span>
                   )}
                 </div>
               </div>
@@ -175,15 +183,20 @@ export function NotificationSettingsForm({
         </CardContent>
       </Card>
 
+      {/* Save action bar */}
       <div className="flex items-center gap-3">
         <Button onClick={handleSave} disabled={isPending || !hasChanges}>
           {isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : null}
+          ) : (
+            <Save className="mr-2 h-4 w-4" />
+          )}
           保存する
         </Button>
         {hasChanges && (
-          <p className="text-xs text-muted-foreground">未保存の変更があります</p>
+          <p className="text-xs text-muted-foreground">
+            未保存の変更があります
+          </p>
         )}
       </div>
     </div>

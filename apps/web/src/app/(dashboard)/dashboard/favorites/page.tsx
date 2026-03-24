@@ -1,12 +1,9 @@
 import { redirect } from "next/navigation";
-import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
-import type { Subject, Difficulty } from "@/types/database";
+import { SUBJECT_LABELS } from "@toinoma/shared/constants";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import { FavoritesClient } from "./favorites-client";
+import type { Subject, Difficulty } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -22,11 +19,75 @@ export default async function FavoritesPage() {
 
   const { data: favorites } = await supabase
     .from("favorites")
-    .select("id, problem_set_id, problem_sets(title, subject, difficulty, price)")
+    .select(
+      "id, problem_set_id, created_at, problem_sets(id, title, subject, difficulty, price, cover_image_url, university, seller_id)"
+    )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
-  const items = favorites ?? [];
+  // Gather seller IDs and fetch display names
+  const sellerIds = [
+    ...new Set(
+      (favorites ?? [])
+        .map((f) => {
+          const ps = f.problem_sets as unknown as { seller_id: string } | null;
+          return ps?.seller_id;
+        })
+        .filter(Boolean) as string[]
+    ),
+  ];
+
+  let sellerMap = new Map<string, string>();
+  if (sellerIds.length > 0) {
+    const { data: sellers } = await supabase
+      .from("seller_profiles")
+      .select("id, seller_display_name")
+      .in("id", sellerIds);
+    sellerMap = new Map(
+      (sellers ?? []).map((s) => [s.id, s.seller_display_name])
+    );
+  }
+
+  const items = (favorites ?? []).map((fav) => {
+    const ps = fav.problem_sets as unknown as {
+      id: string;
+      title: string;
+      subject: string;
+      difficulty: string;
+      price: number;
+      cover_image_url: string | null;
+      university: string | null;
+      seller_id: string;
+    } | null;
+
+    return {
+      favoriteId: fav.id,
+      problemSetId: fav.problem_set_id,
+      createdAt: fav.created_at,
+      card: ps
+        ? {
+            id: ps.id,
+            title: ps.title,
+            subject: ps.subject as Subject,
+            difficulty: ps.difficulty as Difficulty,
+            price: ps.price,
+            cover_image_url: ps.cover_image_url,
+            university: ps.university,
+            seller_display_name: sellerMap.get(ps.seller_id) ?? null,
+          }
+        : null,
+    };
+  });
+
+  // Derive available subjects for filter options
+  const subjectOptions = Array.from(
+    new Set(
+      items.filter((i) => i.card?.subject).map((i) => i.card!.subject)
+    )
+  ).map((s) => ({
+    value: s,
+    label: SUBJECT_LABELS[s] ?? s,
+  }));
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -37,64 +98,11 @@ export default async function FavoritesPage() {
           { label: "お気に入り", href: "/dashboard/favorites" },
         ]}
       />
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">お気に入り</h1>
-
-      {items.length === 0 ? (
-        <Card>
-          <CardContent className="py-16 text-center">
-            <p className="text-muted-foreground">
-              お気に入りの問題セットがありません
-            </p>
-            <Button className="mt-4" asChild>
-              <Link href="/explore">問題を探す</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items.map((fav) => {
-            const ps = fav.problem_sets as unknown as {
-              title: string;
-              subject: string;
-              difficulty: string;
-              price: number;
-            } | null;
-
-            return (
-              <Link key={fav.id} href={`/problem/${fav.problem_set_id}`}>
-                <Card className="h-full transition-shadow hover:shadow-md">
-                  <CardContent className="p-5">
-                    <h2 className="mb-2 line-clamp-2 font-semibold">
-                      {ps?.title ?? "Unknown"}
-                    </h2>
-                    <div className="flex flex-wrap items-center gap-2">
-                      {ps?.subject && (
-                        <Badge variant="outline">
-                          {SUBJECT_LABELS[ps.subject as Subject]}
-                        </Badge>
-                      )}
-                      {ps?.difficulty && (
-                        <Badge variant="outline">
-                          {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-                        </Badge>
-                      )}
-                    </div>
-                    {ps && (
-                      <div className="mt-3 text-right">
-                        <span className="text-lg font-bold text-primary">
-                          {ps.price === 0
-                            ? "無料"
-                            : `¥${ps.price.toLocaleString()}`}
-                        </span>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
-        </div>
-      )}
+      <FavoritesClient
+        items={items}
+        userId={user.id}
+        subjectOptions={subjectOptions}
+      />
     </main>
   );
 }

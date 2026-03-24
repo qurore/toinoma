@@ -2,9 +2,33 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Play, BookOpen, Search } from "lucide-react";
 import { CollectionItemList } from "@/components/collections/collection-item-list";
 import { CollectionSettings } from "@/components/collections/collection-settings";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import type { Metadata } from "next";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const supabase = await createClient();
+  const { data: collection } = await supabase
+    .from("collections")
+    .select("name")
+    .eq("id", id)
+    .single();
+
+  return {
+    title: collection
+      ? `${collection.name} | コレクション | 問の間`
+      : "コレクション | 問の間",
+  };
+}
 
 export default async function CollectionDetailPage({
   params,
@@ -47,9 +71,20 @@ export default async function CollectionDetailPage({
     } | null,
   }));
 
+  const itemCount = typedItems.length;
+
   return (
     <main className="container mx-auto max-w-3xl px-4 py-8">
-      <div className="mb-6">
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "マイページ", href: "/dashboard" },
+          { label: "コレクション", href: "/dashboard/collections" },
+          { label: collection.name },
+        ]}
+      />
+
+      <div className="mb-2">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/dashboard/collections">
             <ArrowLeft className="mr-1 h-4 w-4" />
@@ -59,7 +94,7 @@ export default async function CollectionDetailPage({
       </div>
 
       <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight">
             {collection.name}
           </h1>
@@ -68,15 +103,50 @@ export default async function CollectionDetailPage({
               {collection.description}
             </p>
           )}
+          <div className="mt-2 flex items-center gap-3">
+            <Badge variant="secondary" className="text-xs">
+              <BookOpen className="mr-1 h-3 w-3" />
+              {itemCount}問
+            </Badge>
+          </div>
         </div>
-        <CollectionSettings
-          collectionId={collection.id}
-          name={collection.name}
-          description={collection.description}
-        />
+        <div className="flex shrink-0 items-center gap-2">
+          {itemCount > 0 && (
+            <Button asChild>
+              <Link href={`/dashboard/collections/${id}/solve`}>
+                <Play className="mr-1.5 h-4 w-4" />
+                解き始める
+              </Link>
+            </Button>
+          )}
+          <CollectionSettings
+            collectionId={collection.id}
+            name={collection.name}
+            description={collection.description}
+          />
+        </div>
       </div>
 
-      <CollectionItemList collectionId={id} items={typedItems} />
+      {itemCount === 0 ? (
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center py-16 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+              <Search className="h-7 w-7 text-primary" />
+            </div>
+            <h2 className="mb-2 text-lg font-semibold">
+              まだ問題がありません
+            </h2>
+            <p className="mb-6 max-w-sm text-sm text-muted-foreground">
+              購入した問題セットの詳細ページから「コレクションに追加」ボタンで問題を追加できます。
+            </p>
+            <Button variant="outline" asChild>
+              <Link href="/explore">問題を探す</Link>
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <CollectionItemList collectionId={id} items={typedItems} />
+      )}
     </main>
   );
 }

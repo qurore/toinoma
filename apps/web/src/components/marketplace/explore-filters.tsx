@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useTransition } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SlidersHorizontal, X, Star } from "lucide-react";
+import { SlidersHorizontal, Star, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -15,8 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetDescription,
+} from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { SUBJECTS, SUBJECT_LABELS, DIFFICULTIES, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
+import {
+  SUBJECTS,
+  SUBJECT_LABELS,
+  DIFFICULTIES,
+  DIFFICULTY_LABELS,
+} from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
 
 // ──────────────────────────────────────────────
@@ -84,15 +97,29 @@ function parseFilterStateFromParams(
 function buildSearchParams(state: FilterState): URLSearchParams {
   const params = new URLSearchParams();
   if (state.q) params.set("q", state.q);
-  if (state.subjects.length > 0) params.set("subject", state.subjects.join(","));
-  if (state.difficulties.length > 0) params.set("difficulty", state.difficulties.join(","));
+  if (state.subjects.length > 0)
+    params.set("subject", state.subjects.join(","));
+  if (state.difficulties.length > 0)
+    params.set("difficulty", state.difficulties.join(","));
   if (state.freeOnly) params.set("free", "1");
   if (state.priceMin) params.set("price_min", state.priceMin);
   if (state.priceMax) params.set("price_max", state.priceMax);
-  if (state.minRating > 0) params.set("min_rating", String(state.minRating));
+  if (state.minRating > 0)
+    params.set("min_rating", String(state.minRating));
   if (state.sort !== "newest") params.set("sort", state.sort);
   // Always reset to page 1 on filter change
   return params;
+}
+
+function countActiveFilters(state: FilterState): number {
+  return (
+    state.subjects.length +
+    state.difficulties.length +
+    (state.freeOnly ? 1 : 0) +
+    (state.priceMin ? 1 : 0) +
+    (state.priceMax ? 1 : 0) +
+    (state.minRating > 0 ? 1 : 0)
+  );
 }
 
 // ──────────────────────────────────────────────
@@ -110,19 +137,13 @@ function FilterContent({
   onApply: () => void;
   onClear: () => void;
 }) {
-  const hasActiveFilters =
-    state.subjects.length > 0 ||
-    state.difficulties.length > 0 ||
-    state.freeOnly ||
-    state.priceMin !== "" ||
-    state.priceMax !== "" ||
-    state.minRating > 0;
+  const hasActiveFilters = countActiveFilters(state) > 0;
 
   return (
     <div className="space-y-6">
       {/* Sort */}
       <div>
-        <h3 className="mb-2 text-sm font-semibold">並び替え</h3>
+        <h3 className="mb-2.5 text-sm font-semibold">並び替え</h3>
         <Select
           value={state.sort}
           onValueChange={(v) => onChange({ sort: v as SortOption })}
@@ -144,12 +165,12 @@ function FilterContent({
 
       {/* Subject checkboxes */}
       <div>
-        <h3 className="mb-2 text-sm font-semibold">教科</h3>
-        <div className="space-y-2">
+        <h3 className="mb-2.5 text-sm font-semibold">教科</h3>
+        <div className="space-y-2.5">
           {SUBJECTS.map((subject) => {
             const checked = state.subjects.includes(subject);
             return (
-              <div key={subject} className="flex items-center gap-2">
+              <div key={subject} className="flex items-center gap-2.5">
                 <Checkbox
                   id={`subject-${subject}`}
                   checked={checked}
@@ -162,7 +183,7 @@ function FilterContent({
                 />
                 <Label
                   htmlFor={`subject-${subject}`}
-                  className="cursor-pointer text-sm"
+                  className="cursor-pointer text-sm leading-none"
                 >
                   {SUBJECT_LABELS[subject]}
                 </Label>
@@ -176,12 +197,12 @@ function FilterContent({
 
       {/* Difficulty checkboxes */}
       <div>
-        <h3 className="mb-2 text-sm font-semibold">難易度</h3>
-        <div className="space-y-2">
+        <h3 className="mb-2.5 text-sm font-semibold">難易度</h3>
+        <div className="space-y-2.5">
           {DIFFICULTIES.map((diff) => {
             const checked = state.difficulties.includes(diff);
             return (
-              <div key={diff} className="flex items-center gap-2">
+              <div key={diff} className="flex items-center gap-2.5">
                 <Checkbox
                   id={`difficulty-${diff}`}
                   checked={checked}
@@ -194,7 +215,7 @@ function FilterContent({
                 />
                 <Label
                   htmlFor={`difficulty-${diff}`}
-                  className="cursor-pointer text-sm"
+                  className="cursor-pointer text-sm leading-none"
                 >
                   {DIFFICULTY_LABELS[diff]}
                 </Label>
@@ -208,8 +229,8 @@ function FilterContent({
 
       {/* Price range */}
       <div>
-        <h3 className="mb-2 text-sm font-semibold">価格</h3>
-        <div className="mb-3 flex items-center gap-2">
+        <h3 className="mb-2.5 text-sm font-semibold">価格</h3>
+        <div className="mb-3 flex items-center gap-2.5">
           <Checkbox
             id="free-only"
             checked={state.freeOnly}
@@ -217,7 +238,7 @@ function FilterContent({
               onChange({ freeOnly: !!val, priceMin: "", priceMax: "" })
             }
           />
-          <Label htmlFor="free-only" className="cursor-pointer text-sm">
+          <Label htmlFor="free-only" className="cursor-pointer text-sm leading-none">
             無料のみ
           </Label>
         </div>
@@ -230,9 +251,9 @@ function FilterContent({
               placeholder="¥ 下限"
               value={state.priceMin}
               onChange={(e) => onChange({ priceMin: e.target.value })}
-              className="h-8 text-xs"
+              className="h-9 text-sm"
             />
-            <span className="text-xs text-muted-foreground">〜</span>
+            <span className="shrink-0 text-xs text-muted-foreground">〜</span>
             <Input
               type="number"
               min="0"
@@ -240,7 +261,7 @@ function FilterContent({
               placeholder="¥ 上限"
               value={state.priceMax}
               onChange={(e) => onChange({ priceMax: e.target.value })}
-              className="h-8 text-xs"
+              className="h-9 text-sm"
             />
           </div>
         )}
@@ -250,16 +271,18 @@ function FilterContent({
 
       {/* Minimum rating */}
       <div>
-        <h3 className="mb-2 text-sm font-semibold">最低評価</h3>
+        <h3 className="mb-2.5 text-sm font-semibold">最低評価</h3>
         <div className="flex items-center gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
               type="button"
               onClick={() =>
-                onChange({ minRating: state.minRating === star ? 0 : star })
+                onChange({
+                  minRating: state.minRating === star ? 0 : star,
+                })
               }
-              className="p-0.5 transition-transform hover:scale-110"
+              className="rounded p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               aria-label={`${star}星以上`}
             >
               <Star
@@ -273,7 +296,7 @@ function FilterContent({
             </button>
           ))}
           {state.minRating > 0 && (
-            <span className="ml-1.5 text-xs text-muted-foreground">
+            <span className="ml-2 text-xs text-muted-foreground">
               {state.minRating}以上
             </span>
           )}
@@ -289,6 +312,7 @@ function FilterContent({
         </Button>
         {hasActiveFilters && (
           <Button onClick={onClear} variant="outline" size="sm">
+            <RotateCcw className="mr-1 h-3 w-3" />
             クリア
           </Button>
         )}
@@ -342,10 +366,10 @@ export function ExploreFiltersSidebar() {
     <aside
       className={cn(
         "hidden w-64 shrink-0 lg:block",
-        isPending && "opacity-50 pointer-events-none"
+        isPending && "pointer-events-none opacity-50"
       )}
     >
-      <div className="sticky top-20 rounded-lg border border-border bg-card p-5">
+      <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-xl border border-border bg-card p-5 scrollbar-thin">
         <h2 className="mb-4 flex items-center gap-2 text-sm font-bold">
           <SlidersHorizontal className="h-4 w-4" />
           フィルター
@@ -374,13 +398,7 @@ export function ExploreFiltersMobile() {
     parseFilterStateFromParams(searchParams)
   );
 
-  const activeFilterCount =
-    state.subjects.length +
-    state.difficulties.length +
-    (state.freeOnly ? 1 : 0) +
-    (state.priceMin ? 1 : 0) +
-    (state.priceMax ? 1 : 0) +
-    (state.minRating > 0 ? 1 : 0);
+  const activeFilterCount = countActiveFilters(state);
 
   const handleChange = useCallback((update: Partial<FilterState>) => {
     setState((prev) => ({ ...prev, ...update }));
@@ -414,68 +432,46 @@ export function ExploreFiltersMobile() {
   }, [state.q, router]);
 
   return (
-    <>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       {/* Trigger button */}
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setIsOpen(true)}
-        className="lg:hidden"
-      >
-        <SlidersHorizontal className="h-4 w-4" />
-        <span>フィルター</span>
-        {activeFilterCount > 0 && (
-          <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
-            {activeFilterCount}
-          </span>
+      <SheetTrigger asChild>
+        <Button variant="outline" size="sm" className="lg:hidden">
+          <SlidersHorizontal className="h-4 w-4" />
+          <span>フィルター</span>
+          {activeFilterCount > 0 && (
+            <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+              {activeFilterCount}
+            </span>
+          )}
+        </Button>
+      </SheetTrigger>
+
+      {/* Sheet content slides up from the bottom */}
+      <SheetContent
+        side="bottom"
+        className={cn(
+          "max-h-[85vh] overflow-y-auto rounded-t-2xl scrollbar-thin",
+          isPending && "pointer-events-none opacity-50"
         )}
-      </Button>
+      >
+        <SheetHeader className="mb-4">
+          <SheetTitle className="flex items-center gap-2 text-sm font-bold">
+            <SlidersHorizontal className="h-4 w-4" />
+            フィルター
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            検索結果を絞り込むフィルターです
+          </SheetDescription>
+        </SheetHeader>
 
-      {/* Backdrop + Sheet */}
-      {isOpen && (
-        <>
-          <div
-            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
-          <div
-            className={cn(
-              "fixed inset-x-0 bottom-0 z-50 max-h-[85vh] overflow-y-auto rounded-t-2xl border-t border-border bg-card p-5 shadow-lg lg:hidden",
-              isPending && "opacity-50 pointer-events-none"
-            )}
-            role="dialog"
-            aria-label="フィルター"
-          >
-            {/* Header */}
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="flex items-center gap-2 text-sm font-bold">
-                <SlidersHorizontal className="h-4 w-4" />
-                フィルター
-              </h2>
-              <button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="rounded-full p-1 text-muted-foreground hover:bg-muted"
-                aria-label="閉じる"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Drag indicator */}
-            <div className="absolute left-1/2 top-2 h-1 w-10 -translate-x-1/2 rounded-full bg-muted-foreground/20" />
-
-            <FilterContent
-              state={state}
-              onChange={handleChange}
-              onApply={handleApply}
-              onClear={handleClear}
-            />
-          </div>
-        </>
-      )}
-    </>
+        <FilterContent
+          state={state}
+          onChange={handleChange}
+          onApply={handleApply}
+          onClear={handleClear}
+        />
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -509,7 +505,7 @@ export function ExploreSortDropdown() {
   return (
     <Select value={current} onValueChange={handleChange}>
       <SelectTrigger
-        className={cn("w-40 h-8 text-xs", isPending && "opacity-50")}
+        className={cn("h-9 w-40 text-sm", isPending && "opacity-50")}
       >
         <SelectValue />
       </SelectTrigger>

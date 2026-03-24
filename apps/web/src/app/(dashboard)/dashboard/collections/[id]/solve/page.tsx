@@ -1,6 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { problemSetRubricSchema } from "@toinoma/shared/schemas";
+import { shuffleArray } from "@toinoma/shared/utils";
 import { CollectionSolveClient } from "./collection-solve-client";
 
 // ─── Types ────────────────────────────────────────────────────────────
@@ -18,10 +19,13 @@ interface CollectionProblem {
 
 export default async function CollectionSolvePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ shuffle?: string }>;
 }) {
   const { id } = await params;
+  const { shuffle } = await searchParams;
   const supabase = await createClient();
   const {
     data: { user },
@@ -95,6 +99,10 @@ export default async function CollectionSolvePage({
     });
   }
 
+  // Shuffle if requested via query param
+  const orderedProblems =
+    shuffle === "true" ? shuffleArray(problems) : problems;
+
   // Fetch existing submissions to determine completion status
   const { data: submissions } = await supabase
     .from("submissions")
@@ -119,7 +127,7 @@ export default async function CollectionSolvePage({
       <CollectionSolveClient
         collectionId={id}
         collectionName={collection.name}
-        problems={problems}
+        problems={orderedProblems}
         completionMap={completionMap}
         unpurchasedCount={unpurchasedCount.count}
       />

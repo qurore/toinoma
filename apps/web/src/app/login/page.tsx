@@ -4,25 +4,20 @@ import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
+import { BookOpen, CheckCircle2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { BookOpen, Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
-function GoogleIcon() {
+// ──────────────────────────────────────────────
+// SVG icons for OAuth providers
+// ──────────────────────────────────────────────
+
+function GoogleIcon({ className }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" className="h-5 w-5" aria-hidden="true">
+    <svg className={className} viewBox="0 0 24 24" aria-hidden="true">
       <path
-        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
+        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
         fill="#4285F4"
       />
       <path
@@ -41,11 +36,11 @@ function GoogleIcon() {
   );
 }
 
-function XIcon() {
+function XIcon({ className }: { className?: string }) {
   return (
     <svg
+      className={className}
       viewBox="0 0 24 24"
-      className="h-5 w-5"
       fill="currentColor"
       aria-hidden="true"
     >
@@ -54,21 +49,33 @@ function XIcon() {
   );
 }
 
+// ──────────────────────────────────────────────
+// Benefits list for the brand panel
+// ──────────────────────────────────────────────
+
+const benefits = [
+  "AI採点で記述式の部分点を即座に判定",
+  "大学生作問者による本格入試対策問題",
+  "9科目対応、難易度別の問題検索",
+  "学習進捗の可視化で効率的な受験対策",
+];
+
+// ──────────────────────────────────────────────
+// Login content (requires useSearchParams)
+// ──────────────────────────────────────────────
+
 function LoginContent() {
   const searchParams = useSearchParams();
   const next = searchParams.get("next") ?? "/dashboard";
   const errorParam = searchParams.get("error");
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(
+  const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
+  const [error] = useState<string | null>(
     errorParam ? "ログインに失敗しました。もう一度お試しください。" : null
   );
-  const [isLoading, setIsLoading] = useState(false);
-  const [oauthLoading, setOauthLoading] = useState<"google" | "twitter" | null>(null);
 
-  const handleOAuthLogin = async (provider: "google" | "twitter") => {
-    setOauthLoading(provider);
+  async function handleOAuth(provider: "google" | "twitter") {
+    setLoadingProvider(provider);
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider,
@@ -76,173 +83,168 @@ function LoginContent() {
         redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
       },
     });
-  };
+  }
 
-  const handleEmailLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email || !password) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError) {
-      setError("メールアドレスまたはパスワードが正しくありません");
-      setIsLoading(false);
-      return;
-    }
-
-    window.location.assign(next);
-  };
-
-  const isOAuthDisabled = oauthLoading !== null;
+  const isDisabled = loadingProvider !== null;
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center px-4">
-      {/* Back-to-home logo */}
-      <Link
-        href="/"
-        className="mb-8 flex items-center gap-2 transition-opacity hover:opacity-80"
-      >
-        <BookOpen className="h-7 w-7 text-primary" />
-        <div className="flex flex-col leading-none">
-          <span className="font-display text-xl font-bold text-foreground">問の間</span>
-          <span className="text-[10px] font-medium tracking-wider text-foreground/50">
-            TOINOMA
-          </span>
-        </div>
-      </Link>
+    <div className="flex min-h-screen">
+      {/* Left — Brand panel (hidden on mobile) */}
+      <div className="hidden w-1/2 bg-hero lg:flex lg:flex-col lg:justify-between lg:p-12">
+        {/* Top — Logo */}
+        <Link
+          href="/"
+          className="flex items-center gap-2 transition-opacity hover:opacity-80"
+        >
+          <BookOpen className="h-6 w-6 text-white" />
+          <div className="flex flex-col leading-none">
+            <span className="font-display text-lg font-bold text-white">
+              問の間
+            </span>
+            <span className="text-[10px] font-medium tracking-wider text-white/60">
+              TOINOMA
+            </span>
+          </div>
+        </Link>
 
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">問の間にログイン</CardTitle>
-          <CardDescription>
-            アカウントにログインして、問題の購入やAI採点を利用しましょう
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+        {/* Center — Headline and benefits */}
+        <div className="space-y-6 animate-fade-up">
+          <h1 className="text-3xl font-bold leading-tight text-white">
+            問いと答えが
+            <br />
+            出会う場所
+          </h1>
+          <ul className="space-y-3">
+            {benefits.map((b) => (
+              <li key={b} className="flex items-start gap-2 text-white/80">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-light" />
+                <span className="text-sm">{b}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Bottom — Copyright */}
+        <p className="text-xs text-white/40">
+          &copy; {new Date().getFullYear()} Toinoma
+        </p>
+      </div>
+
+      {/* Right — Login form */}
+      <div className="flex flex-1 items-center justify-center p-6 lg:p-12">
+        <div
+          className={cn(
+            "w-full max-w-sm",
+            "animate-fade-up [animation-delay:150ms] [animation-fill-mode:backwards]"
+          )}
+        >
+          {/* Mobile logo — visible only on small screens */}
+          <Link
+            href="/"
+            className="mb-8 flex items-center gap-2 lg:hidden"
+          >
+            <BookOpen className="h-6 w-6 text-primary" />
+            <div className="flex flex-col leading-none">
+              <span className="font-display text-lg font-bold">問の間</span>
+              <span className="text-[10px] font-medium tracking-wider text-muted-foreground">
+                TOINOMA
+              </span>
+            </div>
+          </Link>
+
+          <h2 className="mb-1 text-2xl font-bold tracking-tight">
+            無料で始める
+          </h2>
+          <p className="mb-8 text-sm text-muted-foreground">
+            アカウントにログインして学習を続けましょう
+          </p>
+
+          {/* Error banner */}
           {error && (
-            <p className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
+            <div className="mb-6 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-center text-sm text-destructive">
               {error}
-            </p>
+            </div>
           )}
 
-          {/* Email/password form */}
-          <form onSubmit={handleEmailLogin} className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="email">メールアドレス</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">パスワード</Label>
-                <Link
-                  href="/forgot-password"
-                  className="rounded-sm px-1 py-2 text-xs text-muted-foreground underline transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  パスワードをお忘れですか？
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="パスワード"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                autoComplete="current-password"
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              ログイン
+          {/* OAuth buttons */}
+          <div className="space-y-3">
+            <Button
+              variant="outline"
+              className="h-11 w-full justify-center gap-3"
+              onClick={() => handleOAuth("google")}
+              disabled={isDisabled}
+            >
+              {loadingProvider === "google" ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <GoogleIcon className="h-5 w-5" />
+              )}
+              Googleでログイン
             </Button>
-          </form>
 
-          <div className="flex items-center gap-3">
-            <Separator className="flex-1" />
-            <span className="text-xs text-muted-foreground">または</span>
-            <Separator className="flex-1" />
+            <Button
+              variant="outline"
+              className="h-11 w-full justify-center gap-3"
+              onClick={() => handleOAuth("twitter")}
+              disabled={isDisabled}
+            >
+              {loadingProvider === "twitter" ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <XIcon className="h-5 w-5" />
+              )}
+              X (Twitter) でログイン
+            </Button>
           </div>
 
-          {/* OAuth buttons */}
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => handleOAuthLogin("google")}
-            disabled={isOAuthDisabled}
-          >
-            {oauthLoading === "google" ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <GoogleIcon />
-            )}
-            Googleでログイン
-          </Button>
+          {/* Mobile benefits — visible only on small screens */}
+          <ul className="mt-8 space-y-2 lg:hidden">
+            {benefits.map((b) => (
+              <li
+                key={b}
+                className="flex items-start gap-2 text-muted-foreground"
+              >
+                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                <span className="text-xs">{b}</span>
+              </li>
+            ))}
+          </ul>
 
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => handleOAuthLogin("twitter")}
-            disabled={isOAuthDisabled}
-          >
-            {oauthLoading === "twitter" ? (
-              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-            ) : (
-              <XIcon />
-            )}
-            X (Twitter) でログイン
-          </Button>
-
-          <p className="text-center text-sm text-muted-foreground">
-            アカウントをお持ちでないですか？{" "}
-            <Link
-              href="/signup"
-              className="font-medium text-primary underline hover:text-primary/80"
-            >
-              新規登録
-            </Link>
-          </p>
-
-          <p className="text-center text-xs text-muted-foreground">
+          {/* Legal footer */}
+          <p className="mt-8 text-center text-xs text-muted-foreground">
             ログインすることで、
-            <Link href="/terms" className="underline hover:text-foreground">
+            <Link
+              href="/legal/terms"
+              className="text-primary hover:underline"
+            >
               利用規約
             </Link>
-            と
-            <Link href="/privacy" className="underline hover:text-foreground">
+            および
+            <Link
+              href="/legal/privacy"
+              className="text-primary hover:underline"
+            >
               プライバシーポリシー
             </Link>
-            に同意したことになります。
+            に同意したものとみなされます。
           </p>
-        </CardContent>
-      </Card>
-    </main>
+        </div>
+      </div>
+    </div>
   );
 }
+
+// ──────────────────────────────────────────────
+// Page component with Suspense for useSearchParams
+// ──────────────────────────────────────────────
 
 export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <main className="flex min-h-screen items-center justify-center">
+        <div className="flex min-h-screen items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-        </main>
+        </div>
       }
     >
       <LoginContent />

@@ -5,12 +5,12 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Database,
-  PlusCircle,
   Tag,
   Receipt,
   BarChart3,
   Wallet,
-  FileUp,
+  Settings,
+  Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -28,21 +28,9 @@ export const SELLER_NAV_ITEMS = [
     exact: false,
   },
   {
-    href: "/sell/sets/new",
-    label: "セット作成",
-    icon: PlusCircle,
-    exact: true,
-  },
-  {
-    href: "/sell/coupons",
-    label: "クーポン",
-    icon: Tag,
-    exact: false,
-  },
-  {
-    href: "/sell/transactions",
-    label: "取引履歴",
-    icon: Receipt,
+    href: "/sell/sets",
+    label: "問題セット",
+    icon: Library,
     exact: false,
   },
   {
@@ -52,16 +40,28 @@ export const SELLER_NAV_ITEMS = [
     exact: false,
   },
   {
+    href: "/sell/transactions",
+    label: "取引",
+    icon: Receipt,
+    exact: false,
+  },
+  {
+    href: "/sell/coupons",
+    label: "クーポン",
+    icon: Tag,
+    exact: false,
+  },
+  {
     href: "/sell/payouts",
     label: "収益",
     icon: Wallet,
     exact: false,
   },
   {
-    href: "/sell/pool/import",
-    label: "PDF取り込み",
-    icon: FileUp,
-    exact: true,
+    href: "/sell/settings",
+    label: "設定",
+    icon: Settings,
+    exact: false,
   },
 ] as const;
 

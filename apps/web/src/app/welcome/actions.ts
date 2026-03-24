@@ -6,6 +6,9 @@ import type { Subject } from "@/types/database";
 import { SUBJECTS } from "@toinoma/shared/constants";
 
 const VALID_STUDY_GOALS = [
+  "common_test",
+  "national_secondary",
+  "private_general",
   "entrance_exam",
   "daily_study",
   "certification",
