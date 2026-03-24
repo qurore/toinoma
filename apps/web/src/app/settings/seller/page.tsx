@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,11 @@ export default async function SellerSettingsPage() {
     // Non-sellers: guide them to onboarding
     return (
       <div className="space-y-6">
+        <Breadcrumbs items={[
+          { label: "ホーム", href: "/" },
+          { label: "設定", href: "/settings/profile" },
+          { label: "出品者設定" },
+        ]} />
         <div>
           <h1 className="text-xl font-semibold tracking-tight">出品者情報</h1>
           <p className="text-sm text-muted-foreground">問題集の出品・販売に関する設定</p>
@@ -57,6 +63,11 @@ export default async function SellerSettingsPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "設定", href: "/settings/profile" },
+        { label: "出品者設定" },
+      ]} />
       <div>
         <h1 className="text-xl font-semibold tracking-tight">出品者情報</h1>
         <p className="text-sm text-muted-foreground">問題集の出品・販売に関する設定</p>

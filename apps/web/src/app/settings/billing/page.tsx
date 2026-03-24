@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { getSubscriptionState } from "@/lib/subscription";
 import { getStripe } from "@/lib/stripe";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
@@ -133,6 +134,11 @@ export default async function BillingPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "設定", href: "/settings/profile" },
+        { label: "請求情報" },
+      ]} />
       <div>
         <h1 className="text-xl font-semibold tracking-tight">
           請求・お支払い

@@ -22,6 +22,39 @@ export function StripeStep({
 }) {
   const [, action, isPending] = useActionState(initStripeConnect, undefined);
 
+  // Handle Stripe return with error (user abandoned or Stripe failed)
+  if (stripeReturn && !stripeAccountId) {
+    return (
+      <Card className="mx-auto max-w-2xl overflow-hidden">
+        <div className="h-2 bg-gradient-to-r from-warning via-amber-400 to-warning" />
+        <CardHeader className="pb-2 pt-8 text-center">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-warning/10">
+            <CreditCard className="h-10 w-10 text-warning" />
+          </div>
+          <CardTitle className="text-xl">Stripe連携が完了していません</CardTitle>
+          <CardDescription className="text-base">
+            Stripeのセットアップが中断されました。もう一度お試しください。
+          </CardDescription>
+        </CardHeader>
+        <CardFooter className="flex-col gap-2 pt-4">
+          <form action={action} className="w-full">
+            <Button type="submit" className="w-full" size="lg" disabled={isPending}>
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <CreditCard className="mr-2 h-4 w-4" />
+              )}
+              もう一度試す
+            </Button>
+          </form>
+          <Button variant="ghost" size="sm" className="w-full" asChild>
+            <a href="/sell">後で設定する</a>
+          </Button>
+        </CardFooter>
+      </Card>
+    );
+  }
+
   if (stripeReturn && stripeAccountId) {
     return (
       <Card className="mx-auto max-w-2xl overflow-hidden">

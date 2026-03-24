@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Metadata } from "next";
 import {
   NotificationList,
@@ -79,6 +80,13 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
     <>
       <AppNavbar {...navbarData} />
       <main className="container mx-auto max-w-2xl px-4 py-8 pt-16">
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "通知" },
+          ]}
+          className="mb-4"
+        />
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight">通知</h1>
           <p className="mt-1 text-sm text-muted-foreground">

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Heart, Star, Users } from "lucide-react";
 import { useState, useCallback, useOptimistic } from "react";
+import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -178,8 +179,8 @@ function FavoriteButton({
             .insert({ user_id: userId, problem_set_id: problemSetId });
         }
       } catch {
-        // Revert on error by toggling back
         addOptimistic(!next);
+        toast.error(next ? "お気に入り登録に失敗しました" : "お気に入り解除に失敗しました");
       } finally {
         setToggling(false);
       }

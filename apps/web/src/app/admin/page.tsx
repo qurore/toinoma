@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -310,6 +311,13 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "管理者ダッシュボード" },
+        ]}
+        className="mb-6"
+      />
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">
           管理者ダッシュボード

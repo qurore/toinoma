@@ -9,6 +9,7 @@ import {
   Receipt,
   Ticket,
 } from "lucide-react";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { getTransactions } from "./actions";
 import { TransactionFilters } from "./transaction-filters";
 import type { Metadata } from "next";
@@ -52,6 +53,11 @@ export default async function SellerTransactionsPage(props: {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "出品者ダッシュボード", href: "/sell" },
+        { label: "取引履歴" },
+      ]} />
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">取引履歴</h1>
         <p className="mt-1 text-sm text-muted-foreground">

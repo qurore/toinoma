@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from "react";
 import Link from "next/link";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import {
   ChevronDown,
   Search,
@@ -282,29 +283,14 @@ export default function FaqPage() {
 
   return (
     <main className="mx-auto max-w-3xl px-4 pb-16 pt-8">
-      {/* Breadcrumb */}
-      <nav aria-label="パンくずリスト" className="mb-6">
-        <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <li>
-            <Link href="/" className="transition-colors hover:text-foreground">
-              ホーム
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li>
-            <Link
-              href="/help"
-              className="transition-colors hover:text-foreground"
-            >
-              ヘルプ
-            </Link>
-          </li>
-          <li aria-hidden="true">/</li>
-          <li aria-current="page" className="font-medium text-foreground">
-            よくある質問
-          </li>
-        </ol>
-      </nav>
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "ヘルプ", href: "/help" },
+          { label: "FAQ" },
+        ]}
+        className="mb-6"
+      />
 
       {/* Header */}
       <div className="mb-8 text-center">

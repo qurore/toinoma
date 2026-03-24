@@ -116,7 +116,7 @@ export function SettingsSidebar({
                   className={cn(
                     "inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
                     isActive
-                      ? "bg-secondary text-foreground"
+                      ? "bg-primary/10 text-primary"
                       : isDestructive
                         ? "text-destructive hover:bg-destructive/10"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -151,7 +151,7 @@ export function SettingsSidebar({
                 className={cn(
                   "relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActive
-                    ? "bg-secondary text-foreground"
+                    ? "bg-primary/10 text-primary"
                     : isDestructive
                       ? "text-destructive hover:bg-destructive/10 hover:text-destructive"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"

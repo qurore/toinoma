@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, CreditCard, Wallet } from "lucide-react";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -43,6 +44,11 @@ export default async function PayoutsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "出品者ダッシュボード", href: "/sell" },
+        { label: "振込・収益" },
+      ]} />
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">振込・収益</h1>
         <p className="mt-1 text-sm text-muted-foreground">

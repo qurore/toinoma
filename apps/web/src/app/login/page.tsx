@@ -170,7 +170,7 @@ function LoginContent() {
           <div className="space-y-3">
             <Button
               variant="outline"
-              className="h-11 w-full justify-center gap-3"
+              className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
               onClick={() => handleOAuth("google")}
               disabled={isDisabled}
             >
@@ -182,9 +182,18 @@ function LoginContent() {
               Googleでログイン
             </Button>
 
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-background px-2 text-muted-foreground">または</span>
+              </div>
+            </div>
+
             <Button
               variant="outline"
-              className="h-11 w-full justify-center gap-3"
+              className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
               onClick={() => handleOAuth("twitter")}
               disabled={isDisabled}
             >

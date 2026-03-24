@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { NotificationSettingsForm } from "./notification-settings-form";
 import { getNotificationPreferences } from "./actions";
 
@@ -22,6 +23,11 @@ export default async function NotificationSettingsPage() {
   if (result.error || !result.data) {
     return (
       <div className="space-y-6">
+        <Breadcrumbs items={[
+          { label: "ホーム", href: "/" },
+          { label: "設定", href: "/settings/profile" },
+          { label: "通知設定" },
+        ]} />
         <div>
           <h1 className="text-xl font-semibold tracking-tight">通知設定</h1>
           <p className="text-sm text-muted-foreground">
@@ -45,6 +51,11 @@ export default async function NotificationSettingsPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "設定", href: "/settings/profile" },
+        { label: "通知設定" },
+      ]} />
       <div>
         <h1 className="text-xl font-semibold tracking-tight">通知設定</h1>
         <p className="text-sm text-muted-foreground">

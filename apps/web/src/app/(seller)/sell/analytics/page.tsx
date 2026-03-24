@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { TrendingUp, TrendingDown, Minus, Download, BarChart3 } from "lucide-react";
 import { SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject } from "@/types/database";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -156,6 +157,11 @@ export default async function SalesAnalyticsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "出品者ダッシュボード", href: "/sell" },
+        { label: "分析" },
+      ]} />
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">販売分析</h1>

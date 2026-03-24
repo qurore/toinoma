@@ -143,9 +143,14 @@ export default async function DashboardPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <h1 className="mb-6 text-3xl font-bold tracking-tight">
-        ダッシュボード
-      </h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+          ダッシュボード
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          学習の進捗を確認しましょう
+        </p>
+      </div>
 
       {/* New user empty state */}
       {isNewUser ? (
@@ -171,62 +176,79 @@ export default async function DashboardPage() {
       ) : (
         <>
           {/* 4 stat cards */}
-          <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="stagger-children mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Link href="/dashboard/history" className="group">
-              <Card className="transition-colors group-hover:border-primary/30">
+              <Card className="card-hover transition-colors group-hover:border-primary/30">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     購入済みセット
                   </CardTitle>
-                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/15">
+                    <BookOpen className="h-4 w-4 text-primary" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold tabular-nums">
                     {purchaseCount ?? 0}
                   </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    購入した問題セット
+                  </p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/dashboard/history" className="group">
-              <Card className="transition-colors group-hover:border-primary/30">
+              <Card className="card-hover transition-colors group-hover:border-primary/30">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     総解答回数
                   </CardTitle>
-                  <History className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-info/10 transition-colors group-hover:bg-info/15">
+                    <History className="h-4 w-4 text-info" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold tabular-nums">
                     {submissionCount ?? 0}
                   </p>
-                </CardContent>
-              </Card>
-            </Link>
-
-            <Link href="/dashboard/analytics" className="group">
-              <Card className="transition-colors group-hover:border-primary/30">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    平均正答率
-                  </CardTitle>
-                  <Target className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold tabular-nums">
-                    {averageScore !== null ? `${averageScore}%` : "—"}
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    これまでの解答数
                   </p>
                 </CardContent>
               </Card>
             </Link>
 
             <Link href="/dashboard/analytics" className="group">
-              <Card className="transition-colors group-hover:border-primary/30">
+              <Card className="card-hover transition-colors group-hover:border-primary/30">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    平均正答率
+                  </CardTitle>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10 transition-colors group-hover:bg-warning/15">
+                    <Target className="h-4 w-4 text-warning" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold tabular-nums">
+                    {averageScore !== null ? `${averageScore}%` : "—"}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {averageScore !== null ? "全科目の平均" : "解答データなし"}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
+
+            <Link href="/dashboard/analytics" className="group">
+              <Card className="card-hover transition-colors group-hover:border-primary/30">
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     連続学習日数
                   </CardTitle>
-                  <Flame className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/10 transition-colors group-hover:bg-destructive/15">
+                    <Flame className="h-4 w-4 text-destructive" />
+                  </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-baseline gap-1">
@@ -235,6 +257,9 @@ export default async function DashboardPage() {
                     </p>
                     <span className="text-sm text-muted-foreground">日</span>
                   </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {currentStreak > 0 ? "継続中!" : "今日から始めましょう"}
+                  </p>
                 </CardContent>
               </Card>
             </Link>

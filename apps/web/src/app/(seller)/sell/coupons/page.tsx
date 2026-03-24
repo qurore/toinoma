@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Plus, Tag, Ticket } from "lucide-react";
 import { CouponListActions } from "@/components/seller/coupon-list-actions";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Database } from "@/types/database";
 import type { Metadata } from "next";
 
@@ -76,6 +77,11 @@ export default async function CouponsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "出品者ダッシュボード", href: "/sell" },
+        { label: "クーポン管理" },
+      ]} />
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">クーポン管理</h1>

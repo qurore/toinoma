@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { SiteFooter } from "@/components/navigation/site-footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -94,6 +95,13 @@ export default async function RankingsPage({
     <>
       <AppNavbar {...navbarData} />
       <main className="mx-auto max-w-4xl px-4 pb-12 pt-20 sm:px-6">
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "ランキング" },
+          ]}
+          className="mb-6"
+        />
         {/* Header */}
         <div className="mb-8 text-center">
           <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">

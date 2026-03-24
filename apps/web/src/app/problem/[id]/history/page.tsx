@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -80,33 +81,14 @@ export default async function ProblemHistoryPage({
     <>
       <AppNavbar {...navbarData} />
       <main className="mx-auto max-w-3xl px-4 pb-12 pt-20 sm:px-6">
-        {/* Breadcrumb navigation */}
-        <nav aria-label="パンくずリスト" className="mb-6">
-          <ol className="flex items-center gap-1 text-sm text-muted-foreground">
-            <li>
-              <Link href="/" className="transition-colors hover:text-foreground">
-                ホーム
-              </Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRight className="h-3.5 w-3.5" />
-            </li>
-            <li>
-              <Link
-                href={`/problem/${id}`}
-                className="transition-colors hover:text-foreground"
-              >
-                {ps.title}
-              </Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRight className="h-3.5 w-3.5" />
-            </li>
-            <li className="text-foreground" aria-current="page">
-              解答履歴
-            </li>
-          </ol>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "マイページ", href: "/dashboard" },
+            { label: "解答履歴" },
+          ]}
+          className="mb-6"
+        />
 
         <div className="mb-6 flex items-start justify-between gap-4">
           <div>

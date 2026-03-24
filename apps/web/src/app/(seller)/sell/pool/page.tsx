@@ -15,6 +15,7 @@ import {
   Upload,
 } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS, ANSWER_TYPE_LABELS } from "@toinoma/shared/constants";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Subject, Difficulty, AnswerType } from "@/types/database";
 import type { Metadata } from "next";
 
@@ -88,6 +89,11 @@ export default async function ProblemPoolPage({
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "出品者ダッシュボード", href: "/sell" },
+        { label: "問題プール" },
+      ]} />
       {/* Header with title and actions */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

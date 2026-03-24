@@ -18,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { SellerSettingsForm } from "./seller-settings-form";
 
 export const metadata = {
@@ -43,6 +44,11 @@ export default async function SellerSettingsPage() {
 
   return (
     <main className="container mx-auto max-w-3xl px-4 py-8">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "出品者ダッシュボード", href: "/sell" },
+        { label: "出品者設定" },
+      ]} />
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">出品者設定</h1>
         <p className="mt-1 text-muted-foreground">

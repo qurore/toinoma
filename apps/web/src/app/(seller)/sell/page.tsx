@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SellerTosGate } from "@/components/seller/seller-tos-gate";
 import { ProblemSetList } from "./problem-set-list";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -264,6 +265,13 @@ export default async function SellerDashboardPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "出品者ダッシュボード" },
+        ]}
+      />
+
       {/* Onboarding completion banner */}
       {!onboardingComplete && (
         <div className="mb-8 overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-primary/[0.03] to-transparent">
@@ -392,7 +400,7 @@ export default async function SellerDashboardPage() {
       </div>
 
       {/* Stats with trend indicators */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="stagger-children mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">

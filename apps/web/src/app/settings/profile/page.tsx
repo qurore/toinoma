@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -37,6 +38,11 @@ export default async function ProfileSettingsPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "設定", href: "/settings/profile" },
+        { label: "プロフィール" },
+      ]} />
       <div>
         <h1 className="text-xl font-semibold tracking-tight">プロフィール</h1>
         <p className="text-sm text-muted-foreground">

@@ -11,6 +11,7 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -112,6 +113,13 @@ export default async function PurchaseSuccessPage({
     <>
       <AppNavbar {...navbarData} />
       <main className="flex min-h-screen items-center justify-center px-4 pb-20 pt-14">
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "購入完了" },
+          ]}
+          className="absolute left-4 top-16 sm:left-6"
+        />
         <div className="w-full max-w-lg">
           {/* Success card */}
           <Card className="overflow-hidden shadow-lg">

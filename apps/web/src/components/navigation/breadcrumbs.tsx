@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ChevronRight, Home } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface BreadcrumbItem {
   label: string;
@@ -8,6 +9,7 @@ export interface BreadcrumbItem {
 
 interface BreadcrumbsProps {
   items: BreadcrumbItem[];
+  className?: string;
 }
 
 /**
@@ -16,13 +18,13 @@ interface BreadcrumbsProps {
  * The first item renders a Home icon. The last item is the current page (bold, no link).
  * Middle items are truncated on mobile when there are 4+ items.
  */
-export function Breadcrumbs({ items }: BreadcrumbsProps) {
+export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
   if (items.length === 0) return null;
 
   const lastIndex = items.length - 1;
 
   return (
-    <nav aria-label="パンくずリスト" className="mb-4">
+    <nav aria-label="パンくずリスト" className={cn("mb-4", className)}>
       <ol className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
         {items.map((item, index) => {
           const isFirst = index === 0;

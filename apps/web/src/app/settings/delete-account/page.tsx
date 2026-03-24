@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteAccountConfirm } from "@/components/settings/delete-account-confirm";
 import { AlertTriangle } from "lucide-react";
@@ -19,6 +20,11 @@ export default async function DeleteAccountPage() {
 
   return (
     <div className="space-y-6">
+      <Breadcrumbs items={[
+        { label: "ホーム", href: "/" },
+        { label: "設定", href: "/settings/profile" },
+        { label: "アカウント削除" },
+      ]} />
       <div>
         <h1 className="text-xl font-semibold tracking-tight text-destructive">退会</h1>
         <p className="text-sm text-muted-foreground">

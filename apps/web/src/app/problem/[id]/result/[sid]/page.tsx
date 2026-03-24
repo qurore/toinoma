@@ -3,7 +3,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { PdfDownloadButton } from "@/components/solving/pdf-download-button";
 import {
@@ -11,7 +10,6 @@ import {
   Star,
   RotateCcw,
   FolderPlus,
-  AlertTriangle,
   TrendingUp,
   XCircle,
   MessageSquare,

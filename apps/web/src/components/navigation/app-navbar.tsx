@@ -91,23 +91,7 @@ export async function getNavbarData(): Promise<NavbarData> {
   };
 }
 
-interface NavItemProps {
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  label: string;
-}
-
-function NavItem({ href, icon: Icon, label }: NavItemProps) {
-  return (
-    <Link
-      href={href}
-      className="flex flex-col items-center gap-0.5 rounded-md px-3 py-1.5 text-xs font-medium text-foreground/60 transition-colors hover:text-foreground"
-    >
-      <Icon className="h-5 w-5" />
-      <span>{label}</span>
-    </Link>
-  );
-}
+import { NavItemClient } from "./nav-item-client";
 
 /**
  * AppNavbar — Server Component.
@@ -136,11 +120,11 @@ export function AppNavbar({
         {/* Search — client component with autocomplete */}
         <SearchAutocomplete className="flex-1 max-w-sm" />
 
-        {/* Nav items — hidden on mobile */}
+        {/* Nav items — hidden on mobile, with active state */}
         <nav className="hidden items-center md:flex" aria-label="メインナビゲーション">
-          <NavItem href="/" icon={House} label="ホーム" />
-          <NavItem href="/explore" icon={Grid2x2} label="問題を探す" />
-          <NavItem href="/dashboard" icon={LayoutDashboard} label="マイページ" />
+          <NavItemClient href="/" icon={House} label="ホーム" exact />
+          <NavItemClient href="/explore" icon={Grid2x2} label="問題を探す" />
+          <NavItemClient href="/dashboard" icon={LayoutDashboard} label="マイページ" />
         </nav>
 
         {/* Right-side actions */}
