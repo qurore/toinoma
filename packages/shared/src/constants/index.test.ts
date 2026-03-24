@@ -68,15 +68,16 @@ describe("DIFFICULTY_LABELS", () => {
 });
 
 describe("ANSWER_TYPES", () => {
-  it("contains exactly 3 answer types", () => {
-    expect(ANSWER_TYPES).toHaveLength(3);
+  it("contains exactly 4 answer types", () => {
+    expect(ANSWER_TYPES).toHaveLength(4);
   });
 
-  it("contains essay, mark_sheet, fill_in_blank in order", () => {
+  it("contains essay, mark_sheet, fill_in_blank, multiple_choice in order", () => {
     expect([...ANSWER_TYPES]).toEqual([
       "essay",
       "mark_sheet",
       "fill_in_blank",
+      "multiple_choice",
     ]);
   });
 });

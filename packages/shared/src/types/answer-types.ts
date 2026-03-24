@@ -1,1 +1,5 @@
-export type AnswerType = "essay" | "mark_sheet" | "fill_in_blank";
+export type AnswerType =
+  | "essay"
+  | "mark_sheet"
+  | "fill_in_blank"
+  | "multiple_choice";

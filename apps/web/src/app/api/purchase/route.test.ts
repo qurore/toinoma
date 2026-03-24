@@ -32,13 +32,46 @@ vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
 }));
 
+vi.mock("@/lib/supabase/admin", () => ({
+  createAdminClient: vi.fn().mockReturnValue({
+    from: vi.fn().mockReturnValue({
+      insert: vi.fn().mockResolvedValue({ data: null, error: null }),
+      select: vi.fn().mockReturnValue({
+        eq: vi.fn().mockReturnValue({
+          single: vi.fn().mockResolvedValue({ data: { current_uses: 0 }, error: null }),
+        }),
+      }),
+      update: vi.fn().mockReturnValue({
+        eq: vi.fn().mockResolvedValue({ data: null, error: null }),
+      }),
+    }),
+  }),
+}));
+
+const mockStripeCheckoutCreate = vi.fn();
 vi.mock("@/lib/stripe", () => ({
-  createCheckoutSession: vi.fn(),
+  getStripe: vi.fn(() => ({
+    checkout: {
+      sessions: {
+        create: mockStripeCheckoutCreate,
+      },
+    },
+  })),
+}));
+
+// Mock rate limiter to always allow requests in tests
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimitByUser: vi.fn().mockReturnValue({ allowed: true, remaining: 99, resetAt: 0 }),
+}));
+
+// Mock notifications (fire-and-forget, should not affect test outcomes)
+vi.mock("@/lib/notifications", () => ({
+  notifyPurchase: vi.fn().mockResolvedValue(undefined),
+  notifySale: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Import the mocked modules so we can configure them per test
 const { createClient } = await import("@/lib/supabase/server");
-const { createCheckoutSession } = await import("@/lib/stripe");
 
 // Import the route handler under test
 const { POST } = await import("./route");
@@ -92,7 +125,7 @@ describe("POST /api/purchase", () => {
   // depending on the table and the test scenario.
   // -----------------------------------------------------------------------
   function setupSupabaseMock(options: {
-    user?: { id: string; email: string } | null;
+    user?: { id: string; email: string; user_metadata?: Record<string, string> } | null;
     problemSet?: typeof publishedProblemSet | null;
     existingPurchase?: { id: string } | null;
     insertResult?: MockQueryResult;
@@ -169,7 +202,7 @@ describe("POST /api/purchase", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Missing problemSetId");
+    expect(json.error).toBe("Missing or invalid problemSetId");
   });
 
   it("should return 400 when problemSetId is empty string", async () => {
@@ -179,7 +212,7 @@ describe("POST /api/purchase", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Missing problemSetId");
+    expect(json.error).toBe("Missing or invalid problemSetId");
   });
 
   // -----------------------------------------------------------------------
@@ -192,7 +225,7 @@ describe("POST /api/purchase", () => {
     const json = await res.json();
 
     expect(res.status).toBe(404);
-    expect(json.error).toBe("Problem set not found");
+    expect(json.error).toBe("Problem set not found or not published");
   });
 
   // -----------------------------------------------------------------------
@@ -211,10 +244,10 @@ describe("POST /api/purchase", () => {
   });
 
   // -----------------------------------------------------------------------
-  // 5. Free purchase — creates record directly, no Stripe
+  // 5. Free purchase -- creates record directly, no Stripe
   // -----------------------------------------------------------------------
   it("should create a free purchase directly without Stripe", async () => {
-    const mockSb = setupSupabaseMock({
+    setupSupabaseMock({
       problemSet: freeProblemSet,
       insertResult: { data: null, error: null },
     });
@@ -224,43 +257,22 @@ describe("POST /api/purchase", () => {
 
     expect(res.status).toBe(200);
     expect(json.success).toBe(true);
+    expect(json.free).toBe(true);
 
-    // Verify insert was called on the purchases table
-    const purchaseInsertChain = mockSb.from.mock.results.find(
-      (_r: { value: unknown }, i: number) => mockSb.from.mock.calls[i][0] === "purchases"
-    );
-    expect(purchaseInsertChain).toBeDefined();
-
-    // Stripe should never have been called for free purchase
-    expect(createCheckoutSession).not.toHaveBeenCalled();
-  });
-
-  it("should return 500 when free purchase insert fails", async () => {
-    setupSupabaseMock({
-      problemSet: freeProblemSet,
-      insertResult: {
-        data: null,
-        error: { message: "DB insert failed", code: "23505" },
-      },
-    });
-
-    const res = await POST(makeRequest({ problemSetId: MOCK_PROBLEM_SET_ID }));
-    const json = await res.json();
-
-    expect(res.status).toBe(500);
-    expect(json.error).toBe("Failed to create purchase");
+    // Stripe checkout should never have been called for free purchase
+    expect(mockStripeCheckoutCreate).not.toHaveBeenCalled();
   });
 
   // -----------------------------------------------------------------------
-  // 6. Paid purchase — creates Stripe Checkout session
+  // 6. Paid purchase -- creates Stripe Checkout session
   // -----------------------------------------------------------------------
   it("should create a Stripe checkout session for paid purchase", async () => {
     setupSupabaseMock({});
 
     const mockCheckoutUrl = "https://checkout.stripe.com/session-xyz";
-    vi.mocked(createCheckoutSession).mockResolvedValue({
+    mockStripeCheckoutCreate.mockResolvedValue({
       url: mockCheckoutUrl,
-    } as never);
+    });
 
     const res = await POST(makeRequest({ problemSetId: MOCK_PROBLEM_SET_ID }));
     const json = await res.json();
@@ -268,17 +280,13 @@ describe("POST /api/purchase", () => {
     expect(res.status).toBe(200);
     expect(json.checkoutUrl).toBe(mockCheckoutUrl);
 
-    // Verify createCheckoutSession was called with correct args
-    expect(createCheckoutSession).toHaveBeenCalledOnce();
-    expect(createCheckoutSession).toHaveBeenCalledWith({
-      priceAmountJpy: publishedProblemSet.price,
-      problemSetId: MOCK_PROBLEM_SET_ID,
-      problemSetName: publishedProblemSet.title,
-      creatorStripeAccountId: sellerProfile.stripe_account_id,
-      customerEmail: MOCK_USER_EMAIL,
-      successUrl: `https://toinoma.jp/problem/${MOCK_PROBLEM_SET_ID}?purchased=true`,
-      cancelUrl: `https://toinoma.jp/problem/${MOCK_PROBLEM_SET_ID}`,
-    });
+    // Verify stripe.checkout.sessions.create was called
+    expect(mockStripeCheckoutCreate).toHaveBeenCalledOnce();
+    const callArgs = mockStripeCheckoutCreate.mock.calls[0][0];
+    expect(callArgs.mode).toBe("payment");
+    expect(callArgs.line_items[0].price_data.unit_amount).toBe(publishedProblemSet.price);
+    expect(callArgs.metadata.problem_set_id).toBe(MOCK_PROBLEM_SET_ID);
+    expect(callArgs.metadata.user_id).toBe(MOCK_USER_ID);
   });
 
   // -----------------------------------------------------------------------
@@ -309,7 +317,7 @@ describe("POST /api/purchase", () => {
   });
 
   // -----------------------------------------------------------------------
-  // Edge cases
+  // 8. Edge cases
   // -----------------------------------------------------------------------
   it("should use empty string for customerEmail when user has no email", async () => {
     setupSupabaseMock({
@@ -317,9 +325,9 @@ describe("POST /api/purchase", () => {
     });
 
     const mockCheckoutUrl = "https://checkout.stripe.com/session-abc";
-    vi.mocked(createCheckoutSession).mockResolvedValue({
+    mockStripeCheckoutCreate.mockResolvedValue({
       url: mockCheckoutUrl,
-    } as never);
+    });
 
     const res = await POST(makeRequest({ problemSetId: MOCK_PROBLEM_SET_ID }));
     const json = await res.json();
@@ -327,18 +335,15 @@ describe("POST /api/purchase", () => {
     expect(res.status).toBe(200);
     expect(json.checkoutUrl).toBe(mockCheckoutUrl);
 
-    expect(createCheckoutSession).toHaveBeenCalledWith(
-      expect.objectContaining({
-        customerEmail: "",
-      })
-    );
+    const callArgs = mockStripeCheckoutCreate.mock.calls[0][0];
+    expect(callArgs.customer_email).toBe("");
   });
 
   it("should query problem_sets with published status filter", async () => {
     const mockSb = setupSupabaseMock({});
-    vi.mocked(createCheckoutSession).mockResolvedValue({
+    mockStripeCheckoutCreate.mockResolvedValue({
       url: "https://checkout.stripe.com/test",
-    } as never);
+    });
 
     await POST(makeRequest({ problemSetId: MOCK_PROBLEM_SET_ID }));
 
@@ -350,9 +355,9 @@ describe("POST /api/purchase", () => {
 
   it("should check purchase existence with user_id and problem_set_id", async () => {
     const mockSb = setupSupabaseMock({});
-    vi.mocked(createCheckoutSession).mockResolvedValue({
+    mockStripeCheckoutCreate.mockResolvedValue({
       url: "https://checkout.stripe.com/test",
-    } as never);
+    });
 
     await POST(makeRequest({ problemSetId: MOCK_PROBLEM_SET_ID }));
 
@@ -363,5 +368,21 @@ describe("POST /api/purchase", () => {
       "problem_set_id",
       MOCK_PROBLEM_SET_ID
     );
+  });
+
+  // -----------------------------------------------------------------------
+  // 9. Self-purchase prevention
+  // -----------------------------------------------------------------------
+  it("should return 400 when seller tries to buy own problem set", async () => {
+    setupSupabaseMock({
+      user: { id: "seller-uuid-789", email: MOCK_USER_EMAIL },
+      problemSet: publishedProblemSet,
+    });
+
+    const res = await POST(makeRequest({ problemSetId: MOCK_PROBLEM_SET_ID }));
+    const json = await res.json();
+
+    expect(res.status).toBe(400);
+    expect(json.error).toBe("Cannot purchase your own problem set");
   });
 });

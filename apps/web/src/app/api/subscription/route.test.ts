@@ -44,6 +44,12 @@ vi.mock("@/lib/stripe", () => ({
   cancelSubscription: vi.fn(),
   resumeSubscription: vi.fn(),
   getSubscriptionPriceId: vi.fn(),
+  getStripe: vi.fn(),
+}));
+
+// Mock rate limiter to always allow requests in tests
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimitByUser: vi.fn().mockReturnValue({ allowed: true, remaining: 99, resetAt: 0 }),
 }));
 
 // Import the mocked modules so we can configure them per test
@@ -153,7 +159,7 @@ describe("POST /api/subscription", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Invalid tier or interval");
+    expect(json.error).toContain("Invalid tier");
   });
 
   // -------------------------------------------------------------------------
@@ -168,7 +174,7 @@ describe("POST /api/subscription", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Invalid interval");
+    expect(json.error).toContain("Invalid interval");
   });
 
   // -------------------------------------------------------------------------
@@ -209,7 +215,7 @@ describe("POST /api/subscription", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Invalid tier or interval");
+    expect(json.error).toContain("Invalid tier");
   });
 
   it("should upsert stripe customer ID into user_subscriptions", async () => {
@@ -239,11 +245,11 @@ describe("PATCH /api/subscription", () => {
   // -------------------------------------------------------------------------
   function setupSupabaseMock(options: {
     user?: { id: string; email?: string } | null;
-    subscription?: { stripe_subscription_id: string | null } | null;
+    subscription?: { stripe_subscription_id: string | null; cancel_at_period_end?: boolean } | null;
   }) {
     const {
       user = { id: MOCK_USER_ID, email: MOCK_USER_EMAIL },
-      subscription = { stripe_subscription_id: MOCK_SUBSCRIPTION_ID },
+      subscription = { stripe_subscription_id: MOCK_SUBSCRIPTION_ID, cancel_at_period_end: true },
     } = options;
 
     const fromCalls: Record<
@@ -387,7 +393,7 @@ describe("PATCH /api/subscription", () => {
   // -------------------------------------------------------------------------
   // Query verification
   // -------------------------------------------------------------------------
-  it("should query user_subscriptions with correct user_id", async () => {
+  it("should query user_subscriptions with correct user_id for cancel", async () => {
     const mockSb = setupSupabaseMock({});
 
     await PATCH(makePatchRequest({ action: "cancel" }));

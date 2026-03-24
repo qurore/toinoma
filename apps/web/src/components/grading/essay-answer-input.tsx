@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,8 +11,27 @@ import {
   Camera,
   Grid3X3,
   AlignVerticalSpaceAround,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+// ──────────────────────────────────────────────
+// KaTeX lazy loading (only imported when needed)
+// ──────────────────────────────────────────────
+
+let katexPromise: Promise<typeof import("katex")> | null = null;
+
+function getKatex() {
+  if (!katexPromise) {
+    katexPromise = import("katex");
+  }
+  return katexPromise;
+}
+
+// ──────────────────────────────────────────────
+// Types
+// ──────────────────────────────────────────────
 
 type InputMode = "text" | "image";
 
@@ -24,7 +43,80 @@ interface EssayAnswerInputProps {
   maxLength?: number;
   /** Subject hint — enables vertical text mode toggle for kokugo */
   subject?: string;
+  /** Whether the question has LaTeX content (enables preview toggle) */
+  enableLatex?: boolean;
 }
+
+// ──────────────────────────────────────────────
+// LaTeX preview sub-component
+// ──────────────────────────────────────────────
+
+function LatexPreview({ text }: { text: string }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!text.trim() || !containerRef.current) return;
+
+    let cancelled = false;
+
+    getKatex().then((katex) => {
+      if (cancelled || !containerRef.current) return;
+
+      try {
+        // Replace inline math delimiters \( ... \) and $ ... $ with rendered LaTeX
+        const processed = text.replace(
+          /\$([^$]+)\$|\\\(([^)]+)\\\)/g,
+          (_, g1, g2) => {
+            const expr = g1 ?? g2;
+            return katex.default.renderToString(expr, {
+              throwOnError: false,
+              displayMode: false,
+            });
+          }
+        );
+
+        // Replace display math $$ ... $$ and \[ ... \]
+        const withDisplay = processed.replace(
+          /\$\$([^$]+)\$\$|\\\[([^\]]+)\\\]/g,
+          (_, g1, g2) => {
+            const expr = g1 ?? g2;
+            return katex.default.renderToString(expr, {
+              throwOnError: false,
+              displayMode: true,
+            });
+          }
+        );
+
+        containerRef.current.innerHTML = withDisplay;
+        setError(null);
+      } catch {
+        setError("LaTeX のレンダリングに失敗しました");
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [text]);
+
+  if (error) {
+    return (
+      <p className="text-xs text-destructive">{error}</p>
+    );
+  }
+
+  return (
+    <div
+      ref={containerRef}
+      className="min-h-[120px] rounded-md border border-border bg-muted/30 p-4 text-sm leading-relaxed"
+    />
+  );
+}
+
+// ──────────────────────────────────────────────
+// Main component
+// ──────────────────────────────────────────────
 
 export function EssayAnswerInput({
   questionNumber,
@@ -32,6 +124,7 @@ export function EssayAnswerInput({
   initialValue,
   maxLength,
   subject,
+  enableLatex = false,
 }: EssayAnswerInputProps) {
   const [mode, setMode] = useState<InputMode>(
     initialValue?.imageUrl ? "image" : "text"
@@ -42,9 +135,9 @@ export function EssayAnswerInput({
   );
   const [genkoYoshi, setGenkoYoshi] = useState(false);
   const [verticalMode, setVerticalMode] = useState(false);
+  const [showLatexPreview, setShowLatexPreview] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const textareaContainerRef = useRef<HTMLDivElement>(null);
 
   // Detect mobile for camera capture button
   const [isMobile, setIsMobile] = useState(false);
@@ -63,6 +156,15 @@ export function EssayAnswerInput({
   const charCount = text.length;
   const isOverLimit = maxLength ? charCount > maxLength : false;
 
+  // Compute character count color tiers
+  const charCountColor = useMemo(() => {
+    if (!maxLength) return "text-muted-foreground";
+    const ratio = charCount / maxLength;
+    if (ratio > 1) return "font-medium text-destructive";
+    if (ratio > 0.9) return "text-amber-600";
+    return "text-muted-foreground";
+  }, [charCount, maxLength]);
+
   const handleTextChange = useCallback(
     (value: string) => {
       setText(value);
@@ -76,10 +178,11 @@ export function EssayAnswerInput({
       const file = e.target.files?.[0];
       if (!file) return;
 
+      // Validate file type
+      if (!file.type.startsWith("image/")) return;
+
       // Validate file size (10MB max)
-      if (file.size > 10 * 1024 * 1024) {
-        return;
-      }
+      if (file.size > 10 * 1024 * 1024) return;
 
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -105,6 +208,8 @@ export function EssayAnswerInput({
 
   // Determine if vertical text toggle should be shown (for kokugo)
   const showVerticalToggle = subject === "japanese";
+  // Determine if LaTeX preview can be toggled
+  const showLatexToggle = enableLatex || subject === "math" || subject === "physics" || subject === "chemistry";
 
   return (
     <div className="space-y-3">
@@ -140,6 +245,24 @@ export function EssayAnswerInput({
             </Button>
           )}
 
+          {/* LaTeX preview toggle (math/science subjects) */}
+          {mode === "text" && showLatexToggle && (
+            <Button
+              type="button"
+              variant={showLatexPreview ? "default" : "outline"}
+              size="sm"
+              onClick={() => setShowLatexPreview(!showLatexPreview)}
+              title="LaTeX プレビュー"
+              className="h-7 px-2"
+            >
+              {showLatexPreview ? (
+                <EyeOff className="h-3.5 w-3.5" />
+              ) : (
+                <Eye className="h-3.5 w-3.5" />
+              )}
+            </Button>
+          )}
+
           <Button
             type="button"
             variant={mode === "text" ? "default" : "outline"}
@@ -164,58 +287,72 @@ export function EssayAnswerInput({
       </div>
 
       {mode === "text" ? (
-        <div ref={textareaContainerRef} className="relative">
-          {/* Genko-yoshi grid overlay */}
-          {genkoYoshi && (
-            <div
-              className="pointer-events-none absolute inset-0 z-10"
-              aria-hidden="true"
-              style={{
-                backgroundImage: `
-                  linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
-                  linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
-                `,
-                backgroundSize: "1.5em 1.5em",
-                borderRadius: "0.375rem",
-              }}
-            />
-          )}
-
-          <Textarea
-            placeholder="解答を入力してください..."
-            value={text}
-            onChange={(e) => handleTextChange(e.target.value)}
-            rows={8}
-            maxLength={maxLength}
-            className={cn(
-              "resize-y font-sans text-base leading-relaxed",
-              genkoYoshi &&
-                "font-serif tracking-widest leading-[1.5em] bg-transparent",
-              verticalMode &&
-                "writing-vertical-rl min-h-[300px] overflow-x-auto text-base",
-              isOverLimit && "border-destructive focus-visible:ring-destructive"
+        <div className="space-y-2">
+          <div className="relative">
+            {/* Genko-yoshi grid overlay */}
+            {genkoYoshi && (
+              <div
+                className="pointer-events-none absolute inset-0 z-10"
+                aria-hidden="true"
+                style={{
+                  backgroundImage: `
+                    linear-gradient(to right, hsl(var(--border)) 1px, transparent 1px),
+                    linear-gradient(to bottom, hsl(var(--border)) 1px, transparent 1px)
+                  `,
+                  backgroundSize: "1.5em 1.5em",
+                  borderRadius: "0.375rem",
+                }}
+              />
             )}
-            style={
-              verticalMode
-                ? { writingMode: "vertical-rl", textOrientation: "upright" }
-                : undefined
-            }
-          />
+
+            <Textarea
+              placeholder={
+                showLatexToggle
+                  ? "解答を入力してください... （数式は $...$ や $$...$$ で囲んでください）"
+                  : "解答を入力してください..."
+              }
+              value={text}
+              onChange={(e) => handleTextChange(e.target.value)}
+              rows={8}
+              maxLength={maxLength}
+              className={cn(
+                "resize-y font-sans text-base leading-relaxed",
+                genkoYoshi &&
+                  "bg-transparent font-serif leading-[1.5em] tracking-widest",
+                verticalMode &&
+                  "min-h-[300px] overflow-x-auto text-base writing-vertical-rl",
+                isOverLimit && "border-destructive focus-visible:ring-destructive"
+              )}
+              style={
+                verticalMode
+                  ? { writingMode: "vertical-rl", textOrientation: "upright" }
+                  : undefined
+              }
+            />
+          </div>
 
           {/* Character count */}
-          <div className="mt-1 flex items-center justify-end gap-2">
-            <span
-              className={cn(
-                "text-xs tabular-nums",
-                isOverLimit
-                  ? "font-medium text-destructive"
-                  : "text-muted-foreground"
-              )}
-            >
+          <div className="flex items-center justify-between">
+            {showLatexToggle && !showLatexPreview && (
+              <p className="text-xs text-muted-foreground">
+                $...$ で数式を記述できます
+              </p>
+            )}
+            <span className={cn("ml-auto text-xs tabular-nums", charCountColor)}>
               {charCount.toLocaleString()}
               {maxLength ? ` / ${maxLength.toLocaleString()}` : ""} 文字
             </span>
           </div>
+
+          {/* LaTeX preview panel */}
+          {showLatexPreview && text.trim() && (
+            <div className="space-y-1">
+              <p className="text-xs font-medium text-muted-foreground">
+                プレビュー
+              </p>
+              <LatexPreview text={text} />
+            </div>
+          )}
         </div>
       ) : (
         <div>
@@ -244,7 +381,7 @@ export function EssayAnswerInput({
               <img
                 src={imagePreview}
                 alt="解答画像プレビュー"
-                className="max-h-80 w-full rounded-lg border border-border object-contain bg-muted/30"
+                className="max-h-80 w-full rounded-lg border border-border bg-muted/30 object-contain"
               />
               <Button
                 type="button"

@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getSubscriptionState } from "@/lib/subscription";
+import { getStripe } from "@/lib/stripe";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
 import {
   Card,
@@ -16,6 +18,9 @@ import {
   Receipt,
   Calendar,
   TrendingUp,
+  FileText,
+  ArrowRight,
+  ExternalLink,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ManagePaymentButton } from "./manage-payment-button";
@@ -66,6 +71,39 @@ export default async function BillingPage() {
 
   const setMap = new Map((sets ?? []).map((s) => [s.id, s.title]));
 
+  // Fetch Stripe invoices for subscribed users
+  let invoices: Array<{
+    id: string;
+    date: number;
+    amount: number;
+    status: string;
+    url: string | null;
+    description: string | null;
+  }> = [];
+
+  if (subRecord?.stripe_customer_id) {
+    try {
+      const stripe = getStripe();
+      const stripeInvoices = await stripe.invoices.list({
+        customer: subRecord.stripe_customer_id,
+        limit: 12,
+      });
+
+      invoices = stripeInvoices.data.map((inv) => ({
+        id: inv.id,
+        date: inv.created,
+        amount: inv.amount_paid ?? 0,
+        status: inv.status ?? "unknown",
+        url: inv.hosted_invoice_url ?? null,
+        description:
+          inv.lines.data[0]?.description ?? "サブスクリプション",
+      }));
+    } catch {
+      // Non-critical: if Stripe API fails, show purchases only
+      console.warn("[billing] Failed to fetch Stripe invoices");
+    }
+  }
+
   // Compute total spend
   const totalSpend = allPurchases.reduce(
     (sum, p) => sum + (p.amount_paid ?? 0),
@@ -76,12 +114,22 @@ export default async function BillingPage() {
   const isUnlimited = subState.gradingLimit === -1;
   const percentage = isUnlimited
     ? 0
-    : Math.min(
-        Math.round(
-          (subState.gradingsUsedThisMonth / subState.gradingLimit) * 100
-        ),
-        100
-      );
+    : subState.gradingLimit > 0
+      ? Math.min(
+          Math.round(
+            (subState.gradingsUsedThisMonth / subState.gradingLimit) * 100
+          ),
+          100
+        )
+      : 0;
+
+  // Compute next billing amount
+  const nextBillingAmount =
+    subState.tier === "free"
+      ? null
+      : subRecord?.interval === "annual"
+        ? tierConfig.annualPrice
+        : tierConfig.monthlyPrice;
 
   return (
     <div>
@@ -97,7 +145,7 @@ export default async function BillingPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <CreditCard className="h-4 w-4 text-muted-foreground" />
                 サブスクリプション
               </CardTitle>
@@ -153,7 +201,7 @@ export default async function BillingPage() {
             {/* Billing details grid */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <p className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />
                   次の請求日
                 </p>
@@ -166,19 +214,19 @@ export default async function BillingPage() {
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                <p className="flex items-center gap-1 text-xs text-muted-foreground">
                   <TrendingUp className="h-3 w-3" />
-                  月額料金
+                  {subRecord?.interval === "annual" ? "年額料金" : "月額料金"}
                 </p>
                 <p className="mt-1 text-sm font-semibold">
-                  {tierConfig.monthlyPrice === 0
+                  {nextBillingAmount == null || nextBillingAmount === 0
                     ? "無料"
-                    : `¥${tierConfig.monthlyPrice.toLocaleString()}`}
-                  {subRecord?.interval === "annual" && (
+                    : `¥${nextBillingAmount.toLocaleString()}`}
+                  {subRecord?.interval === "annual" && nextBillingAmount ? (
                     <span className="ml-1 text-xs font-normal text-muted-foreground">
                       (年払い)
                     </span>
-                  )}
+                  ) : null}
                 </p>
               </div>
               <div>
@@ -187,6 +235,10 @@ export default async function BillingPage() {
                   {subState.cancelAtPeriodEnd ? (
                     <Badge variant="outline" className="text-xs">
                       解約予約済み
+                    </Badge>
+                  ) : subState.status === "past_due" ? (
+                    <Badge variant="destructive" className="text-xs">
+                      支払い遅延
                     </Badge>
                   ) : subState.tier === "free" ? (
                     <span className="text-muted-foreground">—</span>
@@ -219,12 +271,12 @@ export default async function BillingPage() {
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <p className="text-xs text-muted-foreground">
                     プランの変更・解約は
-                    <a
+                    <Link
                       href="/settings/subscription"
                       className="ml-1 text-primary underline-offset-4 hover:underline"
                     >
                       サブスクリプション設定
-                    </a>
+                    </Link>
                     から行えます。
                   </p>
                   {subRecord?.stripe_customer_id && (
@@ -236,11 +288,92 @@ export default async function BillingPage() {
           </CardContent>
         </Card>
 
+        {/* Invoice history (Stripe) */}
+        {invoices.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base">
+                <FileText className="h-4 w-4 text-muted-foreground" />
+                請求書
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b text-left text-muted-foreground">
+                      <th className="pb-3 pr-4 font-medium">日付</th>
+                      <th className="pb-3 pr-4 font-medium">内容</th>
+                      <th className="pb-3 pr-4 text-right font-medium">
+                        金額
+                      </th>
+                      <th className="pb-3 text-center font-medium">
+                        ステータス
+                      </th>
+                      <th className="pb-3 text-right font-medium" />
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y">
+                    {invoices.map((inv) => (
+                      <tr key={inv.id} className="hover:bg-muted/50">
+                        <td className="py-3 pr-4 text-muted-foreground">
+                          {new Date(inv.date * 1000).toLocaleDateString(
+                            "ja-JP"
+                          )}
+                        </td>
+                        <td className="py-3 pr-4 font-medium">
+                          {inv.description}
+                        </td>
+                        <td className="py-3 pr-4 text-right">
+                          ¥{inv.amount.toLocaleString()}
+                        </td>
+                        <td className="py-3 text-center">
+                          <Badge
+                            variant={
+                              inv.status === "paid"
+                                ? "secondary"
+                                : inv.status === "open"
+                                  ? "outline"
+                                  : "destructive"
+                            }
+                            className="text-xs"
+                          >
+                            {inv.status === "paid"
+                              ? "支払い済み"
+                              : inv.status === "open"
+                                ? "未払い"
+                                : inv.status === "void"
+                                  ? "無効"
+                                  : inv.status}
+                          </Badge>
+                        </td>
+                        <td className="py-3 text-right">
+                          {inv.url && (
+                            <a
+                              href={inv.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                            >
+                              表示
+                              <ExternalLink className="h-3 w-3" />
+                            </a>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Purchase history */}
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-base flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-base">
                 <Receipt className="h-4 w-4 text-muted-foreground" />
                 購入履歴
               </CardTitle>
@@ -253,9 +386,17 @@ export default async function BillingPage() {
           </CardHeader>
           <CardContent>
             {allPurchases.length === 0 ? (
-              <p className="py-8 text-center text-muted-foreground">
-                購入履歴がありません
-              </p>
+              <div className="flex flex-col items-center py-8 text-center">
+                <Receipt className="mb-3 h-8 w-8 text-muted-foreground/40" />
+                <p className="text-muted-foreground">購入履歴がありません</p>
+                <Link
+                  href="/explore"
+                  className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                >
+                  問題セットを探す
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -275,14 +416,16 @@ export default async function BillingPage() {
                           )}
                         </td>
                         <td className="py-3 pr-4 font-medium">
-                          {setMap.get(p.problem_set_id) ?? "—"}
+                          <Link
+                            href={`/problem/${p.problem_set_id}`}
+                            className="hover:text-primary hover:underline"
+                          >
+                            {setMap.get(p.problem_set_id) ?? "—"}
+                          </Link>
                         </td>
                         <td className="py-3 text-right">
                           {p.amount_paid === 0 ? (
-                            <Badge
-                              variant="secondary"
-                              className="text-xs"
-                            >
+                            <Badge variant="secondary" className="text-xs">
                               無料
                             </Badge>
                           ) : (

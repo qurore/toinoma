@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { requireAdmin } from "@/lib/auth/require-seller";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import {
   LayoutDashboard,
@@ -29,24 +28,7 @@ export default async function AdminLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
-
-  // Check admin flag
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
-  // is_admin may not exist yet in types — gracefully handle
-  const isAdmin = (profile as { is_admin?: boolean } | null)?.is_admin;
-  if (!isAdmin) redirect("/dashboard");
-
+  await requireAdmin();
   const navbarData = await getNavbarData();
 
   return (

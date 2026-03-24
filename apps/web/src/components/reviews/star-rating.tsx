@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useCallback } from "react";
 import { Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +18,12 @@ const SIZES = {
   lg: "h-5 w-5",
 } as const;
 
+const BUTTON_SIZES = {
+  sm: "h-5 w-5",
+  md: "h-6 w-6",
+  lg: "h-7 w-7",
+} as const;
+
 export function StarRating({
   rating,
   maxRating = 5,
@@ -24,33 +31,107 @@ export function StarRating({
   interactive = false,
   onChange,
 }: StarRatingProps) {
+  const [hoverRating, setHoverRating] = useState(0);
   const iconClass = SIZES[size];
+  const btnClass = BUTTON_SIZES[size];
+
+  // The displayed rating: if hovering, show hover preview; otherwise show actual
+  const displayRating = interactive && hoverRating > 0 ? hoverRating : rating;
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent, currentStar: number) => {
+      if (!interactive || !onChange) return;
+
+      switch (e.key) {
+        case "ArrowRight":
+        case "ArrowUp":
+          e.preventDefault();
+          onChange(Math.min(currentStar + 1, maxRating));
+          break;
+        case "ArrowLeft":
+        case "ArrowDown":
+          e.preventDefault();
+          onChange(Math.max(currentStar - 1, 1));
+          break;
+        case "Home":
+          e.preventDefault();
+          onChange(1);
+          break;
+        case "End":
+          e.preventDefault();
+          onChange(maxRating);
+          break;
+      }
+    },
+    [interactive, onChange, maxRating]
+  );
 
   return (
-    <div className="flex items-center gap-0.5" role="group" aria-label={`${rating}/${maxRating}星`}>
+    <div
+      className="flex items-center gap-0.5"
+      role={interactive ? "radiogroup" : "img"}
+      aria-label={
+        interactive
+          ? "評価を選択"
+          : `${displayRating}/${maxRating}星`
+      }
+      onMouseLeave={() => interactive && setHoverRating(0)}
+    >
       {Array.from({ length: maxRating }, (_, i) => {
-        const filled = i < Math.floor(rating);
-        const halfFilled = !filled && i < rating;
+        const starValue = i + 1;
+        const filled = starValue <= Math.floor(displayRating);
+        const halfFilled =
+          !filled && starValue - 0.5 <= displayRating && starValue > displayRating;
 
+        if (interactive) {
+          return (
+            <button
+              key={i}
+              type="button"
+              role="radio"
+              aria-checked={rating === starValue}
+              aria-label={`${starValue}星`}
+              tabIndex={rating === starValue ? 0 : -1}
+              onClick={() => onChange?.(starValue)}
+              onMouseEnter={() => setHoverRating(starValue)}
+              onKeyDown={(e) => handleKeyDown(e, rating)}
+              className={cn(
+                "relative flex items-center justify-center rounded-sm transition-transform focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                btnClass,
+                "cursor-pointer hover:scale-110"
+              )}
+            >
+              {/* Background star (empty) */}
+              <Star
+                className={cn(iconClass, "text-muted-foreground/20")}
+                fill="currentColor"
+              />
+              {/* Foreground star (filled or half) */}
+              {(filled || halfFilled) && (
+                <Star
+                  className={cn(
+                    iconClass,
+                    "absolute text-amber-400",
+                    halfFilled && "[clip-path:inset(0_50%_0_0)]"
+                  )}
+                  fill="currentColor"
+                />
+              )}
+            </button>
+          );
+        }
+
+        // Display-only mode
         return (
-          <button
+          <span
             key={i}
-            type="button"
-            disabled={!interactive}
-            onClick={() => onChange?.(i + 1)}
-            className={cn(
-              "relative",
-              interactive && "cursor-pointer transition-transform hover:scale-110",
-              !interactive && "cursor-default"
-            )}
-            aria-label={`${i + 1}星`}
+            className="relative inline-flex"
+            aria-hidden="true"
           >
-            {/* Background star (empty) */}
             <Star
               className={cn(iconClass, "text-muted-foreground/20")}
               fill="currentColor"
             />
-            {/* Foreground star (filled) */}
             {(filled || halfFilled) && (
               <Star
                 className={cn(
@@ -61,23 +142,29 @@ export function StarRating({
                 fill="currentColor"
               />
             )}
-          </button>
+          </span>
         );
       })}
     </div>
   );
 }
 
+// ── Rating summary with distribution bars ──────────────────────────────
+
 interface RatingSummaryProps {
   averageRating: number;
   totalReviews: number;
   distribution: Record<number, number>;
+  onFilterByStar?: (star: number | null) => void;
+  activeStar?: number | null;
 }
 
 export function RatingSummary({
   averageRating,
   totalReviews,
   distribution,
+  onFilterByStar,
+  activeStar,
 }: RatingSummaryProps) {
   return (
     <div className="flex items-start gap-6">
@@ -93,9 +180,27 @@ export function RatingSummary({
       <div className="flex-1 space-y-1">
         {[5, 4, 3, 2, 1].map((star) => {
           const count = distribution[star] || 0;
-          const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+          const percentage =
+            totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+          const isActive = activeStar === star;
+
           return (
-            <div key={star} className="flex items-center gap-2 text-sm">
+            <button
+              key={star}
+              type="button"
+              className={cn(
+                "flex w-full items-center gap-2 rounded-sm px-1 py-0.5 text-sm transition-colors",
+                onFilterByStar && "cursor-pointer hover:bg-muted",
+                isActive && "bg-muted"
+              )}
+              onClick={() => {
+                if (!onFilterByStar) return;
+                onFilterByStar(isActive ? null : star);
+              }}
+              aria-label={`${star}星のレビューを${isActive ? "フィルター解除" : "表示"}`}
+              aria-pressed={isActive}
+              disabled={!onFilterByStar}
+            >
               <span className="w-6 text-right text-muted-foreground">
                 {star}
               </span>
@@ -106,10 +211,10 @@ export function RatingSummary({
                   style={{ width: `${Math.max(percentage, 0)}%` }}
                 />
               </div>
-              <span className="w-8 text-right text-xs text-muted-foreground">
-                {Math.round(percentage)}%
+              <span className="w-10 text-right text-xs text-muted-foreground">
+                {count}件
               </span>
-            </div>
+            </button>
           );
         })}
       </div>

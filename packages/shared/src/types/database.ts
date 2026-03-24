@@ -450,6 +450,7 @@ export interface Database {
           current_period_end: string | null;
           cancel_at_period_end: boolean;
           status: string;
+          grace_period_end: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -464,6 +465,7 @@ export interface Database {
           current_period_end?: string | null;
           cancel_at_period_end?: boolean;
           status?: string;
+          grace_period_end?: string | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -476,6 +478,7 @@ export interface Database {
           current_period_end?: string | null;
           cancel_at_period_end?: boolean;
           status?: string;
+          grace_period_end?: string | null;
           updated_at?: string;
         };
         Relationships: [];

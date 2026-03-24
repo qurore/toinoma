@@ -8,6 +8,7 @@ import {
   ChevronUp,
   Loader2,
   MoreVertical,
+  Store,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -49,7 +50,9 @@ export function QaAnswerList({
   const sorted = [...answers].sort((a, b) => {
     if (a.is_accepted !== b.is_accepted) return a.is_accepted ? -1 : 1;
     if (a.upvotes !== b.upvotes) return b.upvotes - a.upvotes;
-    return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
+    return (
+      new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    );
   });
 
   return (
@@ -84,7 +87,7 @@ function AnswerItem({
 }) {
   const [optimisticUpvotes, setOptimisticUpvotes] = useState(answer.upvotes);
   const [optimisticUpvoted, setOptimisticUpvoted] = useState(
-    answer.user_has_upvoted,
+    answer.user_has_upvoted
   );
   const [isUpvoting, setIsUpvoting] = useState(false);
   const [isAccepting, setIsAccepting] = useState(false);
@@ -139,7 +142,7 @@ function AnswerItem({
       toast.success(
         answer.is_accepted
           ? "ベストアンサーを取り消しました"
-          : "ベストアンサーに選びました",
+          : "ベストアンサーに選びました"
       );
     }
 
@@ -197,6 +200,16 @@ function AnswerItem({
           <span className="text-sm font-medium">
             {answer.user.display_name ?? "匿名ユーザー"}
           </span>
+          {/* Seller badge */}
+          {answer.is_seller && (
+            <Badge
+              variant="outline"
+              className="gap-1 border-primary/40 text-primary"
+            >
+              <Store className="h-3 w-3" />
+              出品者
+            </Badge>
+          )}
           <span className="text-xs text-muted-foreground">{timeAgo}</span>
           {answer.is_accepted && (
             <Badge className="gap-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400">

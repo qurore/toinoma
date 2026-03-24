@@ -1,4 +1,6 @@
 import { Suspense } from "react";
+import Link from "next/link";
+import { SearchX, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
@@ -12,8 +14,9 @@ import {
   ExploreSortDropdown,
   type SortOption,
 } from "@/components/marketplace/explore-filters";
+import { Button } from "@/components/ui/button";
 import { generatePageMetadata } from "@/lib/metadata";
-import { SUBJECTS, DIFFICULTIES } from "@toinoma/shared/constants";
+import { SUBJECTS, DIFFICULTIES, SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
 import type { Metadata } from "next";
 
@@ -63,7 +66,7 @@ function Pagination({
   return (
     <nav aria-label="ページナビゲーション" className="flex justify-center">
       <ul className="flex items-center gap-1">
-        {/* Previous — always rendered, disabled on page 1 for layout stability */}
+        {/* Previous -- always rendered, disabled on page 1 for layout stability */}
         <li>
           {currentPage > 1 ? (
             <a
@@ -107,7 +110,7 @@ function Pagination({
           )
         )}
 
-        {/* Next — always rendered, disabled on last page for layout stability */}
+        {/* Next -- always rendered, disabled on last page for layout stability */}
         <li>
           {currentPage < totalPages ? (
             <a
@@ -128,6 +131,60 @@ function Pagination({
         </li>
       </ul>
     </nav>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Empty state
+// ──────────────────────────────────────────────
+
+function EmptyState({ hasFilters, query }: { hasFilters: boolean; query: string }) {
+  return (
+    <div className="flex flex-col items-center py-20 text-center">
+      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
+        <SearchX className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
+      </div>
+      <h2 className="text-lg font-semibold">
+        該当する問題セットが見つかりませんでした
+      </h2>
+      <p className="mt-1 max-w-md text-sm text-muted-foreground">
+        {query
+          ? `「${query}」に一致する問題セットはありません。`
+          : hasFilters
+            ? "フィルター条件を変更してお試しください。"
+            : "まだ問題セットが公開されていません。"}
+      </p>
+
+      {/* Suggestions */}
+      {hasFilters && (
+        <Button asChild variant="outline" size="sm" className="mt-4">
+          <Link href="/explore">
+            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
+            フィルターをクリアして探す
+          </Link>
+        </Button>
+      )}
+
+      {/* Popular subject links */}
+      <div className="mt-6">
+        <p className="mb-2 text-xs font-medium text-muted-foreground">
+          人気の教科から探す
+        </p>
+        <div className="flex flex-wrap justify-center gap-2">
+          {(["math", "english", "japanese", "physics", "chemistry"] as Subject[]).map(
+            (subject) => (
+              <Link
+                key={subject}
+                href={`/explore?subject=${subject}`}
+                className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/30 hover:text-primary"
+              >
+                {SUBJECT_LABELS[subject]}
+              </Link>
+            )
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -169,6 +226,15 @@ export default async function ExplorePage({
         ) as Difficulty[])
     : [];
 
+  const hasFilters =
+    subjects.length > 0 ||
+    difficulties.length > 0 ||
+    freeOnly ||
+    priceMin != null ||
+    priceMax != null ||
+    minRating > 0 ||
+    rawQ.length > 0;
+
   // Fetch navbar data + query data in parallel
   const supabase = await createClient();
   const [navbarData, { data: userData }] = await Promise.all([
@@ -177,7 +243,7 @@ export default async function ExplorePage({
   ]);
   const userId = userData?.user?.id ?? null;
 
-  // Build query — fetch count first for pagination
+  // ── Build count query for pagination ──
   let countQuery = supabase
     .from("problem_sets")
     .select("id", { count: "exact", head: true })
@@ -215,7 +281,7 @@ export default async function ExplorePage({
   const safePage = Math.min(page, totalPages);
   const offset = (safePage - 1) * PAGE_SIZE;
 
-  // Build data query
+  // ── Build data query ──
   let dataQuery = supabase
     .from("problem_sets")
     .select(
@@ -261,14 +327,14 @@ export default async function ExplorePage({
     default:
       dataQuery = dataQuery.order("created_at", { ascending: false });
       break;
-    // popular and highest_rated will be sorted client-side after join
+    // popular and highest_rated will be sorted after join
   }
 
   dataQuery = dataQuery.range(offset, offset + PAGE_SIZE - 1);
   const { data: rawSets } = await dataQuery;
   const sets = rawSets ?? [];
 
-  // Fetch reviews aggregate + seller names + favorites in parallel
+  // ── Fetch related data in parallel ──
   const setIds = sets.map((s) => s.id);
   const sellerIds = [...new Set(sets.map((s) => s.seller_id))];
 
@@ -293,8 +359,7 @@ export default async function ExplorePage({
             .eq("user_id", userId)
             .in("problem_set_id", setIds)
         : Promise.resolve({ data: [] }),
-      // Purchase counts for popular sort
-      sort === "popular" && setIds.length > 0
+      setIds.length > 0
         ? supabase
             .from("purchases")
             .select("problem_set_id")
@@ -302,11 +367,8 @@ export default async function ExplorePage({
         : Promise.resolve({ data: [] }),
     ]);
 
-  // Build lookup maps
-  const reviewAggregates: Record<
-    string,
-    { avg: number; count: number }
-  > = {};
+  // ── Build lookup maps ──
+  const reviewAggregates: Record<string, { avg: number; count: number }> = {};
   for (const r of reviewsResult.data ?? []) {
     const key = r.problem_set_id;
     if (!reviewAggregates[key]) {
@@ -331,37 +393,38 @@ export default async function ExplorePage({
     )
   );
 
-  // Build card data
-  let cardData: (ProblemSetCardData & { _purchaseCount?: number })[] =
-    sets.map((ps) => ({
-      id: ps.id,
-      title: ps.title,
-      subject: ps.subject as Subject,
-      difficulty: ps.difficulty as Difficulty,
-      price: ps.price,
-      cover_image_url: ps.cover_image_url,
-      university: ps.university,
-      seller_display_name: sellerMap[ps.seller_id] ?? null,
-      avg_rating: reviewAggregates[ps.id]?.avg ?? null,
-      review_count: reviewAggregates[ps.id]?.count ?? null,
-    }));
+  // Purchase counts for all sets (used for display and popular sort)
+  const purchaseCounts: Record<string, number> = {};
+  for (const p of purchasesResult.data ?? []) {
+    const key = (p as { problem_set_id: string }).problem_set_id;
+    purchaseCounts[key] = (purchaseCounts[key] ?? 0) + 1;
+  }
 
-  // Client-side sort for popular/highest_rated
+  // ── Build card data ──
+  let cardData: ProblemSetCardData[] = sets.map((ps) => ({
+    id: ps.id,
+    title: ps.title,
+    subject: ps.subject as Subject,
+    difficulty: ps.difficulty as Difficulty,
+    price: ps.price,
+    cover_image_url: ps.cover_image_url,
+    university: ps.university,
+    seller_display_name: sellerMap[ps.seller_id] ?? null,
+    avg_rating: reviewAggregates[ps.id]?.avg ?? null,
+    review_count: reviewAggregates[ps.id]?.count ?? null,
+    purchase_count: purchaseCounts[ps.id] ?? 0,
+  }));
+
+  // Sort for popular/highest_rated (post-query since these depend on joined data)
   if (sort === "popular") {
-    const purchaseCounts: Record<string, number> = {};
-    for (const p of purchasesResult.data ?? []) {
-      const key = (p as { problem_set_id: string }).problem_set_id;
-      purchaseCounts[key] = (purchaseCounts[key] ?? 0) + 1;
-    }
-    cardData = cardData
-      .map((c) => ({
-        ...c,
-        _purchaseCount: purchaseCounts[c.id] ?? 0,
-      }))
-      .sort((a, b) => (b._purchaseCount ?? 0) - (a._purchaseCount ?? 0));
+    cardData = [...cardData].sort(
+      (a, b) => (b.purchase_count ?? 0) - (a.purchase_count ?? 0)
+    );
   }
   if (sort === "highest_rated") {
-    cardData.sort((a, b) => (b.avg_rating ?? 0) - (a.avg_rating ?? 0));
+    cardData = [...cardData].sort(
+      (a, b) => (b.avg_rating ?? 0) - (a.avg_rating ?? 0)
+    );
   }
 
   // Filter by min rating (post-query since reviews are a separate table)
@@ -372,7 +435,7 @@ export default async function ExplorePage({
         )
       : cardData;
 
-  // Build href helper for pagination
+  // ── Build href helper for pagination ──
   function buildPageHref(p: number): string {
     const sp = new URLSearchParams();
     if (rawQ) sp.set("q", rawQ);
@@ -388,6 +451,17 @@ export default async function ExplorePage({
     return qs ? `/explore?${qs}` : "/explore";
   }
 
+  // ── Build page title based on active filters ──
+  const pageTitle = subjects.length === 1
+    ? `${SUBJECT_LABELS[subjects[0]]}の問題を探す`
+    : rawQ
+      ? `「${rawQ}」の検索結果`
+      : "問題を探す";
+
+  const pageSubtitle = subjects.length === 1
+    ? `${SUBJECT_LABELS[subjects[0]]}の入試対策問題セットを見つけよう`
+    : "大学入試対策の問題セットを見つけよう";
+
   return (
     <>
       <AppNavbar {...navbarData} />
@@ -395,10 +469,10 @@ export default async function ExplorePage({
         {/* Page header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-            問題を探す
+            {pageTitle}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            大学入試対策の問題セットを見つけよう
+            {pageSubtitle}
           </p>
         </div>
 
@@ -416,8 +490,11 @@ export default async function ExplorePage({
                 <Suspense fallback={null}>
                   <ExploreFiltersMobile />
                 </Suspense>
-                <p className="text-sm text-muted-foreground">
-                  {total.toLocaleString()}件の問題セット
+                <p className="text-sm text-muted-foreground" aria-live="polite">
+                  <span className="font-medium text-foreground">
+                    {total.toLocaleString()}
+                  </span>
+                  件の問題セット
                 </p>
               </div>
               <Suspense fallback={null}>
@@ -427,14 +504,7 @@ export default async function ExplorePage({
 
             {/* Results grid */}
             {filteredCards.length === 0 ? (
-              <div className="py-20 text-center text-muted-foreground">
-                <p className="text-lg">
-                  該当する問題セットが見つかりませんでした
-                </p>
-                <p className="mt-1 text-sm">
-                  検索条件を変えてお試しください
-                </p>
-              </div>
+              <EmptyState hasFilters={hasFilters} query={rawQ} />
             ) : (
               <>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">

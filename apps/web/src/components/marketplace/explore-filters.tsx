@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useCallback, useTransition } from "react";
+import { useState, useCallback, useTransition, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SlidersHorizontal, Star, RotateCcw } from "lucide-react";
+import { SlidersHorizontal, Star, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
@@ -62,24 +63,37 @@ export interface FilterState {
   q: string;
 }
 
+const EMPTY_FILTER: FilterState = {
+  subjects: [],
+  difficulties: [],
+  freeOnly: false,
+  priceMin: "",
+  priceMax: "",
+  minRating: 0,
+  sort: "newest",
+  q: "",
+};
+
 // ──────────────────────────────────────────────
 // Helpers
 // ──────────────────────────────────────────────
 
-function parseFilterStateFromParams(
-  params: URLSearchParams
-): FilterState {
+function parseFilterStateFromParams(params: URLSearchParams): FilterState {
   const subjectParam = params.get("subject") ?? "";
   const difficultyParam = params.get("difficulty") ?? "";
   const subjects = subjectParam
-    ? (subjectParam.split(",").filter((s) =>
-        (SUBJECTS as readonly string[]).includes(s)
-      ) as Subject[])
+    ? (subjectParam
+        .split(",")
+        .filter((s) =>
+          (SUBJECTS as readonly string[]).includes(s)
+        ) as Subject[])
     : [];
   const difficulties = difficultyParam
-    ? (difficultyParam.split(",").filter((d) =>
-        (DIFFICULTIES as readonly string[]).includes(d)
-      ) as Difficulty[])
+    ? (difficultyParam
+        .split(",")
+        .filter((d) =>
+          (DIFFICULTIES as readonly string[]).includes(d)
+        ) as Difficulty[])
     : [];
 
   return {
@@ -104,8 +118,7 @@ function buildSearchParams(state: FilterState): URLSearchParams {
   if (state.freeOnly) params.set("free", "1");
   if (state.priceMin) params.set("price_min", state.priceMin);
   if (state.priceMax) params.set("price_max", state.priceMax);
-  if (state.minRating > 0)
-    params.set("min_rating", String(state.minRating));
+  if (state.minRating > 0) params.set("min_rating", String(state.minRating));
   if (state.sort !== "newest") params.set("sort", state.sort);
   // Always reset to page 1 on filter change
   return params;
@@ -122,6 +135,115 @@ function countActiveFilters(state: FilterState): number {
   );
 }
 
+/** Build a human-readable list of active filter descriptions for aria */
+function describeActiveFilters(state: FilterState): string {
+  const parts: string[] = [];
+  if (state.subjects.length > 0) {
+    parts.push(state.subjects.map((s) => SUBJECT_LABELS[s]).join("、"));
+  }
+  if (state.difficulties.length > 0) {
+    parts.push(state.difficulties.map((d) => DIFFICULTY_LABELS[d]).join("、"));
+  }
+  if (state.freeOnly) parts.push("無料のみ");
+  if (state.priceMin) parts.push(`\u00A5${state.priceMin}以上`);
+  if (state.priceMax) parts.push(`\u00A5${state.priceMax}以下`);
+  if (state.minRating > 0) parts.push(`${state.minRating}星以上`);
+  return parts.length > 0 ? parts.join("、") : "なし";
+}
+
+// ──────────────────────────────────────────────
+// Active filter chips
+// ──────────────────────────────────────────────
+
+function ActiveFilterChips({
+  state,
+  onChange,
+}: {
+  state: FilterState;
+  onChange: (update: Partial<FilterState>) => void;
+}) {
+  const chips: { key: string; label: string; onRemove: () => void }[] = [];
+
+  for (const subject of state.subjects) {
+    chips.push({
+      key: `subject-${subject}`,
+      label: SUBJECT_LABELS[subject],
+      onRemove: () =>
+        onChange({
+          subjects: state.subjects.filter((s) => s !== subject),
+        }),
+    });
+  }
+
+  for (const diff of state.difficulties) {
+    chips.push({
+      key: `difficulty-${diff}`,
+      label: DIFFICULTY_LABELS[diff],
+      onRemove: () =>
+        onChange({
+          difficulties: state.difficulties.filter((d) => d !== diff),
+        }),
+    });
+  }
+
+  if (state.freeOnly) {
+    chips.push({
+      key: "free",
+      label: "無料のみ",
+      onRemove: () => onChange({ freeOnly: false }),
+    });
+  }
+
+  if (state.priceMin) {
+    chips.push({
+      key: "price-min",
+      label: `\u00A5${state.priceMin}以上`,
+      onRemove: () => onChange({ priceMin: "" }),
+    });
+  }
+
+  if (state.priceMax) {
+    chips.push({
+      key: "price-max",
+      label: `\u00A5${state.priceMax}以下`,
+      onRemove: () => onChange({ priceMax: "" }),
+    });
+  }
+
+  if (state.minRating > 0) {
+    chips.push({
+      key: "rating",
+      label: `${state.minRating}星以上`,
+      onRemove: () => onChange({ minRating: 0 }),
+    });
+  }
+
+  if (chips.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-1.5" role="list" aria-label="適用中のフィルター">
+      {chips.map((chip) => (
+        <Badge
+          key={chip.key}
+          variant="secondary"
+          className="gap-1 pr-1 text-xs"
+          role="listitem"
+        >
+          {chip.label}
+          <button
+            type="button"
+            onClick={chip.onRemove}
+            className="ml-0.5 rounded-full p-0.5 transition-colors hover:bg-foreground/10 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            aria-label={`${chip.label}フィルターを削除`}
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </Badge>
+      ))}
+    </div>
+  );
+}
+
 // ──────────────────────────────────────────────
 // Filter content (shared between sidebar and sheet)
 // ──────────────────────────────────────────────
@@ -131,22 +253,30 @@ function FilterContent({
   onChange,
   onApply,
   onClear,
+  showApplyButton,
 }: {
   state: FilterState;
   onChange: (update: Partial<FilterState>) => void;
   onApply: () => void;
   onClear: () => void;
+  showApplyButton: boolean;
 }) {
   const hasActiveFilters = countActiveFilters(state) > 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6" role="form" aria-label="検索フィルター">
+      {/* Active filter chips */}
+      <ActiveFilterChips state={state} onChange={onChange} />
+
       {/* Sort */}
       <div>
-        <h3 className="mb-2.5 text-sm font-semibold">並び替え</h3>
+        <h3 className="mb-2.5 text-sm font-semibold" id="filter-sort-label">
+          並び替え
+        </h3>
         <Select
           value={state.sort}
           onValueChange={(v) => onChange({ sort: v as SortOption })}
+          aria-labelledby="filter-sort-label"
         >
           <SelectTrigger className="w-full">
             <SelectValue />
@@ -164,8 +294,8 @@ function FilterContent({
       <Separator />
 
       {/* Subject checkboxes */}
-      <div>
-        <h3 className="mb-2.5 text-sm font-semibold">教科</h3>
+      <fieldset>
+        <legend className="mb-2.5 text-sm font-semibold">教科</legend>
         <div className="space-y-2.5">
           {SUBJECTS.map((subject) => {
             const checked = state.subjects.includes(subject);
@@ -191,13 +321,13 @@ function FilterContent({
             );
           })}
         </div>
-      </div>
+      </fieldset>
 
       <Separator />
 
       {/* Difficulty checkboxes */}
-      <div>
-        <h3 className="mb-2.5 text-sm font-semibold">難易度</h3>
+      <fieldset>
+        <legend className="mb-2.5 text-sm font-semibold">難易度</legend>
         <div className="space-y-2.5">
           {DIFFICULTIES.map((diff) => {
             const checked = state.difficulties.includes(diff);
@@ -223,13 +353,13 @@ function FilterContent({
             );
           })}
         </div>
-      </div>
+      </fieldset>
 
       <Separator />
 
       {/* Price range */}
-      <div>
-        <h3 className="mb-2.5 text-sm font-semibold">価格</h3>
+      <fieldset>
+        <legend className="mb-2.5 text-sm font-semibold">価格</legend>
         <div className="mb-3 flex items-center gap-2.5">
           <Checkbox
             id="free-only"
@@ -238,7 +368,10 @@ function FilterContent({
               onChange({ freeOnly: !!val, priceMin: "", priceMax: "" })
             }
           />
-          <Label htmlFor="free-only" className="cursor-pointer text-sm leading-none">
+          <Label
+            htmlFor="free-only"
+            className="cursor-pointer text-sm leading-none"
+          >
             無料のみ
           </Label>
         </div>
@@ -248,35 +381,43 @@ function FilterContent({
               type="number"
               min="0"
               step="100"
-              placeholder="¥ 下限"
+              placeholder="\u00A5 下限"
               value={state.priceMin}
               onChange={(e) => onChange({ priceMin: e.target.value })}
               className="h-9 text-sm"
+              aria-label="最低価格"
             />
-            <span className="shrink-0 text-xs text-muted-foreground">〜</span>
+            <span className="shrink-0 text-xs text-muted-foreground" aria-hidden="true">
+              〜
+            </span>
             <Input
               type="number"
               min="0"
               step="100"
-              placeholder="¥ 上限"
+              placeholder="\u00A5 上限"
               value={state.priceMax}
               onChange={(e) => onChange({ priceMax: e.target.value })}
               className="h-9 text-sm"
+              aria-label="最高価格"
             />
           </div>
         )}
-      </div>
+      </fieldset>
 
       <Separator />
 
       {/* Minimum rating */}
       <div>
-        <h3 className="mb-2.5 text-sm font-semibold">最低評価</h3>
-        <div className="flex items-center gap-1">
+        <h3 className="mb-2.5 text-sm font-semibold" id="filter-rating-label">
+          最低評価
+        </h3>
+        <div className="flex items-center gap-1" role="radiogroup" aria-labelledby="filter-rating-label">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
               key={star}
               type="button"
+              role="radio"
+              aria-checked={state.minRating === star}
               onClick={() =>
                 onChange({
                   minRating: state.minRating === star ? 0 : star,
@@ -287,7 +428,7 @@ function FilterContent({
             >
               <Star
                 className={cn(
-                  "h-5 w-5",
+                  "h-5 w-5 transition-colors",
                   star <= state.minRating
                     ? "fill-amber-400 text-amber-400"
                     : "text-muted-foreground/30"
@@ -307,13 +448,20 @@ function FilterContent({
 
       {/* Action buttons */}
       <div className="flex gap-2">
-        <Button onClick={onApply} className="flex-1" size="sm">
-          適用する
-        </Button>
+        {showApplyButton && (
+          <Button onClick={onApply} className="flex-1" size="sm">
+            適用する
+          </Button>
+        )}
         {hasActiveFilters && (
-          <Button onClick={onClear} variant="outline" size="sm">
-            <RotateCcw className="mr-1 h-3 w-3" />
-            クリア
+          <Button
+            onClick={onClear}
+            variant="outline"
+            size={showApplyButton ? "sm" : "default"}
+            className={showApplyButton ? "" : "w-full"}
+          >
+            <RotateCcw className="mr-1.5 h-3 w-3" />
+            すべてクリア
           </Button>
         )}
       </div>
@@ -322,7 +470,7 @@ function FilterContent({
 }
 
 // ──────────────────────────────────────────────
-// Desktop sidebar
+// Desktop sidebar (auto-applies on change)
 // ──────────────────────────────────────────────
 
 export function ExploreFiltersSidebar() {
@@ -333,9 +481,20 @@ export function ExploreFiltersSidebar() {
     parseFilterStateFromParams(searchParams)
   );
 
-  const handleChange = useCallback((update: Partial<FilterState>) => {
-    setState((prev) => ({ ...prev, ...update }));
-  }, []);
+  const handleChange = useCallback(
+    (update: Partial<FilterState>) => {
+      setState((prev) => {
+        const next = { ...prev, ...update };
+        // Auto-apply filters on desktop
+        startTransition(() => {
+          const params = buildSearchParams(next);
+          router.push(`/explore?${params.toString()}`);
+        });
+        return next;
+      });
+    },
+    [router]
+  );
 
   const handleApply = useCallback(() => {
     startTransition(() => {
@@ -346,13 +505,7 @@ export function ExploreFiltersSidebar() {
 
   const handleClear = useCallback(() => {
     const cleared: FilterState = {
-      subjects: [],
-      difficulties: [],
-      freeOnly: false,
-      priceMin: "",
-      priceMax: "",
-      minRating: 0,
-      sort: "newest",
+      ...EMPTY_FILTER,
       q: state.q, // preserve search query
     };
     setState(cleared);
@@ -364,6 +517,7 @@ export function ExploreFiltersSidebar() {
 
   return (
     <aside
+      aria-label="検索フィルター"
       className={cn(
         "hidden w-64 shrink-0 lg:block",
         isPending && "pointer-events-none opacity-50"
@@ -371,7 +525,7 @@ export function ExploreFiltersSidebar() {
     >
       <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-xl border border-border bg-card p-5 scrollbar-thin">
         <h2 className="mb-4 flex items-center gap-2 text-sm font-bold">
-          <SlidersHorizontal className="h-4 w-4" />
+          <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
           フィルター
         </h2>
         <FilterContent
@@ -379,6 +533,7 @@ export function ExploreFiltersSidebar() {
           onChange={handleChange}
           onApply={handleApply}
           onClear={handleClear}
+          showApplyButton={false}
         />
       </div>
     </aside>
@@ -386,7 +541,7 @@ export function ExploreFiltersSidebar() {
 }
 
 // ──────────────────────────────────────────────
-// Mobile bottom sheet
+// Mobile bottom sheet (manual apply)
 // ──────────────────────────────────────────────
 
 export function ExploreFiltersMobile() {
@@ -399,6 +554,10 @@ export function ExploreFiltersMobile() {
   );
 
   const activeFilterCount = countActiveFilters(state);
+  const activeFilterDescription = useMemo(
+    () => describeActiveFilters(state),
+    [state]
+  );
 
   const handleChange = useCallback((update: Partial<FilterState>) => {
     setState((prev) => ({ ...prev, ...update }));
@@ -414,13 +573,7 @@ export function ExploreFiltersMobile() {
 
   const handleClear = useCallback(() => {
     const cleared: FilterState = {
-      subjects: [],
-      difficulties: [],
-      freeOnly: false,
-      priceMin: "",
-      priceMax: "",
-      minRating: 0,
-      sort: "newest",
+      ...EMPTY_FILTER,
       q: state.q,
     };
     setState(cleared);
@@ -435,11 +588,19 @@ export function ExploreFiltersMobile() {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       {/* Trigger button */}
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm" className="lg:hidden">
+        <Button
+          variant="outline"
+          size="sm"
+          className="lg:hidden"
+          aria-label={`フィルター${activeFilterCount > 0 ? ` (${activeFilterCount}件適用中: ${activeFilterDescription})` : ""}`}
+        >
           <SlidersHorizontal className="h-4 w-4" />
           <span>フィルター</span>
           {activeFilterCount > 0 && (
-            <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+            <span
+              className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground"
+              aria-hidden="true"
+            >
               {activeFilterCount}
             </span>
           )}
@@ -456,8 +617,13 @@ export function ExploreFiltersMobile() {
       >
         <SheetHeader className="mb-4">
           <SheetTitle className="flex items-center gap-2 text-sm font-bold">
-            <SlidersHorizontal className="h-4 w-4" />
+            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
             フィルター
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="ml-1 text-[10px]">
+                {activeFilterCount}件
+              </Badge>
+            )}
           </SheetTitle>
           <SheetDescription className="sr-only">
             検索結果を絞り込むフィルターです
@@ -469,6 +635,7 @@ export function ExploreFiltersMobile() {
           onChange={handleChange}
           onApply={handleApply}
           onClear={handleClear}
+          showApplyButton={true}
         />
       </SheetContent>
     </Sheet>
@@ -506,6 +673,7 @@ export function ExploreSortDropdown() {
     <Select value={current} onValueChange={handleChange}>
       <SelectTrigger
         className={cn("h-9 w-40 text-sm", isPending && "opacity-50")}
+        aria-label="並び替え"
       >
         <SelectValue />
       </SelectTrigger>

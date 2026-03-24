@@ -20,6 +20,11 @@ export const fillInBlankAnswerSchema = z.object({
   text: z.string(),
 });
 
+export const multipleChoiceAnswerSchema = z.object({
+  type: z.literal("multiple_choice"),
+  selected: z.array(z.string()).min(1),
+});
+
 export const questionAnswerSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("essay"),
@@ -28,9 +33,11 @@ export const questionAnswerSchema = z.discriminatedUnion("type", [
   }),
   markSheetAnswerSchema,
   fillInBlankAnswerSchema,
+  multipleChoiceAnswerSchema,
 ]);
 
 export type EssayAnswer = z.infer<typeof essayAnswerSchema>;
 export type MarkSheetAnswer = z.infer<typeof markSheetAnswerSchema>;
 export type FillInBlankAnswer = z.infer<typeof fillInBlankAnswerSchema>;
+export type MultipleChoiceAnswer = z.infer<typeof multipleChoiceAnswerSchema>;
 export type QuestionAnswer = z.infer<typeof questionAnswerSchema>;

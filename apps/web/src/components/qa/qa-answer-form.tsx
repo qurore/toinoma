@@ -24,6 +24,9 @@ export function QaAnswerForm({
   const [body, setBody] = useState("");
   const [isPending, setIsPending] = useState(false);
 
+  const charCount = body.length;
+  const isValid = body.trim().length >= 5;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -49,6 +52,7 @@ export function QaAnswerForm({
     setBody("");
     setIsPending(false);
     router.refresh();
+    onCancel?.();
   }
 
   return (
@@ -73,7 +77,15 @@ export function QaAnswerForm({
           >
             5〜2000文字
           </p>
-          <p className="text-xs text-muted-foreground">{body.length}/2000</p>
+          <p
+            className={`text-xs ${
+              charCount > 1900
+                ? "text-amber-600"
+                : "text-muted-foreground"
+            }`}
+          >
+            {charCount}/2000
+          </p>
         </div>
       </div>
 
@@ -89,7 +101,11 @@ export function QaAnswerForm({
             キャンセル
           </Button>
         )}
-        <Button type="submit" size="sm" disabled={isPending}>
+        <Button
+          type="submit"
+          size="sm"
+          disabled={isPending || !isValid}
+        >
           {isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (

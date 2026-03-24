@@ -13,6 +13,7 @@ import type { NotificationType } from "@/types/database";
 
 export const metadata: Metadata = {
   title: "通知 | 問の間",
+  description: "お知らせ、購入、採点結果などの通知を確認できます。",
 };
 
 const PAGE_SIZE = 20;
@@ -45,12 +46,14 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
   const filter: TypeFilter = VALID_TYPES.has(rawType)
     ? (rawType as NotificationType)
     : "all";
-  const rawPage = typeof params.page === "string" ? parseInt(params.page, 10) : 1;
+  const rawPage =
+    typeof params.page === "string" ? parseInt(params.page, 10) : 1;
   const page = Number.isFinite(rawPage) && rawPage >= 1 ? rawPage : 1;
   const offset = (page - 1) * PAGE_SIZE;
 
   // Build query with optional type filter
-  let query = supabase.from("notifications")
+  let query = supabase
+    .from("notifications")
     .select("*", { count: "exact" })
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
@@ -66,7 +69,8 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
   const totalCount = count ?? 0;
 
   // Count unread (across all types, not just filtered)
-  const { count: unreadCount } = await supabase.from("notifications")
+  const { count: unreadCount } = await supabase
+    .from("notifications")
     .select("id", { count: "exact", head: true })
     .eq("user_id", user.id)
     .is("read_at", null);

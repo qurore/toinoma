@@ -68,8 +68,11 @@ describe("getSubscriptionState", () => {
     subscription?: {
       tier: string;
       status: string;
+      interval?: string | null;
+      current_period_start?: string | null;
       current_period_end: string | null;
       cancel_at_period_end: boolean;
+      grace_period_end?: string | null;
     } | null;
     gradingCount?: number;
   }) {
@@ -271,7 +274,7 @@ describe("getSubscriptionState", () => {
     expect(mockSb.from.mock.calls[0][0]).toBe("user_subscriptions");
     const subscriptionChain = mockSb.from.mock.results[0].value;
     expect(subscriptionChain.select).toHaveBeenCalledWith(
-      "tier, status, current_period_end, cancel_at_period_end"
+      "tier, status, interval, current_period_start, current_period_end, cancel_at_period_end, grace_period_end"
     );
     expect(subscriptionChain.eq).toHaveBeenCalledWith("user_id", MOCK_USER_ID);
   });

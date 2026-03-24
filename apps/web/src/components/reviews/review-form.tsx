@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -25,6 +25,10 @@ export function ReviewForm({ problemSetId, existingReview }: ReviewFormProps) {
   const [body, setBody] = useState(existingReview?.body ?? "");
   const [isPending, setIsPending] = useState(false);
 
+  const charCount = body.length;
+  const isBodyValid = charCount === 0 || charCount >= 10;
+  const isOverLimit = charCount > 500;
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
 
@@ -33,8 +37,13 @@ export function ReviewForm({ problemSetId, existingReview }: ReviewFormProps) {
       return;
     }
 
-    if (body.length > 0 && body.length < 10) {
+    if (charCount > 0 && charCount < 10) {
       toast.error("レビューは10文字以上で入力してください");
+      return;
+    }
+
+    if (isOverLimit) {
+      toast.error("レビューは500文字以内で入力してください");
       return;
     }
 
@@ -51,7 +60,11 @@ export function ReviewForm({ problemSetId, existingReview }: ReviewFormProps) {
       return;
     }
 
-    toast.success(existingReview ? "レビューを更新しました" : "レビューを投稿しました");
+    toast.success(
+      existingReview
+        ? "レビューを更新しました"
+        : "レビューを投稿しました"
+    );
     setIsPending(false);
     router.refresh();
   }
@@ -66,10 +79,22 @@ export function ReviewForm({ problemSetId, existingReview }: ReviewFormProps) {
           interactive
           onChange={setRating}
         />
+        {rating > 0 && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            {rating === 1 && "不満"}
+            {rating === 2 && "やや不満"}
+            {rating === 3 && "普通"}
+            {rating === 4 && "満足"}
+            {rating === 5 && "とても満足"}
+          </p>
+        )}
       </div>
 
       <div>
-        <Label htmlFor="review-body" className="mb-2 block text-sm font-medium">
+        <Label
+          htmlFor="review-body"
+          className="mb-2 block text-sm font-medium"
+        >
           レビュー（任意）
         </Label>
         <Textarea
@@ -79,14 +104,46 @@ export function ReviewForm({ problemSetId, existingReview }: ReviewFormProps) {
           placeholder="この問題セットについてのレビューを書いてください（10〜500文字）"
           maxLength={500}
           rows={3}
+          aria-describedby="review-body-hint"
         />
-        <p className="mt-1 text-right text-xs text-muted-foreground">
-          {body.length}/500
-        </p>
+        <div className="mt-1 flex items-center justify-between">
+          <p
+            id="review-body-hint"
+            className="text-xs text-muted-foreground"
+          >
+            {charCount > 0 && charCount < 10
+              ? "10文字以上で入力してください"
+              : "10〜500文字"}
+          </p>
+          <p
+            className={`text-xs ${
+              isOverLimit
+                ? "text-destructive"
+                : charCount > 450
+                  ? "text-amber-600"
+                  : "text-muted-foreground"
+            }`}
+          >
+            {charCount}/500
+          </p>
+        </div>
       </div>
 
-      <Button type="submit" disabled={rating === 0 || isPending} size="sm">
-        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+      <Button
+        type="submit"
+        disabled={
+          rating === 0 ||
+          isPending ||
+          !isBodyValid ||
+          isOverLimit
+        }
+        size="sm"
+      >
+        {isPending ? (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : (
+          <Send className="mr-2 h-4 w-4" />
+        )}
         {existingReview ? "レビューを更新" : "レビューを投稿"}
       </Button>
     </form>

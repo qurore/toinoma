@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useTransition, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
@@ -20,11 +20,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  markAsRead,
-  markAllAsRead,
-  deleteNotification,
-} from "./actions";
+import { markAsRead, markAllAsRead, deleteNotification } from "./actions";
 import type { NotificationType } from "@/types/database";
 
 export interface NotificationRow {
@@ -37,7 +33,7 @@ export interface NotificationRow {
   created_at: string;
 }
 
-// Type filter values — "all" plus every NotificationType
+// Type filter values -- "all" plus every NotificationType
 export type TypeFilter = "all" | NotificationType;
 
 const TYPE_LABELS: Record<NotificationType, string> = {
@@ -96,8 +92,14 @@ export function NotificationList({
 }: NotificationListProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const listRef = useRef<HTMLDivElement>(null);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+
+  // Scroll to top when page changes
+  useEffect(() => {
+    listRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [page]);
 
   function buildUrl(newFilter?: TypeFilter, newPage?: number) {
     const params = new URLSearchParams();
@@ -138,7 +140,7 @@ export function NotificationList({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={listRef}>
       {/* Header actions */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
@@ -160,10 +162,16 @@ export function NotificationList({
       </div>
 
       {/* Type filter tabs */}
-      <div className="flex flex-wrap gap-1.5">
+      <div
+        className="flex flex-wrap gap-1.5"
+        role="tablist"
+        aria-label="通知の種類"
+      >
         {FILTER_OPTIONS.map((option) => (
           <button
             key={option.value}
+            role="tab"
+            aria-selected={filter === option.value}
             onClick={() => handleFilterChange(option.value)}
             className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
               filter === option.value
@@ -198,7 +206,7 @@ export function NotificationList({
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="space-y-2" role="list" aria-label="通知一覧">
           {notifications.map((n) => {
             const Icon = TYPE_ICONS[n.type];
             const colorClass = TYPE_COLORS[n.type];
@@ -224,16 +232,22 @@ export function NotificationList({
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
                       {isUnread && (
-                        <span className="h-2 w-2 shrink-0 rounded-full bg-primary" />
+                        <span
+                          className="h-2 w-2 shrink-0 rounded-full bg-primary"
+                          aria-label="未読"
+                        />
                       )}
                       <p className="truncate text-sm font-medium">
                         {n.title}
                       </p>
-                      <Badge variant="outline" className="shrink-0 text-xs">
+                      <Badge
+                        variant="outline"
+                        className="shrink-0 text-xs"
+                      >
                         {TYPE_LABELS[n.type]}
                       </Badge>
                     </div>
-                    <p className="mt-0.5 text-sm text-muted-foreground line-clamp-2">
+                    <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
                       {n.body}
                     </p>
                     <p className="mt-1 text-xs text-muted-foreground">
@@ -267,6 +281,7 @@ export function NotificationList({
                   href={n.link}
                   onClick={() => handleNotificationClick(n)}
                   className="block"
+                  role="listitem"
                 >
                   {content}
                 </Link>
@@ -278,6 +293,7 @@ export function NotificationList({
                 key={n.id}
                 onClick={() => handleNotificationClick(n)}
                 className="cursor-default"
+                role="listitem"
               >
                 {content}
               </div>
@@ -324,7 +340,7 @@ export function NotificationList({
 
 export function NotificationListSkeleton() {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" aria-busy="true" aria-label="通知を読み込み中">
       {Array.from({ length: 5 }).map((_, i) => (
         <Card key={i}>
           <CardContent className="flex items-start gap-3 p-4">

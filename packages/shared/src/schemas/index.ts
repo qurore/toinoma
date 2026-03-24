@@ -38,10 +38,12 @@ export {
   essayAnswerSchema,
   markSheetAnswerSchema,
   fillInBlankAnswerSchema,
+  multipleChoiceAnswerSchema,
   questionAnswerSchema,
   type EssayAnswer,
   type MarkSheetAnswer,
   type FillInBlankAnswer,
+  type MultipleChoiceAnswer,
   type QuestionAnswer,
 } from "./answer-schemas";
 

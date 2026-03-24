@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getSubscriptionState } from "@/lib/subscription";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,11 +7,18 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
 import { SubscriptionPlans } from "@/components/subscription/subscription-plans";
-import { Check, X } from "lucide-react";
+import {
+  Check,
+  X,
+  Zap,
+  CreditCard,
+  AlertTriangle,
+  ArrowRight,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const metadata = {
-  title: "サブスクリプション設定",
+  title: "サブスクリプション設定 | 問の間",
 };
 
 export default async function SubscriptionSettingsPage(props: {
@@ -30,10 +38,17 @@ export default async function SubscriptionSettingsPage(props: {
   const isUnlimited = subState.gradingLimit === -1;
   const percentage = isUnlimited
     ? 0
-    : Math.min(Math.round((subState.gradingsUsedThisMonth / subState.gradingLimit) * 100), 100);
+    : subState.gradingLimit > 0
+      ? Math.min(
+          Math.round(
+            (subState.gradingsUsedThisMonth / subState.gradingLimit) * 100
+          ),
+          100
+        )
+      : 0;
 
   const barColor = cn(
-    "h-2 rounded-full transition-all",
+    "h-2.5 rounded-full transition-all duration-500",
     percentage >= 100
       ? "bg-destructive"
       : percentage >= 80
@@ -41,24 +56,56 @@ export default async function SubscriptionSettingsPage(props: {
         : "bg-primary"
   );
 
+  // Grace period warning
+  const isInGracePeriod =
+    subState.status === "past_due" && subState.gracePeriodEnd;
+
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-semibold tracking-tight">サブスクリプション</h1>
+        <h1 className="text-xl font-semibold tracking-tight">
+          サブスクリプション
+        </h1>
         <p className="text-sm text-muted-foreground">
           現在のプランとAI採点の利用状況を確認します
         </p>
       </div>
 
+      {/* Success / cancel banners */}
       {searchParams.success && (
-        <div className="rounded-lg border border-green-300 bg-green-50 p-4 text-sm text-green-800">
-          サブスクリプションが正常に開始されました。
+        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+          <Check className="h-5 w-5 shrink-0" />
+          <p>サブスクリプションが正常に開始されました。</p>
         </div>
       )}
 
       {searchParams.canceled && (
-        <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-4 text-sm text-yellow-800">
-          サブスクリプションの申し込みがキャンセルされました。
+        <div className="flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
+          <AlertTriangle className="h-5 w-5 shrink-0" />
+          <p>サブスクリプションの申し込みがキャンセルされました。</p>
+        </div>
+      )}
+
+      {/* Grace period warning */}
+      {isInGracePeriod && (
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
+          <div>
+            <p className="font-medium text-destructive">
+              お支払いに問題が発生しています
+            </p>
+            <p className="mt-1 text-muted-foreground">
+              {new Date(subState.gracePeriodEnd!).toLocaleDateString("ja-JP")}
+              までにお支払い方法を更新してください。
+            </p>
+            <Link
+              href="/settings/billing"
+              className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+            >
+              お支払い方法を更新
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       )}
 
@@ -66,30 +113,36 @@ export default async function SubscriptionSettingsPage(props: {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+            <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
               現在のプラン
             </CardTitle>
-            <Badge variant={subState.tier === "free" ? "secondary" : "default"}>
+            <Badge
+              variant={subState.tier === "free" ? "secondary" : "default"}
+            >
               {tierConfig.label}
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* AI grading usage */}
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <div className="flex items-baseline justify-between">
-              <span className="text-sm text-muted-foreground">AI採点の利用</span>
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Zap className="h-3.5 w-3.5" />
+                AI採点の利用
+              </span>
               <span className="text-sm font-semibold">
                 {subState.gradingsUsedThisMonth}
                 <span className="font-normal text-muted-foreground">
-                  {" "}/ {isUnlimited ? "無制限" : `${subState.gradingLimit}回`}
+                  {" "}
+                  / {isUnlimited ? "無制限" : `${subState.gradingLimit}回`}
                 </span>
               </span>
             </div>
 
             {/* Visual progress bar (hidden for unlimited plans) */}
             {!isUnlimited && (
-              <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+              <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
                 <div
                   className={barColor}
                   style={{ width: `${percentage}%` }}
@@ -97,12 +150,18 @@ export default async function SubscriptionSettingsPage(props: {
                   aria-valuenow={subState.gradingsUsedThisMonth}
                   aria-valuemin={0}
                   aria-valuemax={subState.gradingLimit}
+                  aria-label="AI採点の利用状況"
                 />
               </div>
             )}
 
             {!isUnlimited && percentage >= 80 && (
-              <p className="text-xs text-warning">
+              <p
+                className={cn(
+                  "text-xs",
+                  percentage >= 100 ? "text-destructive" : "text-warning"
+                )}
+              >
                 {percentage >= 100
                   ? "今月のAI採点上限に達しました。プランをアップグレードしてください。"
                   : "今月のAI採点上限が近づいています。"}
@@ -122,18 +181,34 @@ export default async function SubscriptionSettingsPage(props: {
               <div>
                 <p className="text-xs text-muted-foreground">次の更新日</p>
                 <p className="text-base font-semibold">
-                  {new Date(subState.currentPeriodEnd).toLocaleDateString("ja-JP")}
+                  {new Date(subState.currentPeriodEnd).toLocaleDateString(
+                    "ja-JP"
+                  )}
                 </p>
               </div>
             )}
           </div>
+
+          {/* Quick link to billing */}
+          {subState.tier !== "free" && (
+            <div className="border-t border-border pt-4">
+              <Link
+                href="/settings/billing"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+              >
+                <CreditCard className="h-3.5 w-3.5" />
+                請求・お支払い情報を管理
+                <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          )}
         </CardContent>
       </Card>
 
       {/* Feature comparison table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             機能比較
           </CardTitle>
         </CardHeader>
@@ -142,15 +217,23 @@ export default async function SubscriptionSettingsPage(props: {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left">
-                  <th className="pb-3 pr-4 font-medium text-muted-foreground">機能</th>
-                  <th className="pb-3 pr-4 text-center font-medium">フリー</th>
+                  <th className="pb-3 pr-4 font-medium text-muted-foreground">
+                    機能
+                  </th>
+                  <th className="pb-3 pr-4 text-center font-medium">
+                    フリー
+                  </th>
                   <th className="pb-3 pr-4 text-center font-medium">
                     ベーシック
-                    <span className="block text-xs font-normal text-muted-foreground">¥500/月</span>
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      ¥500/月
+                    </span>
                   </th>
                   <th className="pb-3 text-center font-medium">
                     プロ
-                    <span className="block text-xs font-normal text-muted-foreground">¥2,000/月</span>
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      ¥2,000/月
+                    </span>
                   </th>
                 </tr>
               </thead>
@@ -216,7 +299,8 @@ export default async function SubscriptionSettingsPage(props: {
   );
 }
 
-// Feature comparison row helper
+// ── Feature comparison row helper ────────────────────────────────────
+
 function FeatureRow({
   feature,
   free,

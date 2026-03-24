@@ -233,6 +233,36 @@ ${JSON.stringify(aiRubric, null, 2)}`;
   return { result: object, tokensUsed };
 }
 
+// Deterministic grading for multiple-choice questions (SLV-014)
+function gradeMultipleChoice(
+  rubric: Extract<QuestionRubric, { type: "multiple_choice" }>,
+  answer: Extract<QuestionAnswer, { type: "multiple_choice" }>
+): { score: number; feedback: string; rubricMatches: GradingResult["sections"][0]["questions"][0]["rubricMatches"] } {
+  const correctSet = new Set(rubric.correctAnswers);
+  const selectedSet = new Set(answer.selected);
+  const isCorrect =
+    correctSet.size === selectedSet.size &&
+    [...correctSet].every((a) => selectedSet.has(a));
+
+  return {
+    score: isCorrect ? rubric.points : 0,
+    feedback: isCorrect
+      ? "正解です。"
+      : `不正解です。正解は「${rubric.correctAnswers.join(", ")}」です。`,
+    rubricMatches: [
+      {
+        element: `正解: ${rubric.correctAnswers.join(", ")}`,
+        matched: isCorrect,
+        pointsAwarded: isCorrect ? rubric.points : 0,
+        pointsPossible: rubric.points,
+        explanation: isCorrect
+          ? "正しい選択肢を選んでいます。"
+          : `「${answer.selected.join(", ")}」を選択しましたが、正解は「${rubric.correctAnswers.join(", ")}」です。`,
+      },
+    ],
+  };
+}
+
 // Main grading dispatch engine (FR-010)
 export async function gradeSubmission({
   rubric,
@@ -284,6 +314,18 @@ export async function gradeSubmission({
         case "fill_in_blank": {
           if (answer.type !== "fill_in_blank") break;
           const result = gradeFillInBlank(question, answer);
+          questionResults.push({
+            number: question.number,
+            score: result.score,
+            maxScore: question.points,
+            feedback: result.feedback,
+            rubricMatches: result.rubricMatches,
+          });
+          break;
+        }
+        case "multiple_choice": {
+          if (answer.type !== "multiple_choice") break;
+          const result = gradeMultipleChoice(question, answer);
           questionResults.push({
             number: question.number,
             score: result.score,

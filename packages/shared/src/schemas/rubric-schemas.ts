@@ -29,10 +29,20 @@ const fillInBlankQuestionRubricSchema = z.object({
   caseSensitive: z.boolean(),
 });
 
+const multipleChoiceQuestionRubricSchema = z.object({
+  type: z.literal("multiple_choice"),
+  number: z.string(),
+  points: z.number().int().min(0),
+  correctAnswers: z.array(z.string()).min(1),
+  options: z.array(z.object({ label: z.string(), value: z.string() })).min(2),
+  multiSelect: z.boolean(),
+});
+
 export const questionRubricSchema = z.discriminatedUnion("type", [
   essayQuestionRubricSchema,
   markSheetQuestionRubricSchema,
   fillInBlankQuestionRubricSchema,
+  multipleChoiceQuestionRubricSchema,
 ]);
 
 export const sectionRubricSchema = z.object({

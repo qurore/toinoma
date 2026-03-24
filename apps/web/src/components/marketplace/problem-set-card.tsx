@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Star } from "lucide-react";
-import { useState, useCallback } from "react";
+import { Heart, Star, Users } from "lucide-react";
+import { useState, useCallback, useOptimistic } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
@@ -39,10 +39,22 @@ const SUBJECT_ICONS: Record<Subject, string> = {
   geography: "\uD83D\uDDFA",
 };
 
+const SUBJECT_BADGE_COLORS: Record<Subject, string> = {
+  math: "bg-blue-100 text-blue-700 border-blue-200",
+  english: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  japanese: "bg-rose-100 text-rose-700 border-rose-200",
+  physics: "bg-amber-100 text-amber-700 border-amber-200",
+  chemistry: "bg-violet-100 text-violet-700 border-violet-200",
+  biology: "bg-lime-100 text-lime-700 border-lime-200",
+  japanese_history: "bg-red-100 text-red-700 border-red-200",
+  world_history: "bg-cyan-100 text-cyan-700 border-cyan-200",
+  geography: "bg-teal-100 text-teal-700 border-teal-200",
+};
+
 const DIFFICULTY_COLORS: Record<Difficulty, string> = {
-  easy: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  medium: "bg-amber-100 text-amber-700 border-amber-200",
-  hard: "bg-red-100 text-red-700 border-red-200",
+  easy: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  medium: "bg-amber-50 text-amber-700 border-amber-200",
+  hard: "bg-red-50 text-red-700 border-red-200",
 };
 
 // ──────────────────────────────────────────────
@@ -60,6 +72,7 @@ export interface ProblemSetCardData {
   seller_display_name?: string | null;
   avg_rating?: number | null;
   review_count?: number | null;
+  purchase_count?: number | null;
 }
 
 interface ProblemSetCardProps {
@@ -68,7 +81,7 @@ interface ProblemSetCardProps {
   isFavorited?: boolean;
   /** Currently authenticated user ID (null = not logged in, hide favorite) */
   userId?: string | null;
-  /** Display mode */
+  /** Display mode — vertical on desktop, horizontal on mobile */
   layout?: "vertical" | "horizontal";
 }
 
@@ -86,23 +99,36 @@ function StarRating({
   size?: "sm" | "xs";
 }) {
   const starSize = size === "sm" ? "h-3.5 w-3.5" : "h-3 w-3";
+  const roundedRating = Math.round(rating * 10) / 10;
+
   return (
-    <div className="flex items-center gap-1">
-      <div className="flex items-center">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={cn(
-              starSize,
-              star <= Math.round(rating)
-                ? "fill-amber-400 text-amber-400"
-                : "fill-muted text-muted"
-            )}
-          />
-        ))}
+    <div className="flex items-center gap-1" aria-label={`${roundedRating}星 (${count}件のレビュー)`}>
+      <div className="flex items-center" aria-hidden="true">
+        {[1, 2, 3, 4, 5].map((star) => {
+          // Support half-star rendering for visual fidelity
+          const fillPercent = Math.min(1, Math.max(0, rating - (star - 1)));
+          const isFull = fillPercent >= 0.75;
+          const isHalf = fillPercent >= 0.25 && fillPercent < 0.75;
+
+          return (
+            <span key={star} className="relative">
+              {/* Background (empty) star */}
+              <Star className={cn(starSize, "fill-muted/60 text-muted/60")} />
+              {/* Foreground (filled) star with clip */}
+              {(isFull || isHalf) && (
+                <span
+                  className="absolute inset-0 overflow-hidden"
+                  style={{ width: isFull ? "100%" : "50%" }}
+                >
+                  <Star className={cn(starSize, "fill-amber-400 text-amber-400")} />
+                </span>
+              )}
+            </span>
+          );
+        })}
       </div>
       <span className="text-xs font-medium text-foreground">
-        {rating.toFixed(1)}
+        {roundedRating.toFixed(1)}
       </span>
       <span className="text-xs text-muted-foreground">({count})</span>
     </div>
@@ -110,7 +136,7 @@ function StarRating({
 }
 
 // ──────────────────────────────────────────────
-// Favorite button (isolated for event handling)
+// Favorite button (optimistic)
 // ──────────────────────────────────────────────
 
 function FavoriteButton({
@@ -122,7 +148,10 @@ function FavoriteButton({
   problemSetId: string;
   initialFavorited: boolean;
 }) {
-  const [favorited, setFavorited] = useState(initialFavorited);
+  const [optimisticFavorited, addOptimistic] = useOptimistic(
+    initialFavorited,
+    (_current: boolean, next: boolean) => next
+  );
   const [toggling, setToggling] = useState(false);
 
   const toggleFavorite = useCallback(
@@ -132,12 +161,12 @@ function FavoriteButton({
       if (toggling) return;
 
       setToggling(true);
-      const prev = favorited;
-      setFavorited(!prev);
+      const next = !optimisticFavorited;
+      addOptimistic(next);
 
       try {
         const supabase = createClient();
-        if (prev) {
+        if (!next) {
           await supabase
             .from("favorites")
             .delete()
@@ -149,13 +178,13 @@ function FavoriteButton({
             .insert({ user_id: userId, problem_set_id: problemSetId });
         }
       } catch {
-        // Revert on error
-        setFavorited(prev);
+        // Revert on error by toggling back
+        addOptimistic(!next);
       } finally {
         setToggling(false);
       }
     },
-    [userId, problemSetId, toggling, favorited]
+    [userId, problemSetId, toggling, optimisticFavorited, addOptimistic]
   );
 
   return (
@@ -163,18 +192,206 @@ function FavoriteButton({
       type="button"
       onClick={toggleFavorite}
       disabled={toggling}
-      aria-label={favorited ? "お気に入りから削除" : "お気に入りに追加"}
-      className="rounded-full bg-white/90 p-2 shadow-sm backdrop-blur-sm transition-all hover:bg-white hover:shadow-md active:scale-95"
+      aria-label={optimisticFavorited ? "お気に入りから削除" : "お気に入りに追加"}
+      aria-pressed={optimisticFavorited}
+      className={cn(
+        "rounded-full p-2 shadow-sm backdrop-blur-sm transition-all",
+        "hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        optimisticFavorited
+          ? "bg-white text-red-500"
+          : "bg-white/90 text-muted-foreground hover:bg-white"
+      )}
     >
       <Heart
         className={cn(
-          "h-4 w-4 transition-colors",
-          favorited
-            ? "fill-red-500 text-red-500"
-            : "text-muted-foreground"
+          "h-4 w-4 transition-all duration-200",
+          optimisticFavorited && "fill-current scale-110"
         )}
       />
     </button>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Price display helper
+// ──────────────────────────────────────────────
+
+function PriceTag({
+  price,
+  variant,
+}: {
+  price: number;
+  variant: "overlay" | "inline";
+}) {
+  const label = price === 0 ? "無料" : `\u00A5${price.toLocaleString()}`;
+
+  if (variant === "overlay") {
+    return (
+      <span
+        className={cn(
+          "rounded-full px-3 py-1 text-xs font-bold shadow-sm",
+          price === 0
+            ? "bg-primary text-primary-foreground"
+            : "bg-white/95 text-foreground backdrop-blur-sm"
+        )}
+      >
+        {label}
+      </span>
+    );
+  }
+
+  return (
+    <span
+      className={cn(
+        "shrink-0 text-sm font-bold",
+        price === 0 ? "text-primary" : "text-foreground"
+      )}
+    >
+      {label}
+    </span>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Purchase count display
+// ──────────────────────────────────────────────
+
+function PurchaseCount({ count }: { count: number }) {
+  if (count === 0) return null;
+
+  const label =
+    count >= 1000
+      ? `${(count / 1000).toFixed(count >= 10000 ? 0 : 1)}k`
+      : String(count);
+
+  return (
+    <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
+      <Users className="h-3 w-3" aria-hidden="true" />
+      <span>{label}人購入</span>
+    </span>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Card cover area (shared between layouts)
+// ──────────────────────────────────────────────
+
+function CardCover({
+  subject,
+  coverImageUrl,
+  className,
+  iconSize = "text-5xl",
+  sizes,
+}: {
+  subject: Subject;
+  coverImageUrl?: string | null;
+  className?: string;
+  iconSize?: string;
+  sizes: string;
+}) {
+  return (
+    <div
+      className={cn(
+        "relative flex items-center justify-center bg-gradient-to-br",
+        SUBJECT_GRADIENTS[subject],
+        className
+      )}
+    >
+      {coverImageUrl ? (
+        <Image
+          src={coverImageUrl}
+          alt=""
+          fill
+          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          sizes={sizes}
+        />
+      ) : (
+        <span
+          className={cn(
+            "select-none text-white/80 transition-transform duration-300 group-hover:scale-110",
+            iconSize
+          )}
+          aria-hidden="true"
+        >
+          {SUBJECT_ICONS[subject]}
+        </span>
+      )}
+      {/* Gradient overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Badges row
+// ──────────────────────────────────────────────
+
+function BadgesRow({
+  subject,
+  difficulty,
+  size = "default",
+}: {
+  subject: Subject;
+  difficulty: Difficulty;
+  size?: "default" | "sm";
+}) {
+  const textSize = size === "sm" ? "text-[10px]" : "text-[11px]";
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <Badge
+        className={cn(
+          "border font-medium",
+          textSize,
+          SUBJECT_BADGE_COLORS[subject]
+        )}
+      >
+        {SUBJECT_LABELS[subject]}
+      </Badge>
+      <Badge
+        className={cn(
+          "border font-medium",
+          textSize,
+          DIFFICULTY_COLORS[difficulty]
+        )}
+      >
+        {DIFFICULTY_LABELS[difficulty]}
+      </Badge>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────
+// Rating + meta row
+// ──────────────────────────────────────────────
+
+function RatingMeta({
+  avgRating,
+  reviewCount,
+  purchaseCount,
+  starSize = "sm",
+}: {
+  avgRating?: number | null;
+  reviewCount?: number | null;
+  purchaseCount?: number | null;
+  starSize?: "sm" | "xs";
+}) {
+  const hasRating =
+    avgRating != null && reviewCount != null && reviewCount > 0;
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+      {hasRating ? (
+        <StarRating rating={avgRating} count={reviewCount} size={starSize} />
+      ) : (
+        <span className="text-xs text-muted-foreground">
+          レビューなし
+        </span>
+      )}
+      {purchaseCount != null && purchaseCount > 0 && (
+        <PurchaseCount count={purchaseCount} />
+      )}
+    </div>
   );
 }
 
@@ -188,105 +405,56 @@ export function ProblemSetCard({
   userId = null,
   layout = "vertical",
 }: ProblemSetCardProps) {
-  const priceLabel =
-    data.price === 0 ? "無料" : `¥${data.price.toLocaleString()}`;
-
-  const hasRating =
-    data.avg_rating != null &&
-    data.review_count != null &&
-    data.review_count > 0;
-
+  // Horizontal layout (mobile compact)
   if (layout === "horizontal") {
     return (
-      <Link href={`/problem/${data.id}`} className="group block">
-        <div className="relative flex h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:border-primary/20 hover:shadow-md">
+      <Link
+        href={`/problem/${data.id}`}
+        className="group block"
+        aria-label={`${data.title} - ${SUBJECT_LABELS[data.subject]} ${DIFFICULTY_LABELS[data.difficulty]}`}
+      >
+        <article className="relative flex h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:border-primary/20 hover:shadow-md">
           {/* Cover / gradient */}
-          <div
-            className={cn(
-              "relative flex w-28 shrink-0 items-center justify-center bg-gradient-to-br sm:w-36",
-              SUBJECT_GRADIENTS[data.subject]
-            )}
-          >
-            {data.cover_image_url ? (
-              <Image
-                src={data.cover_image_url}
-                alt=""
-                fill
-                className="object-cover"
-                sizes="(max-width: 640px) 112px, 144px"
-              />
-            ) : (
-              <span className="text-3xl text-white/80">
-                {SUBJECT_ICONS[data.subject]}
-              </span>
-            )}
-          </div>
+          <CardCover
+            subject={data.subject}
+            coverImageUrl={data.cover_image_url}
+            className="w-28 shrink-0 sm:w-36"
+            iconSize="text-3xl"
+            sizes="(max-width: 640px) 112px, 144px"
+          />
 
           {/* Content */}
           <div className="flex min-w-0 flex-1 flex-col justify-between p-4">
             <div>
-              {/* Badges */}
-              <div className="mb-1.5 flex items-center gap-1.5">
-                <Badge
-                  variant="secondary"
-                  className="text-[10px] font-medium"
-                >
-                  {SUBJECT_LABELS[data.subject]}
-                </Badge>
-                <Badge
-                  className={cn(
-                    "border text-[10px] font-medium",
-                    DIFFICULTY_COLORS[data.difficulty]
-                  )}
-                >
-                  {DIFFICULTY_LABELS[data.difficulty]}
-                </Badge>
+              <div className="mb-1.5">
+                <BadgesRow subject={data.subject} difficulty={data.difficulty} size="sm" />
               </div>
-
-              {/* Title */}
               <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
                 {data.title}
               </h3>
             </div>
 
-            <div className="mt-2 flex items-end justify-between">
-              <div className="min-w-0">
-                {/* Rating */}
-                {hasRating ? (
-                  <StarRating
-                    rating={data.avg_rating!}
-                    count={data.review_count!}
-                    size="xs"
-                  />
-                ) : (
-                  <span className="text-xs text-muted-foreground">
-                    レビューなし
-                  </span>
-                )}
-
-                {/* Seller name */}
+            <div className="mt-2 flex items-end justify-between gap-2">
+              <div className="min-w-0 space-y-0.5">
+                <RatingMeta
+                  avgRating={data.avg_rating}
+                  reviewCount={data.review_count}
+                  purchaseCount={data.purchase_count}
+                  starSize="xs"
+                />
                 {data.seller_display_name && (
-                  <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                  <p className="truncate text-xs text-muted-foreground">
                     {data.seller_display_name}
                   </p>
                 )}
               </div>
-
-              {/* Price */}
-              <span
-                className={cn(
-                  "shrink-0 text-sm font-bold",
-                  data.price === 0 ? "text-primary" : "text-foreground"
-                )}
-              >
-                {priceLabel}
-              </span>
+              <PriceTag price={data.price} variant="inline" />
             </div>
           </div>
 
           {/* Favorite button */}
           {userId && (
-            <div className="absolute right-2 top-2">
+            <div className="absolute right-2 top-2 z-10">
               <FavoriteButton
                 userId={userId}
                 problemSetId={data.id}
@@ -294,38 +462,28 @@ export function ProblemSetCard({
               />
             </div>
           )}
-        </div>
+        </article>
       </Link>
     );
   }
 
-  // Default: vertical layout
+  // Default: vertical layout (desktop cards)
   return (
-    <Link href={`/problem/${data.id}`} className="group block">
-      <div className="relative h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-lg">
+    <Link
+      href={`/problem/${data.id}`}
+      className="group block"
+      aria-label={`${data.title} - ${SUBJECT_LABELS[data.subject]} ${DIFFICULTY_LABELS[data.difficulty]}`}
+    >
+      <article className="relative h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-lg">
         {/* Cover image / gradient placeholder */}
-        <div
-          className={cn(
-            "relative flex h-40 items-center justify-center bg-gradient-to-br sm:h-44",
-            SUBJECT_GRADIENTS[data.subject]
-          )}
-        >
-          {data.cover_image_url ? (
-            <Image
-              src={data.cover_image_url}
-              alt=""
-              fill
-              className="object-cover transition-transform duration-300 group-hover:scale-105"
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            />
-          ) : (
-            <span className="text-5xl text-white/80 transition-transform duration-300 group-hover:scale-110">
-              {SUBJECT_ICONS[data.subject]}
-            </span>
-          )}
-
-          {/* Gradient overlay on cover for readability */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+        <div className="relative">
+          <CardCover
+            subject={data.subject}
+            coverImageUrl={data.cover_image_url}
+            className="h-40 sm:h-44"
+            iconSize="text-5xl"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          />
 
           {/* Favorite button overlay */}
           {userId && (
@@ -340,34 +498,15 @@ export function ProblemSetCard({
 
           {/* Price badge overlay */}
           <div className="absolute bottom-2.5 right-2.5">
-            <span
-              className={cn(
-                "rounded-full px-3 py-1 text-xs font-bold shadow-sm",
-                data.price === 0
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-white text-foreground"
-              )}
-            >
-              {priceLabel}
-            </span>
+            <PriceTag price={data.price} variant="overlay" />
           </div>
         </div>
 
         {/* Card body */}
         <div className="p-4">
           {/* Badges row */}
-          <div className="mb-2 flex items-center gap-1.5">
-            <Badge variant="secondary" className="text-[10px] font-medium">
-              {SUBJECT_LABELS[data.subject]}
-            </Badge>
-            <Badge
-              className={cn(
-                "border text-[10px] font-medium",
-                DIFFICULTY_COLORS[data.difficulty]
-              )}
-            >
-              {DIFFICULTY_LABELS[data.difficulty]}
-            </Badge>
+          <div className="mb-2">
+            <BadgesRow subject={data.subject} difficulty={data.difficulty} />
           </div>
 
           {/* Title */}
@@ -375,18 +514,20 @@ export function ProblemSetCard({
             {data.title}
           </h3>
 
-          {/* Rating row */}
+          {/* University tag */}
+          {data.university && (
+            <p className="mt-1 truncate text-xs text-muted-foreground">
+              {data.university}
+            </p>
+          )}
+
+          {/* Rating + purchase count */}
           <div className="mt-2">
-            {hasRating ? (
-              <StarRating
-                rating={data.avg_rating!}
-                count={data.review_count!}
-              />
-            ) : (
-              <span className="text-xs text-muted-foreground">
-                レビューなし
-              </span>
-            )}
+            <RatingMeta
+              avgRating={data.avg_rating}
+              reviewCount={data.review_count}
+              purchaseCount={data.purchase_count}
+            />
           </div>
 
           {/* Seller name */}
@@ -396,7 +537,7 @@ export function ProblemSetCard({
             </p>
           )}
         </div>
-      </div>
+      </article>
     </Link>
   );
 }
@@ -412,7 +553,7 @@ export function ProblemSetCardSkeleton({
 }) {
   if (layout === "horizontal") {
     return (
-      <div className="flex overflow-hidden rounded-xl border border-border">
+      <div className="flex overflow-hidden rounded-xl border border-border" role="presentation">
         <Skeleton className="h-28 w-28 shrink-0 rounded-none sm:w-36" />
         <div className="flex flex-1 flex-col justify-between p-4">
           <div>
@@ -425,8 +566,8 @@ export function ProblemSetCardSkeleton({
           </div>
           <div className="mt-2 flex items-end justify-between">
             <div>
-              <Skeleton className="h-3 w-16" />
-              <Skeleton className="mt-1 h-3 w-20" />
+              <Skeleton className="h-3 w-20" />
+              <Skeleton className="mt-1 h-3 w-16" />
             </div>
             <Skeleton className="h-5 w-12" />
           </div>
@@ -436,7 +577,7 @@ export function ProblemSetCardSkeleton({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border">
+    <div className="overflow-hidden rounded-xl border border-border" role="presentation">
       <Skeleton className="h-40 w-full rounded-none sm:h-44" />
       <div className="p-4">
         <div className="mb-2 flex gap-1.5">
@@ -445,7 +586,7 @@ export function ProblemSetCardSkeleton({
         </div>
         <Skeleton className="h-4 w-full" />
         <Skeleton className="mt-1 h-4 w-3/4" />
-        <Skeleton className="mt-2 h-3 w-24" />
+        <Skeleton className="mt-2 h-3 w-28" />
         <Skeleton className="mt-1.5 h-3 w-20" />
       </div>
     </div>

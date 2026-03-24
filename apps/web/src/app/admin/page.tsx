@@ -8,10 +8,13 @@ import {
   Users,
   Activity,
   ShoppingCart,
+  ClipboardCheck,
+  CreditCard,
   Flag,
   UserCog,
-  Shield,
   Store,
+  BookOpen,
+  Megaphone,
 } from "lucide-react";
 import type { Metadata } from "next";
 
@@ -26,7 +29,7 @@ export const metadata: Metadata = {
 // ──────────────────────────────────────────────
 
 interface WeeklyDataPoint {
-  week: string; // Label for the week (e.g. "3/10")
+  week: string;
   value: number;
 }
 
@@ -55,7 +58,7 @@ function WeeklyBarChart({
   const maxValue = Math.max(...data.map((d) => d.value), 1);
   const barWidth = Math.max(16, Math.floor(320 / data.length) - 8);
   const chartWidth = data.length * (barWidth + 8) + 16;
-  const chartHeight = height - 28; // Reserve space for labels
+  const chartHeight = height - 28;
 
   return (
     <div className="overflow-x-auto">
@@ -74,7 +77,6 @@ function WeeklyBarChart({
 
           return (
             <g key={idx}>
-              {/* Bar */}
               <rect
                 x={x}
                 y={y}
@@ -84,7 +86,6 @@ function WeeklyBarChart({
                 fill={barColor}
                 opacity={0.85}
               />
-              {/* Value on top */}
               {point.value > 0 && (
                 <text
                   x={x + barWidth / 2}
@@ -95,7 +96,6 @@ function WeeklyBarChart({
                   {point.value.toLocaleString()}
                 </text>
               )}
-              {/* Week label */}
               <text
                 x={x + barWidth / 2}
                 y={height - 4}
@@ -127,7 +127,6 @@ function bucketByWeek(
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() - i * 7);
     weekStart.setHours(0, 0, 0, 0);
-    // Set to Monday of that week
     const dayOfWeek = weekStart.getDay();
     weekStart.setDate(weekStart.getDate() - ((dayOfWeek + 6) % 7));
 
@@ -184,11 +183,14 @@ function bucketRevenueByWeek(
 export default async function AdminDashboardPage() {
   const supabase = await createClient();
 
-  // Date threshold for "active users" (7 days) and weekly charts (12 weeks)
   const sevenDaysAgo = new Date();
   sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
   const twelveWeeksAgo = new Date();
   twelveWeeksAgo.setDate(twelveWeeksAgo.getDate() - 84);
+
+  // Current month boundaries for revenue
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
 
   const [
     usersResult,
@@ -200,6 +202,8 @@ export default async function AdminDashboardPage() {
     recentPurchasesResult,
     activeSubmitters,
     recentReportsResult,
+    monthPurchasesResult,
+    submissionsCountResult,
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase
@@ -211,30 +215,36 @@ export default async function AdminDashboardPage() {
       .eq("status", "published"),
     supabase.from("purchases").select("id, amount_paid"),
     supabase.from("user_subscriptions").select("tier"),
-    // Registrations in last 12 weeks for growth chart
     supabase
       .from("profiles")
       .select("id, created_at")
       .gte("created_at", twelveWeeksAgo.toISOString()),
-    // Purchases in last 12 weeks for revenue chart
     supabase
       .from("purchases")
       .select("id, amount_paid, created_at")
       .gte("created_at", twelveWeeksAgo.toISOString()),
-    // Active users: users with submissions in last 7 days
     supabase
       .from("submissions")
       .select("user_id")
       .gte("created_at", sevenDaysAgo.toISOString()),
-    // Recent reports (most recent 5)
     supabase
       .from("reports")
-      .select("id, reason, status, created_at, problem_set_id, problem_sets(title)")
+      .select(
+        "id, reason, status, created_at, problem_set_id, problem_sets(title)"
+      )
       .order("created_at", { ascending: false })
       .limit(5),
+    // This month's purchases for revenue card
+    supabase
+      .from("purchases")
+      .select("id, amount_paid")
+      .gte("created_at", monthStart.toISOString()),
+    // Total submissions
+    supabase
+      .from("submissions")
+      .select("id", { count: "exact", head: true }),
   ]);
 
-  // Type the reports data safely since the table may not be in generated types
   interface ReportRow {
     id: string;
     reason: string;
@@ -243,7 +253,8 @@ export default async function AdminDashboardPage() {
     problem_set_id: string;
     problem_sets: { title: string } | null;
   }
-  const recentReports = (recentReportsResult.data ?? []) as unknown as ReportRow[];
+  const recentReports =
+    (recentReportsResult.data ?? []) as unknown as ReportRow[];
 
   const totalUsers = usersResult.count ?? 0;
   const totalSellers = sellersResult.count ?? 0;
@@ -258,6 +269,16 @@ export default async function AdminDashboardPage() {
   const paidSubs = subscriptions.filter(
     (s) => s.tier === "basic" || s.tier === "pro"
   ).length;
+
+  // This month's revenue
+  const monthRevenue = (monthPurchasesResult.data ?? []).reduce(
+    (sum, p) => sum + (p.amount_paid ?? 0),
+    0
+  );
+  const monthPurchaseCount = monthPurchasesResult.data?.length ?? 0;
+
+  // Total submissions
+  const totalSubmissions = submissionsCountResult.count ?? 0;
 
   // Active users (unique submitters in last 7 days)
   const activeUserIds = new Set(
@@ -293,32 +314,40 @@ export default async function AdminDashboardPage() {
         管理者ダッシュボード
       </h1>
 
-      {/* Summary stats */}
+      {/* Primary summary stats */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
         <StatCard title="総ユーザー数" value={totalUsers} icon={Users} />
-        <StatCard title="出品者数" value={totalSellers} icon={Users} />
-        <StatCard title="公開中の問題セット" value={publishedSets} icon={ShoppingCart} />
+        <StatCard title="出品者数" value={totalSellers} icon={Store} />
+        <StatCard
+          title="公開中の問題セット"
+          value={publishedSets}
+          icon={BookOpen}
+        />
         <StatCard
           title="総売上"
-          value={`¥${totalRevenue.toLocaleString()}`}
+          value={`\xA5${totalRevenue.toLocaleString()}`}
           icon={TrendingUp}
         />
-        <StatCard title="有料サブスク" value={paidSubs} icon={Activity} />
+        <StatCard
+          title="有料サブスク"
+          value={paidSubs}
+          icon={CreditCard}
+        />
       </div>
 
-      {/* Enhanced metrics row */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-2">
+      {/* Secondary metrics */}
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
               <Activity className="h-4 w-4" />
-              アクティブユーザー（直近7日間）
+              アクティブユーザー（7日間）
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">{activeUserCount}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              直近7日間に解答を提出したユニークユーザー数
+              直近7日間に解答を提出したユーザー数
             </p>
           </CardContent>
         </Card>
@@ -333,6 +362,39 @@ export default async function AdminDashboardPage() {
             <p className="text-3xl font-bold">{conversionRate}%</p>
             <p className="mt-1 text-xs text-muted-foreground">
               購入件数 / 総ユーザー数
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <ShoppingCart className="h-4 w-4" />
+              今月の売上
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">
+              {"\xA5"}
+              {monthRevenue.toLocaleString()}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {monthPurchaseCount}件の購入
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+              <ClipboardCheck className="h-4 w-4" />
+              総提出数
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">
+              {totalSubmissions.toLocaleString()}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              全期間の解答提出数
             </p>
           </CardContent>
         </Card>
@@ -360,8 +422,14 @@ export default async function AdminDashboardPage() {
         </Button>
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin/announcements">
-            <Shield className="mr-1.5 h-3.5 w-3.5" />
+            <Megaphone className="mr-1.5 h-3.5 w-3.5" />
             お知らせ管理
+          </Link>
+        </Button>
+        <Button variant="outline" size="sm" asChild>
+          <Link href="/admin/revenue">
+            <TrendingUp className="mr-1.5 h-3.5 w-3.5" />
+            売上レポート
           </Link>
         </Button>
       </div>
@@ -421,15 +489,20 @@ export default async function AdminDashboardPage() {
             <div className="space-y-3">
               {recentReports.map((report) => {
                 const setTitle =
-                  (report.problem_sets as unknown as { title: string } | null)
-                    ?.title ?? "---";
+                  (
+                    report.problem_sets as unknown as {
+                      title: string;
+                    } | null
+                  )?.title ?? "---";
                 return (
                   <div
                     key={report.id}
                     className="flex items-center justify-between rounded-md border border-border p-3"
                   >
                     <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-medium">{setTitle}</p>
+                      <p className="truncate text-sm font-medium">
+                        {setTitle}
+                      </p>
                       <p className="truncate text-xs text-muted-foreground">
                         {report.reason}
                       </p>
@@ -452,7 +525,9 @@ export default async function AdminDashboardPage() {
                             : report.status}
                       </Badge>
                       <span className="text-xs text-muted-foreground">
-                        {new Date(report.created_at).toLocaleDateString("ja-JP")}
+                        {new Date(
+                          report.created_at
+                        ).toLocaleDateString("ja-JP")}
                       </span>
                     </div>
                   </div>
@@ -493,3 +568,4 @@ function StatCard({
     </Card>
   );
 }
+

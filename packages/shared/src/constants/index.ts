@@ -40,12 +40,14 @@ export const ANSWER_TYPES: readonly AnswerType[] = [
   "essay",
   "mark_sheet",
   "fill_in_blank",
+  "multiple_choice",
 ] as const;
 
 export const ANSWER_TYPE_LABELS: Record<AnswerType, string> = {
   essay: "記述式",
   mark_sheet: "マークシート",
   fill_in_blank: "穴埋め",
+  multiple_choice: "選択式",
 } as const;
 
 // Subscription tier constants (FR-026, FR-027)

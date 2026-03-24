@@ -2,8 +2,10 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { LogOut } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { LogOut, AlertTriangle, Lock } from "lucide-react";
 import { problemSetRubricSchema } from "@toinoma/shared/schemas";
+import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
 import { SolveClient } from "@/components/grading/solve-client";
 import { AiAssistantDialog } from "@/components/ai-assistant/ai-assistant-dialog";
 import { getSubscriptionState } from "@/lib/subscription";
@@ -35,51 +37,101 @@ export default async function ProblemSolvePage({
   const { id } = await params;
   const supabase = await createClient();
 
+  // ── Authentication check ──
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Verify purchase
-  const { data: purchase } = await supabase
-    .from("purchases")
-    .select("id")
-    .eq("user_id", user.id)
-    .eq("problem_set_id", id)
-    .single();
+  // ── Parallel data fetching ──
+  const [
+    { data: purchase },
+    { data: ps },
+    subState,
+  ] = await Promise.all([
+    // Verify purchase
+    supabase
+      .from("purchases")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("problem_set_id", id)
+      .single(),
+    // Fetch problem set
+    supabase
+      .from("problem_sets")
+      .select("title, subject, rubric, problem_pdf_url, time_limit_minutes, total_points")
+      .eq("id", id)
+      .single(),
+    // Check subscription tier
+    getSubscriptionState(user.id),
+  ]);
 
+  // ── Purchase verification ──
   if (!purchase) redirect(`/problem/${id}`);
 
-  // Fetch problem set with rubric
-  const { data: ps } = await supabase
-    .from("problem_sets")
-    .select("title, rubric, problem_pdf_url, time_limit_minutes")
-    .eq("id", id)
-    .single();
-
+  // ── Problem set existence check ──
   if (!ps) notFound();
 
-  // Check subscription tier for AI assistant access
-  const subState = await getSubscriptionState(user.id);
-  const isPro = subState.tier === "pro";
-
+  // ── Rubric validation ──
   const rubricResult = problemSetRubricSchema.safeParse(ps.rubric);
   if (!rubricResult.success) {
     return (
       <main className="container mx-auto max-w-3xl px-4 py-8">
-        <p className="text-destructive">
-          この問題セットのルーブリックが無効です。出題者に連絡してください。
-        </p>
+        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center">
+          <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-destructive" />
+          <p className="text-sm font-medium text-destructive">
+            この問題セットのルーブリックが無効です
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            出題者にお問い合わせください
+          </p>
+          <Button variant="outline" size="sm" className="mt-4" asChild>
+            <Link href={`/problem/${id}`}>問題詳細に戻る</Link>
+          </Button>
+        </div>
       </main>
     );
   }
 
-  // Count total questions for the progress indicator
+  // ── Grading limit check ──
+  const isPro = subState.tier === "pro";
+  const tierConfig = SUBSCRIPTION_TIERS[subState.tier];
+
+  if (!subState.canGrade) {
+    return (
+      <main className="container mx-auto max-w-lg px-4 py-12">
+        <div className="rounded-lg border border-border p-8 text-center">
+          <Lock className="mx-auto mb-4 h-10 w-10 text-muted-foreground" />
+          <h2 className="text-lg font-semibold">
+            今月のAI採点回数の上限に達しました
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {tierConfig.label}プランでは月{tierConfig.gradingLimit}回までAI採点をご利用いただけます。
+            プランをアップグレードするか、来月までお待ちください。
+          </p>
+          <div className="mt-2 text-xs text-muted-foreground">
+            今月の使用回数: {subState.gradingsUsedThisMonth} / {tierConfig.gradingLimit}
+          </div>
+          <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+            <Button asChild>
+              <Link href="/settings/subscription">プランを変更</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href={`/problem/${id}`}>問題詳細に戻る</Link>
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // ── Compute question stats ──
   const totalQuestions = rubricResult.data.sections.reduce(
     (sum, s) => sum + s.questions.length,
     0
   );
 
+  // ── Render ──
   return (
     <>
       {/* Minimal exam-mode header bar */}
@@ -90,15 +142,26 @@ export default async function ProblemSolvePage({
             {ps.title}
           </h1>
 
-          {/* Center: Progress indicator */}
-          <div className="mx-4 hidden shrink-0 items-center gap-3 sm:flex">
-            <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground">
+          {/* Center: Metadata badges */}
+          <div className="mx-4 hidden shrink-0 items-center gap-2 sm:flex">
+            <Badge variant="outline" className="text-xs tabular-nums">
               全{totalQuestions}問
-            </span>
+            </Badge>
+            {ps.total_points > 0 && (
+              <Badge variant="outline" className="text-xs tabular-nums">
+                {ps.total_points}点満点
+              </Badge>
+            )}
             {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
-              <span className="rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground tabular-nums">
+              <Badge variant="outline" className="text-xs tabular-nums">
                 制限時間 {ps.time_limit_minutes}分
-              </span>
+              </Badge>
+            )}
+            {/* Grading usage indicator */}
+            {subState.gradingLimit !== -1 && (
+              <Badge variant="secondary" className="text-xs tabular-nums">
+                残り{subState.gradingsRemaining === Infinity ? "無制限" : subState.gradingsRemaining}回
+              </Badge>
             )}
           </div>
 
@@ -123,6 +186,7 @@ export default async function ProblemSolvePage({
           userId={user.id}
           problemPdfUrl={ps.problem_pdf_url}
           timeLimitMinutes={ps.time_limit_minutes}
+          subject={ps.subject}
         />
 
         <AiAssistantDialog problemSetId={id} isPro={isPro} />

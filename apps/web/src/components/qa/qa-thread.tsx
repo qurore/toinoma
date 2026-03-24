@@ -41,7 +41,7 @@ interface QaThreadProps {
 export function QaThread({
   question,
   problemSetId,
-  // sellerId reserved for future seller-specific Q&A features
+  sellerId,
   userId,
   isSeller,
 }: QaThreadProps) {
@@ -68,7 +68,9 @@ export function QaThread({
 
     const { data: answerRows } = await supabase
       .from("qa_answers")
-      .select("id, body, is_accepted, upvotes, created_at, updated_at, user_id")
+      .select(
+        "id, body, is_accepted, upvotes, created_at, updated_at, user_id"
+      )
       .eq("qa_question_id", question.id)
       .order("is_accepted", { ascending: false })
       .order("upvotes", { ascending: false })
@@ -83,16 +85,15 @@ export function QaThread({
 
     // Fetch profiles for answer authors
     const authorIds = [...new Set(answerRows.map((a) => a.user_id))];
-    const { data: profiles } = authorIds.length > 0
-      ? await supabase
-          .from("profiles")
-          .select("id, display_name, avatar_url")
-          .in("id", authorIds)
-      : { data: [] };
+    const { data: profiles } =
+      authorIds.length > 0
+        ? await supabase
+            .from("profiles")
+            .select("id, display_name, avatar_url")
+            .in("id", authorIds)
+        : { data: [] };
 
-    const profileMap = new Map(
-      (profiles ?? []).map((p) => [p.id, p]),
-    );
+    const profileMap = new Map((profiles ?? []).map((p) => [p.id, p]));
 
     // Fetch current user's upvotes for these answers
     let userUpvoteSet = new Set<string>();
@@ -105,32 +106,34 @@ export function QaThread({
         .in("qa_answer_id", answerIds);
 
       userUpvoteSet = new Set(
-        (upvotes ?? []).map((u) => u.qa_answer_id),
+        (upvotes ?? []).map((u) => u.qa_answer_id)
       );
     }
 
     const answerData: QaAnswerData[] = answerRows.map((a) => {
-      const profile = profileMap.get(a.user_id);
+      const row = a as { id: string; body: string; is_accepted: boolean; upvotes: number; created_at: string; updated_at: string; user_id: string };
+      const profile = profileMap.get(row.user_id);
       return {
-        id: a.id,
-        body: a.body,
-        is_accepted: a.is_accepted,
-        upvotes: a.upvotes,
-        created_at: a.created_at,
-        updated_at: a.updated_at,
+        id: row.id,
+        body: row.body,
+        is_accepted: row.is_accepted,
+        upvotes: row.upvotes,
+        created_at: row.created_at,
+        updated_at: row.updated_at,
         user: {
-          id: a.user_id,
+          id: row.user_id,
           display_name: profile?.display_name ?? null,
           avatar_url: profile?.avatar_url ?? null,
         },
-        user_has_upvoted: userUpvoteSet.has(a.id),
+        is_seller: row.user_id === sellerId,
+        user_has_upvoted: userUpvoteSet.has(row.id),
       };
     });
 
     setAnswers(answerData);
     setIsLoadingAnswers(false);
     setHasLoadedAnswers(true);
-  }, [question.id, userId]);
+  }, [question.id, userId, sellerId]);
 
   // Fetch answers when expanded
   useEffect(() => {
@@ -165,11 +168,26 @@ export function QaThread({
       toast.success(
         question.pinned
           ? "ピン留めを解除しました"
-          : "質問をピン留めしました",
+          : "質問をピン留めしました"
       );
     }
     setIsPinning(false);
   }, [question.id, question.pinned, problemSetId]);
+
+  // Render simple markdown in question body (bold, code, line breaks)
+  function renderBody(text: string) {
+    const escaped = text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;");
+    return escaped
+      .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+      .replace(
+        /`(.+?)`/g,
+        '<code class="rounded bg-muted px-1 py-0.5 text-xs font-mono">$1</code>'
+      )
+      .replace(/\n/g, "<br />");
+  }
 
   return (
     <div
@@ -181,7 +199,7 @@ export function QaThread({
       role="article"
       aria-label={`質問: ${question.title}`}
     >
-      {/* Question header — always visible, clickable to expand */}
+      {/* Question header -- always visible, clickable to expand */}
       <button
         type="button"
         className="flex w-full items-start gap-3 p-4 text-left transition-colors hover:bg-muted/50"
@@ -251,9 +269,11 @@ export function QaThread({
 
           {/* Full question body */}
           <div className="mb-4 rounded-md bg-muted/30 p-3">
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
-              {question.body}
-            </p>
+            <div
+              className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/80"
+              dangerouslySetInnerHTML={{ __html: renderBody(question.body) }}
+            />
+            {/* Image attachments not yet supported in schema */}
           </div>
 
           {/* Seller actions: pin */}

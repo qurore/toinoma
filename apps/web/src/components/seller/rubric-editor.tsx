@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import type { ProblemSetRubric } from "@toinoma/shared/schemas";
 import { saveRubric } from "@/app/(seller)/sell/actions";
 
-type AnswerType = "essay" | "mark_sheet" | "fill_in_blank";
+type AnswerType = "essay" | "mark_sheet" | "fill_in_blank" | "multiple_choice";
 
 // Type tab configuration with icons
 const TYPE_TABS: Array<{
