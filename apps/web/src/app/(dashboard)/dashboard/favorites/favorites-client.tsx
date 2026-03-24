@@ -152,15 +152,18 @@ export function FavoritesClient({
 
       {items.length === 0 ? (
         <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-              <Heart className="h-7 w-7 text-primary" />
+          <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+              <Heart className="h-7 w-7 text-muted-foreground" />
             </div>
             <h2 className="mb-2 text-lg font-semibold">
-              まだお気に入りがありません
+              お気に入りの問題セットがまだありません
             </h2>
-            <p className="mb-6 max-w-sm text-sm text-muted-foreground">
-              気になる問題セットのハートアイコンをタップして、お気に入りに追加しましょう。
+            <p className="mb-2 max-w-md text-sm text-muted-foreground">
+              気になる問題セットを見つけたら、ハートアイコンをタップしてお気に入りに保存できます。
+            </p>
+            <p className="mb-8 max-w-md text-sm text-muted-foreground">
+              後でまとめて確認・購入したいときに便利です。
             </p>
             <Button asChild>
               <Link href="/explore">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-seller";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { AdminMobileSidebar } from "@/components/admin/admin-mobile-sidebar";
 import {
   LayoutDashboard,
   Users,
@@ -35,6 +36,7 @@ export default async function AdminLayout({
     <>
       <AppNavbar {...navbarData} />
       <div className="pt-14 lg:grid lg:grid-cols-[220px_1fr]">
+        {/* Desktop sidebar */}
         <aside className="hidden border-r border-border lg:block">
           <nav className="sticky top-14 px-3 py-4">
             <h2 className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
@@ -55,7 +57,11 @@ export default async function AdminLayout({
             </ul>
           </nav>
         </aside>
-        <main className="min-h-[calc(100vh-3.5rem)] p-6">{children}</main>
+
+        {/* Mobile sidebar (Sheet-based) */}
+        <AdminMobileSidebar navItems={[...ADMIN_NAV]} />
+
+        <main className="min-h-[calc(100vh-3.5rem)] p-4 md:p-6">{children}</main>
       </div>
     </>
   );

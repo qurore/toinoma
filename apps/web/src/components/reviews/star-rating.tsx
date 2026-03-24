@@ -149,7 +149,7 @@ export function StarRating({
   );
 }
 
-// ── Rating summary with distribution bars ──────────────────────────────
+// ── Rating summary with distribution histogram ──────────────────────────
 
 interface RatingSummaryProps {
   averageRating: number;
@@ -159,6 +159,14 @@ interface RatingSummaryProps {
   activeStar?: number | null;
 }
 
+const STAR_LABELS: Record<number, string> = {
+  5: "最高",
+  4: "良い",
+  3: "普通",
+  2: "やや不満",
+  1: "不満",
+};
+
 export function RatingSummary({
   averageRating,
   totalReviews,
@@ -166,22 +174,33 @@ export function RatingSummary({
   onFilterByStar,
   activeStar,
 }: RatingSummaryProps) {
+  // Find the max count to normalize bar widths relative to each other
+  const maxCount = Math.max(...Object.values(distribution), 1);
+
   return (
-    <div className="flex items-start gap-6">
-      {/* Average */}
-      <div className="text-center">
-        <p className="text-4xl font-bold">{averageRating.toFixed(1)}</p>
-        <StarRating rating={averageRating} size="sm" />
-        <p className="mt-1 text-xs text-muted-foreground">
-          {totalReviews}件のレビュー
+    <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:gap-8">
+      {/* Average rating (left column) */}
+      <div className="flex shrink-0 flex-col items-center sm:w-32">
+        <p className="text-5xl font-bold tracking-tight">
+          {averageRating.toFixed(1)}
+        </p>
+        <div className="mt-1.5">
+          <StarRating rating={averageRating} size="md" />
+        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {totalReviews.toLocaleString()}件のレビュー
         </p>
       </div>
-      {/* Distribution bars */}
-      <div className="flex-1 space-y-1">
+
+      {/* Distribution histogram (right column) */}
+      <div className="flex-1 space-y-1.5">
         {[5, 4, 3, 2, 1].map((star) => {
           const count = distribution[star] || 0;
           const percentage =
-            totalReviews > 0 ? (count / totalReviews) * 100 : 0;
+            totalReviews > 0 ? Math.round((count / totalReviews) * 100) : 0;
+          // Normalize bar fill relative to the most popular rating for visual impact
+          const barWidth =
+            maxCount > 0 ? (count / maxCount) * 100 : 0;
           const isActive = activeStar === star;
 
           return (
@@ -189,30 +208,63 @@ export function RatingSummary({
               key={star}
               type="button"
               className={cn(
-                "flex w-full items-center gap-2 rounded-sm px-1 py-0.5 text-sm transition-colors",
-                onFilterByStar && "cursor-pointer hover:bg-muted",
-                isActive && "bg-muted"
+                "group flex w-full items-center gap-2.5 rounded-md px-2 py-1 text-sm transition-all",
+                onFilterByStar
+                  ? "cursor-pointer hover:bg-muted/80"
+                  : "cursor-default",
+                isActive && "bg-primary/5 ring-1 ring-primary/20"
               )}
               onClick={() => {
                 if (!onFilterByStar) return;
                 onFilterByStar(isActive ? null : star);
               }}
-              aria-label={`${star}星のレビューを${isActive ? "フィルター解除" : "表示"}`}
+              aria-label={`${star}星（${STAR_LABELS[star]}）のレビューを${isActive ? "フィルター解除" : "表示"}：${count}件 (${percentage}%)`}
               aria-pressed={isActive}
               disabled={!onFilterByStar}
             >
-              <span className="w-6 text-right text-muted-foreground">
+              {/* Star label */}
+              <span
+                className={cn(
+                  "flex w-5 items-center justify-end gap-0.5 tabular-nums",
+                  isActive ? "font-semibold text-foreground" : "text-muted-foreground"
+                )}
+              >
                 {star}
               </span>
-              <Star className="h-3 w-3 text-amber-400" fill="currentColor" />
-              <div className="h-2 flex-1 rounded-full bg-muted">
+              <Star
+                className={cn(
+                  "h-3.5 w-3.5 shrink-0",
+                  isActive ? "text-amber-500" : "text-amber-400"
+                )}
+                fill="currentColor"
+              />
+
+              {/* Bar track */}
+              <div className="relative h-3 flex-1 overflow-hidden rounded-sm bg-muted/60">
                 <div
-                  className="h-full rounded-full bg-amber-400 transition-all"
-                  style={{ width: `${Math.max(percentage, 0)}%` }}
+                  className={cn(
+                    "absolute inset-y-0 left-0 rounded-sm transition-all duration-300",
+                    isActive
+                      ? "bg-amber-500"
+                      : "bg-amber-400/80 group-hover:bg-amber-400"
+                  )}
+                  style={{ width: `${Math.max(barWidth, count > 0 ? 2 : 0)}%` }}
                 />
               </div>
-              <span className="w-10 text-right text-xs text-muted-foreground">
-                {count}件
+
+              {/* Percentage + count */}
+              <span
+                className={cn(
+                  "w-20 text-right text-xs tabular-nums",
+                  isActive
+                    ? "font-medium text-foreground"
+                    : "text-muted-foreground"
+                )}
+              >
+                {percentage}%
+                <span className="ml-1 text-muted-foreground/60">
+                  ({count})
+                </span>
               </span>
             </button>
           );

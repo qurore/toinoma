@@ -2,9 +2,9 @@ import { Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const steps = [
-  { number: 1, label: "利用規約", description: "規約に同意" },
-  { number: 2, label: "プロフィール", description: "販売者情報を入力" },
-  { number: 3, label: "Stripe連携", description: "収益の受け取り設定" },
+  { number: 1, label: "利用規約", description: "規約に同意", estimate: "約1分" },
+  { number: 2, label: "プロフィール", description: "販売者情報を入力", estimate: "約2分" },
+  { number: 3, label: "Stripe連携", description: "収益の受け取り設定", estimate: "約3分" },
 ];
 
 export function StepIndicator({ currentStep }: { currentStep: number }) {
@@ -56,6 +56,16 @@ export function StepIndicator({ currentStep }: { currentStep: number }) {
                   )}
                 >
                   {step.description}
+                </span>
+                <span
+                  className={cn(
+                    "mt-1 hidden text-center text-[10px] sm:block",
+                    isCurrent
+                      ? "text-muted-foreground/80"
+                      : "text-muted-foreground/40"
+                  )}
+                >
+                  {step.estimate}
                 </span>
               </div>
 

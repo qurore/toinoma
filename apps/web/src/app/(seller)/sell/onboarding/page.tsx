@@ -51,11 +51,20 @@ export default async function SellerOnboardingPage({
   const requestedStep = params.step ? parseInt(params.step, 10) : currentStep;
   const step = Math.min(requestedStep, currentStep);
 
-  // Step descriptions for the progress area
-  const stepDescriptions = [
-    "出品者利用規約をご確認の上、同意してください。",
-    "購入者に表示される販売者情報を入力してください。",
-    "Stripeと連携して、収益の受け取りを設定します。",
+  // Step preview: heading + description for each step
+  const stepPreviews = [
+    {
+      heading: "利用規約をご確認ください",
+      description: "出品者利用規約をご確認の上、同意してください。",
+    },
+    {
+      heading: "出品者プロフィールを設定します",
+      description: "購入者に表示される販売者情報を入力してください。",
+    },
+    {
+      heading: "収益受取の設定をします",
+      description: "Stripeと連携して、収益の受け取りを設定します。",
+    },
   ];
 
   return (
@@ -68,9 +77,14 @@ export default async function SellerOnboardingPage({
           3つのステップで販売者登録を完了しましょう
         </p>
         <StepIndicator currentStep={step} />
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          {stepDescriptions[step - 1]}
-        </p>
+        <div className="mt-6 text-center">
+          <p className="text-sm font-medium text-foreground">
+            {stepPreviews[step - 1].heading}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {stepPreviews[step - 1].description}
+          </p>
+        </div>
       </div>
 
       {step === 1 && <TosStep />}

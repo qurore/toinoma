@@ -14,6 +14,11 @@ import {
   ShoppingCart,
   ClipboardList,
   Eye,
+  Package,
+  Wallet,
+  Users,
+  FileText,
+  ArrowRight,
 } from "lucide-react";
 import { getSellerTosStatus } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
@@ -275,96 +280,105 @@ export default async function SellerDashboardPage() {
       />
 
       {/* Onboarding completion banner */}
-      {!onboardingComplete && (
-        <div className="mb-8 overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-primary/[0.03] to-transparent">
-          <div className="flex items-start gap-4 p-5">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-              <Circle className="h-5 w-5 text-primary" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-base font-semibold">
-                セットアップを完了して、出品を始めましょう
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {!profileComplete
-                  ? "プロフィールを設定すると、あなたの問題セットが購入者に表示されます"
-                  : "支払い設定を完了すると、有料問題セットの販売収益を受け取れます"}
-              </p>
-              {/* Step progress bar */}
-              <div className="mt-4 flex items-center gap-6 text-sm">
-                <span className="flex items-center gap-2 text-success">
-                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/15">
-                    <Check className="h-3 w-3" />
-                  </span>
-                  <span className="font-medium">利用規約</span>
-                </span>
-                <span className="flex items-center gap-2">
-                  <span
-                    className={
-                      profileComplete
-                        ? "flex h-5 w-5 items-center justify-center rounded-full bg-success/15 text-success"
-                        : "flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-xs font-bold text-muted-foreground"
-                    }
-                  >
-                    {profileComplete ? (
-                      <Check className="h-3 w-3" />
-                    ) : (
-                      "2"
-                    )}
-                  </span>
-                  <span
-                    className={
-                      profileComplete
-                        ? "font-medium text-success"
-                        : "font-medium text-muted-foreground"
-                    }
-                  >
-                    プロフィール
-                  </span>
-                </span>
-                <span className="flex items-center gap-2">
-                  <span
-                    className={
-                      stripeComplete
-                        ? "flex h-5 w-5 items-center justify-center rounded-full bg-success/15 text-success"
-                        : "flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-xs font-bold text-muted-foreground"
-                    }
-                  >
-                    {stripeComplete ? (
-                      <Check className="h-3 w-3" />
-                    ) : (
-                      "3"
-                    )}
-                  </span>
-                  <span
-                    className={
-                      stripeComplete
-                        ? "font-medium text-success"
-                        : "font-medium text-muted-foreground"
-                    }
-                  >
-                    支払い設定
-                  </span>
-                </span>
+      {!onboardingComplete && (() => {
+        const completedSteps = 1 + (profileComplete ? 1 : 0) + (stripeComplete ? 1 : 0);
+        return (
+          <div className="mb-8 overflow-hidden rounded-xl border-2 border-primary/25 bg-gradient-to-r from-primary/[0.07] via-primary/[0.03] to-transparent shadow-sm">
+            <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-start">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10">
+                <Circle className="h-5 w-5 text-primary" />
               </div>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-3">
+                  <p className="text-base font-semibold">
+                    セットアップを完了して、出品を始めましょう
+                  </p>
+                  <Badge className="shrink-0 border-primary/20 bg-primary/10 text-xs font-semibold text-primary" variant="outline">
+                    {completedSteps} / 3 完了
+                  </Badge>
+                </div>
+                <p className="mt-1.5 text-sm text-muted-foreground">
+                  {!profileComplete
+                    ? "プロフィールを設定すると、あなたの問題セットが購入者に表示されます"
+                    : "支払い設定を完了すると、有料問題セットの販売収益を受け取れます"}
+                </p>
+                {/* Step progress indicators */}
+                <div className="mt-4 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+                  <span className="flex items-center gap-2 text-success">
+                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/15">
+                      <Check className="h-3 w-3" />
+                    </span>
+                    <span className="font-medium">利用規約</span>
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={
+                        profileComplete
+                          ? "flex h-5 w-5 items-center justify-center rounded-full bg-success/15 text-success"
+                          : "flex h-5 w-5 items-center justify-center rounded-full border-2 border-primary/40 bg-card text-xs font-bold text-primary"
+                      }
+                    >
+                      {profileComplete ? (
+                        <Check className="h-3 w-3" />
+                      ) : (
+                        "2"
+                      )}
+                    </span>
+                    <span
+                      className={
+                        profileComplete
+                          ? "font-medium text-success"
+                          : "font-medium text-foreground"
+                      }
+                    >
+                      プロフィール
+                    </span>
+                  </span>
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={
+                        stripeComplete
+                          ? "flex h-5 w-5 items-center justify-center rounded-full bg-success/15 text-success"
+                          : "flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-xs font-bold text-muted-foreground"
+                      }
+                    >
+                      {stripeComplete ? (
+                        <Check className="h-3 w-3" />
+                      ) : (
+                        "3"
+                      )}
+                    </span>
+                    <span
+                      className={
+                        stripeComplete
+                          ? "font-medium text-success"
+                          : "font-medium text-muted-foreground"
+                      }
+                    >
+                      支払い設定
+                    </span>
+                  </span>
+                </div>
+              </div>
+              <Button asChild className="shrink-0">
+                <Link href="/sell/onboarding">
+                  <span>セットアップを続ける</span>
+                  <ArrowRight className="ml-1.5 h-4 w-4" />
+                </Link>
+              </Button>
             </div>
-            <Button asChild>
-              <Link href="/sell/onboarding">
-                セットアップを続ける
-              </Link>
-            </Button>
+            {/* Progress bar */}
+            <div className="h-1.5 w-full bg-border/60">
+              <div
+                className="h-full rounded-r-full bg-gradient-to-r from-primary to-primary/80 transition-all duration-500"
+                style={{
+                  width: `${(completedSteps / 3) * 100}%`,
+                }}
+              />
+            </div>
           </div>
-          {/* Progress bar */}
-          <div className="h-1 w-full bg-border">
-            <div
-              className="h-full bg-primary transition-all duration-300"
-              style={{
-                width: `${((profileComplete ? 2 : 1) / 3) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       <div className="mb-8 flex items-center justify-between">
         <div>
@@ -378,56 +392,73 @@ export default async function SellerDashboardPage() {
       </div>
 
       {/* Quick actions */}
-      <div className="mb-8 flex flex-wrap gap-2">
-        <Button size="sm" asChild>
+      <div className="mb-8 flex flex-wrap gap-3">
+        <Button asChild size="default">
           <Link href="/sell/sets/new">
-            <PlusCircle className="mr-1.5 h-3.5 w-3.5" />
+            <PlusCircle className="mr-1.5 h-4 w-4" />
             新規セット作成
           </Link>
         </Button>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" asChild size="default">
           <Link href="/sell/pool/import">
-            <FileUp className="mr-1.5 h-3.5 w-3.5" />
+            <FileUp className="mr-1.5 h-4 w-4" />
             PDF取り込み
           </Link>
         </Button>
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="outline" asChild size="default">
           <Link href="/sell/pool">
-            <Eye className="mr-1.5 h-3.5 w-3.5" />
+            <Eye className="mr-1.5 h-4 w-4" />
             問題プール
+          </Link>
+        </Button>
+        <Button variant="outline" asChild size="default">
+          <Link href="/sell/analytics">
+            <BarChart3 className="mr-1.5 h-4 w-4" />
+            売上分析
           </Link>
         </Button>
       </div>
 
       {/* Stats with trend indicators */}
       <div className="stagger-children mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card>
+        <Card className="relative overflow-hidden">
+          <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/8">
+            <Package className="h-4.5 w-4.5 text-primary/70" />
+          </div>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               公開中 / 合計
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">
-              <span className="text-success">{publishedCount}</span>
+            <p className="text-3xl font-bold tabular-nums">
+              <span className="text-primary">{publishedCount}</span>
               <span className="text-lg text-muted-foreground"> / {sets.length}</span>
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              下書き {draftCount}件
-            </p>
+            <div className="mt-1 flex items-center gap-1 text-xs">
+              <FileText className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">
+                下書き {draftCount}件
+              </span>
+            </div>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="relative overflow-hidden">
+          <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/8">
+            <Wallet className="h-4.5 w-4.5 text-primary/70" />
+          </div>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
               累計売上
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-3xl font-bold">¥{totalRevenue.toLocaleString()}</p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              手取り ¥{Math.round(totalRevenue * 0.85).toLocaleString()}
-            </p>
+            <p className="text-3xl font-bold tabular-nums">¥{totalRevenue.toLocaleString()}</p>
+            <div className="mt-1 flex items-center gap-1 text-xs">
+              <span className="text-muted-foreground">
+                手取り ¥{Math.round(totalRevenue * 0.85).toLocaleString()}
+              </span>
+            </div>
           </CardContent>
         </Card>
         <StatCardWithTrend
@@ -435,6 +466,7 @@ export default async function SellerDashboardPage() {
           value={`¥${currentRevenueTotal.toLocaleString()}`}
           current={currentRevenueTotal}
           previous={prevRevenueTotal}
+          icon={<TrendingUp className="h-4.5 w-4.5 text-primary/70" />}
         />
         <StatCardWithTrend
           label="購入数（30日）"
@@ -442,18 +474,20 @@ export default async function SellerDashboardPage() {
           current={currentPurchaseCount ?? 0}
           previous={prevPurchaseCount ?? 0}
           subLabel={`累計 ${uniqueStudents}名`}
+          icon={<Users className="h-4.5 w-4.5 text-primary/70" />}
         />
         <StatCardWithTrend
           label="解答数（30日）"
           value={String(currentSubmissionCount ?? 0)}
           current={currentSubmissionCount ?? 0}
           previous={prevSubmissionCount ?? 0}
+          icon={<ClipboardList className="h-4.5 w-4.5 text-primary/70" />}
         />
       </div>
 
       {/* Revenue chart (30-day trend) */}
       <Card className="mb-8">
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2">
           <CardTitle className="text-base font-semibold">
             売上推移（直近30日間）
           </CardTitle>
@@ -473,7 +507,7 @@ export default async function SellerDashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="flex h-40 items-end gap-[2px]">
+            <div className="flex h-40 items-end gap-[2px] overflow-x-auto">
               {chartData.map((d, i) => {
                 const heightPct = (d.revenue / chartMax) * 100;
                 return (
@@ -563,17 +597,17 @@ export default async function SellerDashboardPage() {
                 まだ解答がありません
               </p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="-mx-6 overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b text-left text-xs text-muted-foreground">
-                      <th className="pb-2 font-medium">問題セット</th>
-                      <th className="pb-2 font-medium">回答者</th>
-                      <th className="pb-2 text-right font-medium">得点</th>
-                      <th className="pb-2 text-right font-medium">日時</th>
+                    <tr className="border-b bg-muted/30 text-left text-xs text-muted-foreground">
+                      <th className="px-6 py-2.5 font-medium">問題セット</th>
+                      <th className="px-3 py-2.5 font-medium">回答者</th>
+                      <th className="px-3 py-2.5 text-right font-medium">得点</th>
+                      <th className="px-6 py-2.5 text-right font-medium">日時</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border">
+                  <tbody className="divide-y divide-border/60">
                     {latestSubmissions.map((sub) => {
 
                       const setTitle =
@@ -585,26 +619,36 @@ export default async function SellerDashboardPage() {
                             display_name: string | null;
                           } | null
                         )?.display_name ?? "匿名";
+                      const scoreRatio =
+                        sub.score !== null && sub.max_score !== null && sub.max_score > 0
+                          ? sub.score / sub.max_score
+                          : null;
                       return (
-                        <tr key={sub.id} className="transition-colors hover:bg-muted/50">
-                          <td className="max-w-[140px] truncate py-2 font-medium">
+                        <tr key={sub.id} className="transition-colors hover:bg-muted/40">
+                          <td className="max-w-[140px] truncate px-6 py-2.5 font-medium">
                             {setTitle}
                           </td>
-                          <td className="py-2 text-muted-foreground">
+                          <td className="px-3 py-2.5 text-muted-foreground">
                             {displayName}
                           </td>
-                          <td className="py-2 text-right">
+                          <td className="px-3 py-2.5 text-right">
                             {sub.score !== null && sub.max_score !== null ? (
-                              <span>
+                              <span className={
+                                scoreRatio !== null && scoreRatio >= 0.8
+                                  ? "font-medium text-success"
+                                  : scoreRatio !== null && scoreRatio < 0.4
+                                    ? "font-medium text-destructive"
+                                    : "font-medium"
+                              }>
                                 {sub.score}/{sub.max_score}
                               </span>
                             ) : (
-                              <span className="text-muted-foreground">
+                              <Badge variant="secondary" className="text-[10px]">
                                 採点中
-                              </span>
+                              </Badge>
                             )}
                           </td>
-                          <td className="py-2 text-right text-muted-foreground">
+                          <td className="px-6 py-2.5 text-right text-muted-foreground">
                             {formatRelativeTime(sub.created_at)}
                           </td>
                         </tr>
@@ -714,42 +758,49 @@ function StatCardWithTrend({
   current,
   previous,
   subLabel,
+  icon,
 }: {
   label: string;
   value: string;
   current: number;
   previous: number;
   subLabel?: string;
+  icon?: React.ReactNode;
 }) {
   const diff = previous === 0 ? (current > 0 ? 100 : 0) : Math.round(((current - previous) / previous) * 100);
   const isUp = diff > 0;
   const isDown = diff < 0;
 
   return (
-    <Card>
+    <Card className="relative overflow-hidden">
+      {icon && (
+        <div className="absolute right-3 top-3 flex h-9 w-9 items-center justify-center rounded-lg bg-primary/8">
+          {icon}
+        </div>
+      )}
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {label}
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-3xl font-bold">{value}</p>
+        <p className="text-3xl font-bold tabular-nums">{value}</p>
         <div className="mt-1 flex items-center gap-1 text-xs">
           {isUp ? (
-            <>
-              <TrendingUp className="h-3 w-3 text-success" />
-              <span className="text-success">+{diff}%</span>
-            </>
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-success/10 px-1.5 py-0.5 text-success">
+              <TrendingUp className="h-3 w-3" />
+              +{diff}%
+            </span>
           ) : isDown ? (
-            <>
-              <TrendingDown className="h-3 w-3 text-destructive" />
-              <span className="text-destructive">{diff}%</span>
-            </>
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-destructive/10 px-1.5 py-0.5 text-destructive">
+              <TrendingDown className="h-3 w-3" />
+              {diff}%
+            </span>
           ) : (
-            <>
-              <Minus className="h-3 w-3 text-muted-foreground" />
-              <span className="text-muted-foreground">変動なし</span>
-            </>
+            <span className="inline-flex items-center gap-0.5 rounded-full bg-muted px-1.5 py-0.5 text-muted-foreground">
+              <Minus className="h-3 w-3" />
+              変動なし
+            </span>
           )}
           <span className="text-muted-foreground">前月比</span>
         </div>
@@ -796,19 +847,19 @@ function ActivityBadge({ type }: { type: ActivityItem["type"] }) {
   switch (type) {
     case "purchase":
       return (
-        <Badge variant="secondary" className="shrink-0 text-[10px]">
+        <Badge className="shrink-0 border-transparent bg-success/10 text-[10px] text-success">
           購入
         </Badge>
       );
     case "submission":
       return (
-        <Badge variant="secondary" className="shrink-0 text-[10px]">
+        <Badge className="shrink-0 border-transparent bg-primary/10 text-[10px] text-primary">
           解答
         </Badge>
       );
     case "review":
       return (
-        <Badge variant="secondary" className="shrink-0 text-[10px]">
+        <Badge className="shrink-0 border-transparent bg-amber-500/10 text-[10px] text-amber-600">
           レビュー
         </Badge>
       );

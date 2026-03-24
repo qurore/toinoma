@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ArrowDownUp } from "lucide-react";
+import { ArrowDownUp, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
@@ -97,13 +98,29 @@ export function ReviewsSectionClient({
 
       <Separator />
 
-      {/* Sort control */}
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
-          {filterStar !== null
-            ? `${filterStar}星のレビュー (${filteredAndSorted.length}件)`
-            : `${totalReviews}件のレビュー`}
-        </p>
+      {/* Sort control + filter indicator */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2">
+          <p className="text-sm font-medium text-foreground">
+            {filterStar !== null
+              ? `${filterStar}星のレビュー`
+              : "すべてのレビュー"}
+          </p>
+          <span className="text-sm text-muted-foreground">
+            ({filteredAndSorted.length}件)
+          </span>
+          {filterStar !== null && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-6 gap-1 rounded-full px-2 text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => setFilterStar(null)}
+            >
+              <X className="h-3 w-3" />
+              解除
+            </Button>
+          )}
+        </div>
         <Select
           value={sortBy}
           onValueChange={(v) => setSortBy(v as SortOption)}

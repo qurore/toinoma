@@ -2,11 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { BookOpen, CheckCircle2, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
 // ──────────────────────────────────────────────
@@ -61,21 +63,77 @@ const benefits = [
 ];
 
 // ──────────────────────────────────────────────
+// Error mapping for signInWithPassword
+// ──────────────────────────────────────────────
+
+function mapSignInError(errorMessage: string): string {
+  if (errorMessage.includes("Invalid login credentials")) {
+    return "メールアドレスまたはパスワードが正しくありません";
+  }
+  if (errorMessage.includes("Email not confirmed")) {
+    return "メールアドレスが確認されていません。確認メールをご確認ください。";
+  }
+  if (
+    errorMessage.includes("rate limit") ||
+    errorMessage.includes("too many requests")
+  ) {
+    return "ログイン試行回数が上限に達しました。しばらく時間をおいてお試しください。";
+  }
+  return "ログインに失敗しました。もう一度お試しください。";
+}
+
+// ──────────────────────────────────────────────
+// Error mapping for OAuth callback query params
+// ──────────────────────────────────────────────
+
+function mapCallbackError(errorParam: string | null): string | null {
+  if (!errorParam) return null;
+  switch (errorParam) {
+    case "auth_callback_failed":
+      return "認証に失敗しました。もう一度お試しください。";
+    case "access_denied":
+      return "認証がキャンセルされました。";
+    case "server_error":
+      return "サーバーエラーが発生しました。しばらく時間をおいてお試しください。";
+    case "session_expired":
+      return "セッションの有効期限が切れました。再度ログインしてください。";
+    default:
+      return "ログインに失敗しました。もう一度お試しください。";
+  }
+}
+
+// ──────────────────────────────────────────────
+// Redirect validation
+// ──────────────────────────────────────────────
+
+function getSafeRedirect(next: string | null): string {
+  if (!next || next === "/login" || next === "/signup") {
+    return "/dashboard";
+  }
+  return next;
+}
+
+// ──────────────────────────────────────────────
 // Login content (requires useSearchParams)
 // ──────────────────────────────────────────────
 
 function LoginContent() {
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/dashboard";
+  const router = useRouter();
+  const next = getSafeRedirect(searchParams.get("next"));
   const errorParam = searchParams.get("error");
 
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
-  const [error] = useState<string | null>(
-    errorParam ? "ログインに失敗しました。もう一度お試しください。" : null
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isEmailLoading, setIsEmailLoading] = useState(false);
+  const [error, setError] = useState<string | null>(
+    mapCallbackError(errorParam)
   );
 
   async function handleOAuth(provider: "google" | "twitter") {
     setLoadingProvider(provider);
+    setError(null);
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider,
@@ -85,7 +143,30 @@ function LoginContent() {
     });
   }
 
-  const isDisabled = loadingProvider !== null;
+  async function handleEmailLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email || !password) return;
+
+    setIsEmailLoading(true);
+    setError(null);
+
+    const supabase = createClient();
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+
+    if (signInError) {
+      setError(mapSignInError(signInError.message));
+      setIsEmailLoading(false);
+      return;
+    }
+
+    router.push(next);
+    router.refresh();
+  }
+
+  const isDisabled = loadingProvider !== null || isEmailLoading;
 
   return (
     <div className="flex min-h-screen">
@@ -153,7 +234,7 @@ function LoginContent() {
           </Link>
 
           <h2 className="mb-1 text-2xl font-bold tracking-tight">
-            無料で始める
+            ログイン
           </h2>
           <p className="mb-8 text-sm text-muted-foreground">
             アカウントにログインして学習を続けましょう
@@ -161,7 +242,10 @@ function LoginContent() {
 
           {/* Error banner */}
           {error && (
-            <div className="mb-6 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-center text-sm text-destructive">
+            <div
+              role="alert"
+              className="mb-6 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-center text-sm text-destructive"
+            >
               {error}
             </div>
           )}
@@ -182,15 +266,6 @@ function LoginContent() {
               Googleでログイン
             </Button>
 
-            <div className="relative my-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-xs">
-                <span className="bg-background px-2 text-muted-foreground">または</span>
-              </div>
-            </div>
-
             <Button
               variant="outline"
               className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
@@ -205,6 +280,78 @@ function LoginContent() {
               X (Twitter) でログイン
             </Button>
           </div>
+
+          {/* Divider */}
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-border" />
+            </div>
+            <div className="relative flex justify-center text-xs">
+              <span className="bg-background px-2 text-muted-foreground">
+                またはメールでログイン
+              </span>
+            </div>
+          </div>
+
+          {/* Email + Password form */}
+          <form onSubmit={handleEmailLogin} className="space-y-3">
+            <div className="space-y-2">
+              <Label htmlFor="email">メールアドレス</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                disabled={isDisabled}
+                autoComplete="email"
+              />
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">パスワード</Label>
+                <Link
+                  href="/forgot-password"
+                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
+                  tabIndex={-1}
+                >
+                  パスワードをお忘れですか？
+                </Link>
+              </div>
+              <Input
+                id="password"
+                type="password"
+                placeholder="パスワードを入力"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                disabled={isDisabled}
+                autoComplete="current-password"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="h-12 w-full"
+              disabled={isDisabled}
+            >
+              {isEmailLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              ログイン
+            </Button>
+          </form>
+
+          {/* Signup link */}
+          <p className="mt-6 text-center text-sm text-muted-foreground">
+            アカウントをお持ちでないですか？{" "}
+            <Link
+              href="/signup"
+              className="font-medium text-primary hover:underline"
+            >
+              新規登録
+            </Link>
+          </p>
 
           {/* Mobile benefits — visible only on small screens */}
           <ul className="mt-8 space-y-2 lg:hidden">

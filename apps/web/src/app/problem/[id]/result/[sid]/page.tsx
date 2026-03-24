@@ -16,6 +16,8 @@ import { AiAssistantDialog } from "@/components/ai-assistant/ai-assistant-dialog
 import { VideoPlayer } from "@/components/solving/video-player";
 import { ScoreComparisonSection } from "./score-comparison-section";
 import { getSubscriptionState } from "@/lib/subscription";
+import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { SiteFooter } from "@/components/navigation/site-footer";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -42,7 +44,10 @@ export default async function GradingResultPage({
   params: Promise<{ id: string; sid: string }>;
 }) {
   const { id, sid } = await params;
-  const supabase = await createClient();
+  const [supabase, navbarData] = await Promise.all([
+    createClient(),
+    getNavbarData(),
+  ]);
 
   const {
     data: { user },
@@ -136,8 +141,18 @@ export default async function GradingResultPage({
     { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" }
   );
 
+  // Determine score category for celebration messaging
+  const maxScore = submission.max_score ?? 0;
+  const score = submission.score ?? 0;
+  const scorePercent =
+    maxScore > 0
+      ? Math.round((score / maxScore) * 100)
+      : 0;
+
   return (
-    <main className="container mx-auto max-w-3xl px-4 py-8">
+    <>
+      <AppNavbar {...navbarData} />
+      <main className="container mx-auto max-w-3xl px-4 pb-12 pt-24">
       {/* Breadcrumb navigation */}
       <nav aria-label="パンくずリスト" className="mb-6">
         <ol className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -246,7 +261,31 @@ export default async function GradingResultPage({
         </div>
       )}
 
+      {/* Score-based encouragement message */}
+      <div className="mt-8 rounded-lg border border-border bg-muted/30 p-4 text-center">
+        {scorePercent >= 80 ? (
+          <p className="text-sm font-medium text-success">
+            素晴らしい結果です！この調子で頑張りましょう。
+          </p>
+        ) : scorePercent >= 50 ? (
+          <p className="text-sm font-medium text-foreground">
+            よく頑張りました。弱点を確認して、もう一度挑戦してみましょう。
+          </p>
+        ) : (
+          <p className="text-sm font-medium text-foreground">
+            まだ伸びしろがあります。解説を確認して、基礎を固めましょう。
+          </p>
+        )}
+      </div>
+
+      {/* Grading disclaimer */}
+      <p className="mt-4 text-center text-xs text-muted-foreground">
+        ※ AI採点は参考スコアです。最終的な判断はご自身でお願いいたします。
+      </p>
+
       <AiAssistantDialog problemSetId={id} isPro={isPro} />
     </main>
+    <SiteFooter />
+    </>
   );
 }

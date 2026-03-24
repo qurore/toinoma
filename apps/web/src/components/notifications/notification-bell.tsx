@@ -126,8 +126,11 @@ export function NotificationBell({
         <DropdownMenuSeparator />
 
         {notifications.length === 0 ? (
-          <div className="px-4 py-6 text-center text-sm text-muted-foreground">
-            通知はありません
+          <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
+            <div className="rounded-full bg-muted p-3">
+              <Bell className="h-5 w-5 text-muted-foreground/60" />
+            </div>
+            <p className="text-sm text-muted-foreground">通知はありません</p>
           </div>
         ) : (
           <>

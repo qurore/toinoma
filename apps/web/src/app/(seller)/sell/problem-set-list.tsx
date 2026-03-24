@@ -161,8 +161,10 @@ export function ProblemSetList({ sets }: ProblemSetListProps) {
           <Card
             key={ps.id}
             className={cn(
-              "transition-colors",
-              selectedIds.has(ps.id) && "border-primary/30 bg-primary/5"
+              "transition-all duration-150 hover:border-border/80 hover:shadow-sm",
+              selectedIds.has(ps.id)
+                ? "border-primary/30 bg-primary/5"
+                : "hover:bg-muted/30"
             )}
           >
             <CardContent className="flex items-center gap-3 p-4">
@@ -267,7 +269,15 @@ export function ProblemSetList({ sets }: ProblemSetListProps) {
 
 function StatusBadge({ status }: { status: string }) {
   if (status === "published") {
-    return <Badge variant="default">公開中</Badge>;
+    return (
+      <Badge className="border-transparent bg-success/15 text-success">
+        公開中
+      </Badge>
+    );
   }
-  return <Badge variant="secondary">下書き</Badge>;
+  return (
+    <Badge className="border-transparent bg-amber-500/15 text-amber-600">
+      下書き
+    </Badge>
+  );
 }

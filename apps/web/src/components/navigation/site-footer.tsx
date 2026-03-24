@@ -97,7 +97,7 @@ export function SiteFooter() {
         {/* Bottom bar */}
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-6 sm:flex-row">
           <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} Toinoma. All rights reserved.
+            &copy; {new Date().getFullYear()} Toinoma. 無断複写・転載を禁じます。
           </p>
           <p className="text-xs text-muted-foreground">
             AI採点は参考スコアです。最終判断は受験生ご自身で行ってください。

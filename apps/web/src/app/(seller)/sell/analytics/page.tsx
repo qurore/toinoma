@@ -270,39 +270,70 @@ export default async function SalesAnalyticsPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
-              {monthlyRevenue.map((m) => {
-                const maxRevenue = Math.max(
-                  ...monthlyRevenue.map((r) => r.revenue),
-                  1
-                );
-                const widthPercent = (m.revenue / maxRevenue) * 100;
+            (() => {
+              const maxRevenue = Math.max(
+                ...monthlyRevenue.map((r) => r.revenue),
+                1
+              );
+              // Calculate clean Y-axis scale ticks (4 ticks from 0 to rounded max)
+              const rawStep = maxRevenue / 4;
+              const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep || 1)));
+              const step = Math.ceil(rawStep / magnitude) * magnitude;
+              const scaleMax = step * 4;
+              const ticks = [0, step, step * 2, step * 3, scaleMax];
 
-                return (
-                  <div key={m.month} className="flex items-center gap-3">
-                    <span className="w-16 shrink-0 text-sm text-muted-foreground">
-                      {m.month}
-                    </span>
-                    <div className="flex-1">
-                      <div className="h-7 w-full overflow-hidden rounded bg-muted/40">
-                        <div
-                          className="h-full rounded bg-primary/80 transition-all"
-                          style={{
-                            width: `${m.revenue > 0 ? Math.max(widthPercent, 3) : 0}%`,
-                          }}
-                        />
+              return (
+                <div className="overflow-x-auto">
+                  <div className="min-w-[480px] space-y-3">
+                    {monthlyRevenue.map((m) => {
+                      const widthPercent = (m.revenue / scaleMax) * 100;
+
+                      return (
+                        <div key={m.month} className="flex items-center gap-3">
+                          <span className="w-16 shrink-0 text-sm text-muted-foreground">
+                            {m.month}
+                          </span>
+                          <div className="flex-1">
+                            <div className="h-7 w-full overflow-hidden rounded bg-muted/40">
+                              <div
+                                className="h-full rounded bg-primary/80 transition-all"
+                                style={{
+                                  width: `${m.revenue > 0 ? Math.max(widthPercent, 3) : 0}%`,
+                                }}
+                                title={`¥${m.revenue.toLocaleString()} (${m.count}件)`}
+                              />
+                            </div>
+                          </div>
+                          <span className="w-32 shrink-0 text-right text-sm font-medium">
+                            ¥{m.revenue.toLocaleString()}
+                            <span className="ml-1 text-xs font-normal text-muted-foreground">
+                              ({m.count}件)
+                            </span>
+                          </span>
+                        </div>
+                      );
+                    })}
+                    {/* Y-axis scale labels */}
+                    <div className="flex items-center gap-3">
+                      <span className="w-16 shrink-0" />
+                      <div className="relative flex-1">
+                        <div className="flex justify-between border-t border-muted pt-2">
+                          {ticks.map((tick) => (
+                            <span
+                              key={tick}
+                              className="text-[11px] text-muted-foreground"
+                            >
+                              ¥{tick.toLocaleString()}
+                            </span>
+                          ))}
+                        </div>
                       </div>
+                      <span className="w-32 shrink-0" />
                     </div>
-                    <span className="w-32 shrink-0 text-right text-sm font-medium">
-                      ¥{m.revenue.toLocaleString()}
-                      <span className="ml-1 text-xs font-normal text-muted-foreground">
-                        ({m.count}件)
-                      </span>
-                    </span>
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })()
           )}
         </CardContent>
       </Card>

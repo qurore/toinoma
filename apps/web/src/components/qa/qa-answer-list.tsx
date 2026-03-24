@@ -150,7 +150,14 @@ function AnswerItem({
   }, [answer.id, answer.is_accepted, qaQuestionId, problemSetId]);
 
   return (
-    <div className="flex gap-3 py-4" role="listitem">
+    <div
+      className={`flex gap-3 rounded-lg py-4 transition-colors ${
+        answer.is_accepted
+          ? "border border-emerald-200 bg-emerald-50/50 px-3 dark:border-emerald-800/40 dark:bg-emerald-950/20"
+          : ""
+      }`}
+      role="listitem"
+    >
       {/* Upvote column */}
       <div className="flex flex-col items-center gap-1">
         <Button
@@ -212,8 +219,8 @@ function AnswerItem({
           )}
           <span className="text-xs text-muted-foreground">{timeAgo}</span>
           {answer.is_accepted && (
-            <Badge className="gap-1 bg-emerald-100 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-900/30 dark:text-emerald-400">
-              <CheckCircle2 className="h-3 w-3" />
+            <Badge className="gap-1 border-emerald-300 bg-emerald-100 text-emerald-700 shadow-sm hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+              <CheckCircle2 className="h-3.5 w-3.5 fill-emerald-200 dark:fill-emerald-800" />
               ベストアンサー
             </Badge>
           )}

@@ -22,6 +22,10 @@ import {
   FileText,
   ArrowRight,
   ExternalLink,
+  CheckCircle,
+  AlertCircle,
+  Infinity as InfinityIcon,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ManagePaymentButton } from "./manage-payment-button";
@@ -151,55 +155,156 @@ export default async function BillingPage() {
       <div className="space-y-6">
         {/* Subscription status card */}
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <CreditCard className="h-4 w-4 text-muted-foreground" />
-                サブスクリプション
-              </CardTitle>
-              <Badge
-                variant={subState.tier === "free" ? "secondary" : "default"}
-              >
-                {tierConfig.label}プラン
-              </Badge>
+          <CardHeader className="pb-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="space-y-1">
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                  現在のプラン
+                </CardTitle>
+                <CardDescription>{tierConfig.description}</CardDescription>
+              </div>
+              {/* Cancellation / active / past_due badge */}
+              {subState.tier !== "free" && (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "shrink-0 gap-1 text-xs",
+                    subState.cancelAtPeriodEnd
+                      ? "border-amber-500/40 bg-amber-500/10 text-amber-600"
+                      : subState.status === "past_due"
+                        ? "border-destructive/40 bg-destructive/10 text-destructive"
+                        : "border-success/40 bg-success/10 text-success"
+                  )}
+                >
+                  {subState.cancelAtPeriodEnd ? (
+                    <AlertCircle className="h-3 w-3" />
+                  ) : subState.status === "past_due" ? (
+                    <AlertCircle className="h-3 w-3" />
+                  ) : (
+                    <CheckCircle className="h-3 w-3" />
+                  )}
+                  {subState.cancelAtPeriodEnd
+                    ? "解約予約済み"
+                    : subState.status === "past_due"
+                      ? "支払い遅延"
+                      : "有効"}
+                </Badge>
+              )}
             </div>
-            <CardDescription>{tierConfig.description}</CardDescription>
+
+            {/* Prominent tier + price banner */}
+            <div
+              className={cn(
+                "mt-3 flex items-center justify-between rounded-lg border p-4",
+                subState.tier === "pro"
+                  ? "border-primary/20 bg-primary/5"
+                  : subState.tier === "basic"
+                    ? "border-accent/20 bg-accent/5"
+                    : "border-border bg-muted/50"
+              )}
+            >
+              <div className="flex items-center gap-3">
+                <div
+                  className={cn(
+                    "flex h-10 w-10 items-center justify-center rounded-lg",
+                    subState.tier === "pro"
+                      ? "bg-primary/10 text-primary"
+                      : subState.tier === "basic"
+                        ? "bg-accent/10 text-accent"
+                        : "bg-muted text-muted-foreground"
+                  )}
+                >
+                  <Zap className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-lg font-bold tracking-tight">
+                    {tierConfig.label}プラン
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {subRecord?.interval === "annual" ? "年払い" : subState.tier === "free" ? "無料" : "月払い"}
+                  </p>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold tracking-tight">
+                  {nextBillingAmount == null || nextBillingAmount === 0
+                    ? "¥0"
+                    : `¥${nextBillingAmount.toLocaleString()}`}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {subState.tier === "free"
+                    ? ""
+                    : subRecord?.interval === "annual"
+                      ? "/ 年"
+                      : "/ 月"}
+                </p>
+              </div>
+            </div>
           </CardHeader>
           <CardContent className="space-y-5">
             {/* Usage bar */}
-            <div className="space-y-2">
-              <div className="flex items-baseline justify-between text-sm">
-                <span className="text-muted-foreground">
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium text-foreground">
                   AI採点の利用状況
                 </span>
-                <span className="font-semibold">
-                  {subState.gradingsUsedThisMonth}
-                  <span className="font-normal text-muted-foreground">
-                    {" "}
-                    /{" "}
-                    {isUnlimited
-                      ? "無制限"
-                      : `${subState.gradingLimit}回`}
+                {isUnlimited ? (
+                  <span className="flex items-center gap-1.5 text-sm font-semibold text-primary">
+                    <InfinityIcon className="h-4 w-4" />
+                    無制限
                   </span>
-                </span>
+                ) : (
+                  <span className="font-semibold">
+                    {subState.gradingsUsedThisMonth}
+                    <span className="font-normal text-muted-foreground">
+                      {" / "}
+                      {subState.gradingLimit}回
+                    </span>
+                  </span>
+                )}
               </div>
-              {!isUnlimited && (
-                <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-                  <div
+              {!isUnlimited ? (
+                <>
+                  <div className="h-2.5 w-full overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={cn(
+                        "h-2.5 rounded-full transition-all duration-500",
+                        percentage >= 100
+                          ? "bg-destructive"
+                          : percentage >= 80
+                            ? "bg-warning"
+                            : "bg-primary"
+                      )}
+                      style={{ width: `${Math.max(percentage, 2)}%` }}
+                      role="progressbar"
+                      aria-valuenow={subState.gradingsUsedThisMonth}
+                      aria-valuemin={0}
+                      aria-valuemax={subState.gradingLimit}
+                      aria-label="AI採点の利用状況"
+                    />
+                  </div>
+                  <p
                     className={cn(
-                      "h-2 rounded-full transition-all",
+                      "text-xs",
                       percentage >= 100
-                        ? "bg-destructive"
+                        ? "font-medium text-destructive"
                         : percentage >= 80
-                          ? "bg-warning"
-                          : "bg-primary"
+                          ? "font-medium text-amber-600"
+                          : "text-muted-foreground"
                     )}
-                    style={{ width: `${percentage}%` }}
-                    role="progressbar"
-                    aria-valuenow={subState.gradingsUsedThisMonth}
-                    aria-valuemin={0}
-                    aria-valuemax={subState.gradingLimit}
-                  />
+                  >
+                    {percentage >= 100
+                      ? "今月の利用上限に達しました。プランをアップグレードすると追加の採点が利用できます。"
+                      : percentage >= 80
+                        ? `残り${subState.gradingLimit - subState.gradingsUsedThisMonth}回 — 上限が近づいています`
+                        : `残り${subState.gradingLimit - subState.gradingsUsedThisMonth}回 利用可能`}
+                  </p>
+                </>
+              ) : (
+                <div className="flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
+                  <CheckCircle className="h-3.5 w-3.5 shrink-0" />
+                  プロプランではAI採点を無制限にご利用いただけます
                 </div>
               )}
             </div>
@@ -207,58 +312,39 @@ export default async function BillingPage() {
             <Separator />
 
             {/* Billing details grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
               <div>
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">
                   <Calendar className="h-3 w-3" />
-                  次の請求日
+                  {subState.cancelAtPeriodEnd ? "プラン終了日" : "次の請求日"}
                 </p>
                 <p className="mt-1 text-sm font-semibold">
                   {subState.currentPeriodEnd
-                    ? new Date(
-                        subState.currentPeriodEnd
-                      ).toLocaleDateString("ja-JP")
+                    ? new Date(subState.currentPeriodEnd).toLocaleDateString(
+                        "ja-JP",
+                        { year: "numeric", month: "long", day: "numeric" }
+                      )
                     : "—"}
                 </p>
               </div>
               <div>
                 <p className="flex items-center gap-1 text-xs text-muted-foreground">
                   <TrendingUp className="h-3 w-3" />
-                  {subRecord?.interval === "annual" ? "年額料金" : "月額料金"}
+                  次回請求額
                 </p>
                 <p className="mt-1 text-sm font-semibold">
-                  {nextBillingAmount == null || nextBillingAmount === 0
-                    ? "無料"
-                    : `¥${nextBillingAmount.toLocaleString()}`}
-                  {subRecord?.interval === "annual" && nextBillingAmount ? (
-                    <span className="ml-1 text-xs font-normal text-muted-foreground">
-                      (年払い)
-                    </span>
-                  ) : null}
+                  {subState.cancelAtPeriodEnd
+                    ? "—"
+                    : nextBillingAmount == null || nextBillingAmount === 0
+                      ? "¥0"
+                      : `¥${nextBillingAmount.toLocaleString()}`}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-muted-foreground">ステータス</p>
-                <p className="mt-1 text-sm font-semibold">
-                  {subState.cancelAtPeriodEnd ? (
-                    <Badge variant="outline" className="text-xs">
-                      解約予約済み
-                    </Badge>
-                  ) : subState.status === "past_due" ? (
-                    <Badge variant="destructive" className="text-xs">
-                      支払い遅延
-                    </Badge>
-                  ) : subState.tier === "free" ? (
-                    <span className="text-muted-foreground">—</span>
-                  ) : (
-                    <Badge variant="secondary" className="text-xs">
-                      有効
-                    </Badge>
-                  )}
+                <p className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <CreditCard className="h-3 w-3" />
+                  お支払い方法
                 </p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">お支払い方法</p>
                 <p className="mt-1 text-sm font-semibold">
                   {subRecord?.stripe_customer_id ? (
                     <span className="flex items-center gap-1.5">
@@ -276,19 +362,31 @@ export default async function BillingPage() {
             {subState.tier !== "free" && (
               <>
                 <Separator />
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-xs text-muted-foreground">
-                    プランの変更・解約は
-                    <Link
-                      href="/settings/subscription"
-                      className="ml-1 text-primary underline-offset-4 hover:underline"
-                    >
-                      サブスクリプション設定
-                    </Link>
-                    から行えます。
-                  </p>
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="space-y-1">
+                    <p className="text-sm font-medium text-foreground">
+                      プランの管理
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      プランの変更・解約は
+                      <Link
+                        href="/settings/subscription"
+                        className="mx-0.5 text-primary underline-offset-4 hover:underline"
+                      >
+                        サブスクリプション設定
+                      </Link>
+                      から行えます。
+                    </p>
+                  </div>
                   {subRecord?.stripe_customer_id && (
-                    <ManagePaymentButton />
+                    <div className="flex flex-col items-start gap-1.5 sm:items-end">
+                      <ManagePaymentButton />
+                      <p className="text-[11px] leading-tight text-muted-foreground sm:text-right">
+                        Stripeのポータルでカード情報の変更や
+                        <br className="hidden sm:inline" />
+                        領収書の確認ができます
+                      </p>
+                    </div>
                   )}
                 </div>
               </>
@@ -304,6 +402,9 @@ export default async function BillingPage() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
                 請求書
               </CardTitle>
+              <CardDescription>
+                サブスクリプションに関する請求書の一覧です
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {invoices.length === 0 ? (
@@ -320,7 +421,7 @@ export default async function BillingPage() {
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead>
-                      <tr className="border-b text-left text-muted-foreground">
+                      <tr className="border-b text-left text-xs text-muted-foreground">
                         <th className="pb-3 pr-4 font-medium">日付</th>
                         <th className="pb-3 pr-4 font-medium">内容</th>
                         <th className="pb-3 pr-4 text-right font-medium">
@@ -334,28 +435,37 @@ export default async function BillingPage() {
                     </thead>
                     <tbody className="divide-y">
                       {invoices.map((inv) => (
-                        <tr key={inv.id} className="hover:bg-muted/50">
-                          <td className="py-3 pr-4 text-muted-foreground">
+                        <tr
+                          key={inv.id}
+                          className="transition-colors hover:bg-muted/50"
+                        >
+                          <td className="whitespace-nowrap py-3 pr-4 text-muted-foreground">
                             {new Date(inv.date * 1000).toLocaleDateString(
-                              "ja-JP"
+                              "ja-JP",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
                             )}
                           </td>
                           <td className="py-3 pr-4 font-medium">
                             {inv.description}
                           </td>
-                          <td className="py-3 pr-4 text-right">
+                          <td className="whitespace-nowrap py-3 pr-4 text-right tabular-nums">
                             ¥{inv.amount.toLocaleString()}
                           </td>
                           <td className="py-3 text-center">
                             <Badge
-                              variant={
+                              variant="outline"
+                              className={cn(
+                                "text-xs",
                                 inv.status === "paid"
-                                  ? "secondary"
+                                  ? "border-success/40 bg-success/10 text-success"
                                   : inv.status === "open"
-                                    ? "outline"
-                                    : "destructive"
-                              }
-                              className="text-xs"
+                                    ? "border-amber-500/40 bg-amber-500/10 text-amber-600"
+                                    : "border-destructive/40 bg-destructive/10 text-destructive"
+                              )}
                             >
                               {inv.status === "paid"
                                 ? "支払い済み"
@@ -372,7 +482,7 @@ export default async function BillingPage() {
                                 href={inv.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/5 hover:underline"
                               >
                                 表示
                                 <ExternalLink className="h-3 w-3" />
@@ -393,14 +503,22 @@ export default async function BillingPage() {
         <Card>
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Receipt className="h-4 w-4 text-muted-foreground" />
-                購入履歴
-              </CardTitle>
+              <div>
+                <CardTitle className="flex items-center gap-2 text-base">
+                  <Receipt className="h-4 w-4 text-muted-foreground" />
+                  購入履歴
+                </CardTitle>
+                <CardDescription className="mt-1">
+                  問題セットの購入履歴を確認できます
+                </CardDescription>
+              </div>
               {totalSpend > 0 && (
-                <span className="text-sm text-muted-foreground">
-                  合計: ¥{totalSpend.toLocaleString()}
-                </span>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">合計支払額</p>
+                  <p className="text-sm font-bold tabular-nums">
+                    ¥{totalSpend.toLocaleString()}
+                  </p>
+                </div>
               )}
             </div>
           </CardHeader>
@@ -408,7 +526,9 @@ export default async function BillingPage() {
             {allPurchases.length === 0 ? (
               <div className="flex flex-col items-center py-8 text-center">
                 <Receipt className="mb-3 h-8 w-8 text-muted-foreground/40" />
-                <p className="text-muted-foreground">購入履歴がありません</p>
+                <p className="text-sm text-muted-foreground">
+                  購入履歴がありません
+                </p>
                 <Link
                   href="/explore"
                   className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
@@ -421,7 +541,7 @@ export default async function BillingPage() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b text-left text-muted-foreground">
+                    <tr className="border-b text-left text-xs text-muted-foreground">
                       <th className="pb-3 pr-4 font-medium">日付</th>
                       <th className="pb-3 pr-4 font-medium">問題セット</th>
                       <th className="pb-3 text-right font-medium">金額</th>
@@ -429,21 +549,26 @@ export default async function BillingPage() {
                   </thead>
                   <tbody className="divide-y">
                     {allPurchases.map((p) => (
-                      <tr key={p.id} className="hover:bg-muted/50">
-                        <td className="py-3 pr-4 text-muted-foreground">
-                          {new Date(p.created_at).toLocaleDateString(
-                            "ja-JP"
-                          )}
+                      <tr
+                        key={p.id}
+                        className="transition-colors hover:bg-muted/50"
+                      >
+                        <td className="whitespace-nowrap py-3 pr-4 text-muted-foreground">
+                          {new Date(p.created_at).toLocaleDateString("ja-JP", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
                         </td>
                         <td className="py-3 pr-4 font-medium">
                           <Link
                             href={`/problem/${p.problem_set_id}`}
-                            className="hover:text-primary hover:underline"
+                            className="transition-colors hover:text-primary hover:underline"
                           >
                             {setMap.get(p.problem_set_id) ?? "—"}
                           </Link>
                         </td>
-                        <td className="py-3 text-right">
+                        <td className="whitespace-nowrap py-3 text-right tabular-nums">
                           {p.amount_paid === 0 ? (
                             <Badge variant="secondary" className="text-xs">
                               無料

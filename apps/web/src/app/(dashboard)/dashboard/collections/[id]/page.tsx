@@ -4,10 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Play, BookOpen, Search } from "lucide-react";
+import { ArrowLeft, Play, BookOpen, Search, Tag } from "lucide-react";
 import { CollectionItemList } from "@/components/collections/collection-item-list";
 import { CollectionSettings } from "@/components/collections/collection-settings";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import { SUBJECT_LABELS } from "@toinoma/shared/constants";
+import type { Subject } from "@/types/database";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -73,6 +75,15 @@ export default async function CollectionDetailPage({
 
   const itemCount = typedItems.length;
 
+  // Compute unique subjects covered in this collection
+  const uniqueSubjects = [
+    ...new Set(
+      typedItems
+        .map((item) => item.problem_sets?.subject)
+        .filter((s): s is string => !!s)
+    ),
+  ];
+
   return (
     <main className="container mx-auto max-w-3xl px-4 py-8">
       <Breadcrumbs
@@ -103,11 +114,19 @@ export default async function CollectionDetailPage({
               {collection.description}
             </p>
           )}
-          <div className="mt-2 flex items-center gap-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2">
             <Badge variant="secondary" className="text-xs">
               <BookOpen className="mr-1 h-3 w-3" />
               {itemCount}問
             </Badge>
+            {uniqueSubjects.length > 0 && (
+              <Badge variant="outline" className="gap-1 text-xs">
+                <Tag className="h-3 w-3" />
+                {uniqueSubjects
+                  .map((s) => SUBJECT_LABELS[s as Subject])
+                  .join("・")}
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex shrink-0 items-center gap-2">

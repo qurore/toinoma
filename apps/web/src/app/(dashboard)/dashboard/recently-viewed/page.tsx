@@ -56,15 +56,18 @@ export default async function RecentlyViewedPage() {
 
       {items.length === 0 ? (
         <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-              <Clock className="h-7 w-7 text-primary" />
+          <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+              <Eye className="h-7 w-7 text-muted-foreground" />
             </div>
             <h2 className="mb-2 text-lg font-semibold">
-              まだ閲覧履歴がありません
+              まだ閲覧した問題がありません
             </h2>
-            <p className="mb-6 max-w-sm text-sm text-muted-foreground">
-              問題セットの詳細ページを閲覧すると、ここに履歴が表示されます。
+            <p className="mb-2 max-w-md text-sm text-muted-foreground">
+              問題セットの詳細ページを開くと、自動的にここに履歴が記録されます。
+            </p>
+            <p className="mb-8 max-w-md text-sm text-muted-foreground">
+              気になっていた問題をあとから簡単に見つけられます。
             </p>
             <Button asChild>
               <Link href="/explore">

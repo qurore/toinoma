@@ -3,7 +3,7 @@
 import { useState, useCallback } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
-import { Flag, Loader2, ThumbsUp } from "lucide-react";
+import { Flag, Loader2, Star, ThumbsUp } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -35,14 +35,22 @@ interface ReviewListProps {
 export function ReviewList({ reviews, problemSetId, userId }: ReviewListProps) {
   if (reviews.length === 0) {
     return (
-      <p className="py-8 text-center text-sm text-muted-foreground">
-        まだレビューがありません
-      </p>
+      <div className="flex flex-col items-center py-12 text-center">
+        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+          <Star className="h-5 w-5 text-muted-foreground/50" />
+        </div>
+        <p className="text-sm font-medium text-muted-foreground">
+          まだレビューがありません
+        </p>
+        <p className="mt-1 text-xs text-muted-foreground/70">
+          この問題セットの最初のレビューを投稿しましょう
+        </p>
+      </div>
     );
   }
 
   return (
-    <div className="divide-y">
+    <div className="space-y-0 divide-y divide-border/60">
       {reviews.map((review) => (
         <ReviewItem
           key={review.id}
@@ -117,10 +125,10 @@ function ReviewItem({
   }, [userId, optimisticVoted, review.id]);
 
   return (
-    <div className="py-4">
-      {/* Header */}
+    <article className="py-5 first:pt-0 last:pb-0">
+      {/* Header: avatar + name + date + rating */}
       <div className="flex items-start gap-3">
-        <Avatar className="h-8 w-8">
+        <Avatar className="h-9 w-9 shrink-0 ring-1 ring-border">
           <AvatarImage
             src={review.user.avatar_url ?? undefined}
             alt={review.user.display_name ?? "User"}
@@ -129,33 +137,37 @@ function ReviewItem({
             {initials}
           </AvatarFallback>
         </Avatar>
-        <div className="flex-1">
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline gap-2">
+            <span className="truncate text-sm font-semibold text-foreground">
               {review.user.display_name ?? "匿名ユーザー"}
             </span>
-            <span className="text-xs text-muted-foreground">{timeAgo}</span>
+            <span className="shrink-0 text-xs text-muted-foreground">
+              {timeAgo}
+            </span>
           </div>
-          <StarRating rating={review.rating} size="sm" />
+          <div className="mt-0.5">
+            <StarRating rating={review.rating} size="sm" />
+          </div>
         </div>
       </div>
 
       {/* Body */}
       {review.body && (
-        <p className="mt-2 text-sm leading-relaxed text-foreground/80">
+        <p className="mt-3 text-sm leading-relaxed text-foreground/80">
           {review.body}
         </p>
       )}
 
       {/* Actions: helpful + report */}
-      <div className="mt-2 flex items-center gap-2">
+      <div className="mt-3 flex items-center gap-1">
         <Button
           variant="ghost"
           size="sm"
-          className={`h-7 gap-1 px-2 text-xs ${
+          className={`h-7 gap-1.5 rounded-full px-3 text-xs ${
             optimisticVoted
-              ? "text-primary"
-              : "text-muted-foreground"
+              ? "bg-primary/5 text-primary hover:bg-primary/10"
+              : "text-muted-foreground hover:text-foreground"
           }`}
           onClick={handleHelpful}
           disabled={isVoting}
@@ -167,7 +179,10 @@ function ReviewItem({
           ) : (
             <ThumbsUp className="h-3 w-3" />
           )}
-          参考になった ({optimisticCount})
+          参考になった
+          {optimisticCount > 0 && (
+            <span className="tabular-nums">({optimisticCount})</span>
+          )}
         </Button>
 
         {/* Report button */}
@@ -179,7 +194,7 @@ function ReviewItem({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 gap-1 px-2 text-xs text-muted-foreground"
+                className="h-7 gap-1 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground"
               >
                 <Flag className="h-3 w-3" />
                 報告
@@ -191,10 +206,13 @@ function ReviewItem({
 
       {/* Seller response */}
       {review.seller_response && (
-        <div className="ml-8 mt-3 rounded-md border-l-2 border-primary/30 bg-muted/30 p-3">
-          <div className="flex items-center gap-1.5">
-            <Badge variant="outline" className="text-xs">
-              出品者
+        <div className="ml-6 mt-4 rounded-lg border border-primary/10 bg-primary/[0.02] p-4 sm:ml-12">
+          <div className="flex items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-primary/20 bg-primary/5 text-xs font-medium text-primary"
+            >
+              出品者からの返信
             </Badge>
             {review.seller_responded_at && (
               <span className="text-xs text-muted-foreground">
@@ -208,11 +226,11 @@ function ReviewItem({
               </span>
             )}
           </div>
-          <p className="mt-1.5 text-sm text-foreground/80">
+          <p className="mt-2 text-sm leading-relaxed text-foreground/80">
             {review.seller_response}
           </p>
         </div>
       )}
-    </div>
+    </article>
   );
 }

@@ -196,20 +196,23 @@ export function NotificationList({
         <NotificationListSkeleton />
       ) : notifications.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center gap-3 py-16 text-center">
-            <div className="rounded-full bg-muted p-4">
-              <Bell className="h-8 w-8 text-muted-foreground" />
+          <CardContent className="flex flex-col items-center gap-4 py-20 text-center">
+            <div className="rounded-full bg-muted p-5">
+              <Bell className="h-10 w-10 text-muted-foreground/60" />
             </div>
-            <div>
-              <p className="font-medium text-foreground">
+            <div className="space-y-1">
+              <p className="text-base font-semibold text-foreground">
                 {filter === "all"
                   ? "通知はまだありません"
                   : `${FILTER_OPTIONS.find((o) => o.value === filter)?.label ?? ""}の通知はありません`}
               </p>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 問題の購入や採点完了時に通知が届きます。
               </p>
             </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link href="/explore">問題を探す</Link>
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -221,11 +224,11 @@ export function NotificationList({
 
             const content = (
               <Card
-                className={`group transition-colors ${
+                className={`group transition-all ${
                   isUnread
-                    ? "border-primary/20 bg-primary/[0.02]"
-                    : "opacity-75 hover:opacity-100"
-                }`}
+                    ? "border-primary/20 bg-primary/[0.02] hover:border-primary/40 hover:bg-primary/[0.04]"
+                    : "opacity-75 hover:opacity-100 hover:bg-muted/40"
+                } ${n.link ? "cursor-pointer hover:shadow-sm" : ""}`}
               >
                 <CardContent className="flex items-start gap-3 p-4">
                   {/* Type icon */}

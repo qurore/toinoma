@@ -25,6 +25,7 @@ import {
   MessageSquare,
   Flag,
   Award,
+  CalendarDays,
 } from "lucide-react";
 
 // ──────────────────────────────────────────────
@@ -127,7 +128,7 @@ export default async function SellerProfilePage({
   const { data: seller } = await supabase
     .from("seller_profiles")
     .select(
-      "id, seller_display_name, seller_description, university, circle_name, tos_accepted_at, stripe_account_id"
+      "id, seller_display_name, seller_description, university, circle_name, tos_accepted_at, stripe_account_id, created_at"
     )
     .eq("id", id)
     .single();
@@ -235,6 +236,10 @@ export default async function SellerProfilePage({
   const tier = getSellerTier(sets.length);
   const tierConfig = TIER_CONFIG[tier];
   const isVerified = !!seller.stripe_account_id;
+  const memberSince = new Date(seller.created_at).toLocaleDateString("ja-JP", {
+    year: "numeric",
+    month: "long",
+  });
 
   // Build card data
   const cardData: ProblemSetCardData[] = sets.map((ps) => {
@@ -330,7 +335,7 @@ export default async function SellerProfilePage({
             <Separator className="my-6" />
 
             {/* ── Stats grid ── */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
               <div className="flex flex-col items-center rounded-lg bg-muted/50 p-4">
                 <BookOpen className="mb-1.5 h-5 w-5 text-primary" />
                 <p className="text-2xl font-bold">{sets.length}</p>
@@ -354,6 +359,11 @@ export default async function SellerProfilePage({
                 <MessageSquare className="mb-1.5 h-5 w-5 text-primary" />
                 <p className="text-2xl font-bold">{totalReviews}</p>
                 <p className="text-xs text-muted-foreground">レビュー数</p>
+              </div>
+              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-4">
+                <CalendarDays className="mb-1.5 h-5 w-5 text-primary" />
+                <p className="text-sm font-bold">{memberSince}</p>
+                <p className="text-xs text-muted-foreground">登録日</p>
               </div>
             </div>
           </CardContent>

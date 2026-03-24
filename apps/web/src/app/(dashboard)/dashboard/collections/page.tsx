@@ -62,15 +62,18 @@ export default async function CollectionsPage() {
 
       {!collections?.length ? (
         <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-              <FolderOpen className="h-7 w-7 text-primary" />
+          <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+              <FolderOpen className="h-7 w-7 text-muted-foreground" />
             </div>
             <h2 className="mb-2 text-lg font-semibold">
-              コレクションがありません
+              コレクションを作成しましょう
             </h2>
-            <p className="mb-6 max-w-sm text-sm text-muted-foreground">
-              購入した問題セットの中から気になる問題をピックアップして、自分だけのコレクションを作りましょう。復習やテスト対策に最適です。
+            <p className="mb-2 max-w-md text-sm text-muted-foreground">
+              コレクションは、購入した問題セットから好きな問題をまとめて管理できる機能です。
+            </p>
+            <p className="mb-8 max-w-md text-sm text-muted-foreground">
+              苦手分野の集中対策や、模試直前の総復習など、自分だけの学習セットを作りましょう。
             </p>
             <CreateCollectionDialog />
           </CardContent>

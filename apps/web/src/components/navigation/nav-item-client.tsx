@@ -2,16 +2,26 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Grid2x2, House, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
+
+const iconMap = {
+  House,
+  Grid2x2,
+  LayoutDashboard,
+} as const;
+
+type IconName = keyof typeof iconMap;
 
 interface NavItemClientProps {
   href: string;
-  icon: React.ComponentType<{ className?: string }>;
+  icon: IconName;
   label: string;
   exact?: boolean;
 }
 
-export function NavItemClient({ href, icon: Icon, label, exact }: NavItemClientProps) {
+export function NavItemClient({ href, icon, label, exact }: NavItemClientProps) {
+  const Icon = iconMap[icon];
   const pathname = usePathname();
   const isActive = exact ? pathname === href : pathname.startsWith(href);
 

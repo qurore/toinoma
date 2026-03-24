@@ -28,12 +28,20 @@ export async function POST() {
     );
   }
 
-  const stripe = getStripe();
+  try {
+    const stripe = getStripe();
 
-  const session = await stripe.billingPortal.sessions.create({
-    customer: sub.stripe_customer_id,
-    return_url: `${APP_URL}/settings/billing`,
-  });
+    const session = await stripe.billingPortal.sessions.create({
+      customer: sub.stripe_customer_id,
+      return_url: `${APP_URL}/settings/billing`,
+    });
 
-  return NextResponse.json({ url: session.url });
+    return NextResponse.json({ url: session.url });
+  } catch (err) {
+    console.error("[billing-portal] Stripe error:", err);
+    return NextResponse.json(
+      { error: "請求ポータルの作成に失敗しました。しばらく後にもう一度お試しください。" },
+      { status: 500 }
+    );
+  }
 }

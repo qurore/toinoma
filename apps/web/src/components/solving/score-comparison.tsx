@@ -158,7 +158,7 @@ function ScoreComparisonChart({ data }: { data: ScoreComparisonData }) {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <CardTitle className="text-base">スコア比較</CardTitle>
             <CardDescription>
@@ -167,7 +167,7 @@ function ScoreComparisonChart({ data }: { data: ScoreComparisonData }) {
           </div>
           <Badge
             variant={getPercentileBadgeVariant(percentileRank)}
-            className="text-xs"
+            className="shrink-0 text-xs"
           >
             {getPercentileLabel(percentileRank)} (上位{Math.max(1, 100 - percentileRank)}%)
           </Badge>

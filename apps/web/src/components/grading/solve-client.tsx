@@ -298,6 +298,18 @@ function ExamTimer({
 // ──────────────────────────────────────────────
 
 function AutoSaveIndicator({ lastSaved }: { lastSaved: number | null }) {
+  const [showPulse, setShowPulse] = useState(false);
+  const prevSaved = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (lastSaved && lastSaved !== prevSaved.current) {
+      prevSaved.current = lastSaved;
+      setShowPulse(true);
+      const timer = setTimeout(() => setShowPulse(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [lastSaved]);
+
   if (!lastSaved) return null;
 
   const date = new Date(lastSaved);
@@ -308,12 +320,17 @@ function AutoSaveIndicator({ lastSaved }: { lastSaved: number | null }) {
 
   return (
     <div
-      className="flex items-center gap-1.5 text-xs text-muted-foreground"
+      className={cn(
+        "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors duration-500",
+        showPulse
+          ? "bg-success/10 text-success"
+          : "text-muted-foreground"
+      )}
       aria-live="polite"
       aria-atomic="true"
     >
-      <CheckCircle2 className="h-3 w-3 text-success" />
-      <span>{timeStr} 自動保存済</span>
+      <CheckCircle2 className={cn("h-3 w-3", showPulse ? "text-success" : "text-muted-foreground/60")} />
+      <span>下書き保存済み {timeStr}</span>
     </div>
   );
 }
@@ -713,7 +730,7 @@ export function SolveClient({
   const [result, setResult] = useState<GradingResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [draftRestored, setDraftRestored] = useState(false);
-  const [showValidationDialog, setShowValidationDialog] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [unansweredQuestions, setUnansweredQuestions] = useState<string[]>([]);
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const [gradingStatus, setGradingStatus] = useState<
@@ -900,21 +917,17 @@ export function SolveClient({
   );
 
   const handleSubmit = useCallback(
-    async (submittedAnswers: Record<string, QuestionAnswer>) => {
+    (submittedAnswers: Record<string, QuestionAnswer>) => {
+      answersRef.current = submittedAnswers;
       const unanswered = getUnansweredQuestions(rubric, submittedAnswers);
-      if (unanswered.length > 0) {
-        answersRef.current = submittedAnswers;
-        setUnansweredQuestions(unanswered);
-        setShowValidationDialog(true);
-        return;
-      }
-      await performSubmit(submittedAnswers);
+      setUnansweredQuestions(unanswered);
+      setShowConfirmDialog(true);
     },
-    [rubric, performSubmit]
+    [rubric]
   );
 
-  const handleSubmitAnyway = useCallback(async () => {
-    setShowValidationDialog(false);
+  const handleConfirmSubmit = useCallback(async () => {
+    setShowConfirmDialog(false);
     await performSubmit(answersRef.current);
   }, [performSubmit]);
 
@@ -1156,46 +1169,97 @@ export function SolveClient({
         </button>
       )}
 
-      {/* Unanswered questions warning dialog */}
+      {/* Submission confirmation dialog */}
       <Dialog
-        open={showValidationDialog}
-        onOpenChange={setShowValidationDialog}
+        open={showConfirmDialog}
+        onOpenChange={setShowConfirmDialog}
       >
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
-              未回答の問題があります
+              {unansweredQuestions.length > 0 ? (
+                <AlertTriangle className="h-5 w-5 text-warning" />
+              ) : (
+                <CheckCircle2 className="h-5 w-5 text-success" />
+              )}
+              {unansweredQuestions.length > 0
+                ? "未回答の問題があります"
+                : "解答を提出しますか？"}
             </DialogTitle>
             <DialogDescription>
-              {unansweredQuestions.length}問が未回答です。このまま提出しますか？
+              {unansweredQuestions.length > 0
+                ? "未回答のまま提出すると、該当の問題は0点になります。"
+                : "すべての問題に回答済みです。提出するとAI採点が開始されます。"}
             </DialogDescription>
           </DialogHeader>
 
-          <div className="max-h-40 overflow-y-auto rounded-md border border-border bg-muted/50 p-3">
-            <p className="mb-2 text-sm font-medium">未回答の問題:</p>
-            <div className="flex flex-wrap gap-2">
-              {unansweredQuestions.map((qKey) => {
-                const [sectionNum, questionNum] = qKey.split("-");
-                return (
-                  <Badge key={qKey} variant="outline" className="text-xs">
-                    大問{sectionNum} - {questionNum}
-                  </Badge>
-                );
-              })}
+          {/* Answer summary */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between rounded-md border border-border bg-muted/30 px-4 py-3">
+              <span className="text-sm text-muted-foreground">回答済み</span>
+              <span className="text-sm font-semibold tabular-nums">
+                <span className={progress.totalAnswered === progress.totalQuestions ? "text-success" : "text-foreground"}>
+                  {progress.totalAnswered}
+                </span>
+                <span className="text-muted-foreground"> / {progress.totalQuestions}問</span>
+              </span>
+            </div>
+
+            {unansweredQuestions.length > 0 && (
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
+                <p className="mb-2 text-xs font-medium text-amber-600">
+                  未回答の問題 ({unansweredQuestions.length}問)
+                </p>
+                <div className="flex max-h-32 flex-wrap gap-1.5 overflow-y-auto">
+                  {unansweredQuestions.map((qKey) => {
+                    const [sectionNum, questionNum] = qKey.split("-");
+                    return (
+                      <Badge
+                        key={qKey}
+                        variant="outline"
+                        className="border-amber-500/40 bg-amber-500/10 text-xs text-amber-700"
+                      >
+                        大問{sectionNum} - {questionNum}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Per-section breakdown */}
+            <div className="space-y-1.5">
+              {progress.sections.map((s) => (
+                <div key={s.sectionNumber} className="flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground">大問{s.sectionNumber}</span>
+                  <div className="flex items-center gap-2">
+                    <Progress
+                      value={s.total > 0 ? (s.answered / s.total) * 100 : 0}
+                      className="h-1.5 w-20"
+                      indicatorClassName={s.answered === s.total ? "bg-success" : "bg-primary"}
+                    />
+                    <span className={cn(
+                      "w-12 text-right tabular-nums font-medium",
+                      s.answered === s.total ? "text-success" : "text-muted-foreground"
+                    )}>
+                      {s.answered}/{s.total}
+                    </span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button
               variant="outline"
-              onClick={() => setShowValidationDialog(false)}
+              onClick={() => setShowConfirmDialog(false)}
             >
-              解答を続ける
+              戻る
             </Button>
-            <Button variant="default" onClick={handleSubmitAnyway}>
+            <Button variant="default" onClick={handleConfirmSubmit}>
               <Send className="mr-1.5 h-3.5 w-3.5" />
-              このまま提出する
+              提出する
             </Button>
           </DialogFooter>
         </DialogContent>

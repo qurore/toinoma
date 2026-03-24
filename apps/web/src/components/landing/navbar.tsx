@@ -44,13 +44,11 @@ export function Navbar() {
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
-          <BookOpen className="h-6 w-6 text-green" />
-          <div className="flex flex-col">
-            <span className="font-display text-lg font-bold leading-tight text-white">
-              問の間
-            </span>
-            <span className="text-[10px] font-medium leading-tight text-white/60">
-              Toinoma
+          <BookOpen className="h-5 w-5 text-green" />
+          <div className="flex flex-col leading-none">
+            <span className="font-display text-base font-bold text-white">問の間</span>
+            <span className="text-[9px] font-medium tracking-wider text-white/50">
+              TOINOMA
             </span>
           </div>
         </Link>
@@ -115,7 +113,12 @@ export function Navbar() {
               <div className="flex h-16 items-center justify-between border-b border-white/10 px-6">
                 <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
                   <BookOpen className="h-5 w-5 text-green" />
-                  <span className="font-display text-base font-bold text-white">問の間</span>
+                  <div className="flex flex-col leading-none">
+                    <span className="font-display text-base font-bold text-white">問の間</span>
+                    <span className="text-[9px] font-medium tracking-wider text-white/50">
+                      TOINOMA
+                    </span>
+                  </div>
                 </Link>
                 <DialogPrimitive.Close asChild>
                   <button

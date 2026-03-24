@@ -9,8 +9,6 @@ import {
   BookOpen,
   ChevronRight,
 } from "lucide-react";
-import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
-import { SiteFooter } from "@/components/navigation/site-footer";
 import { Card, CardContent } from "@/components/ui/card";
 import { generatePageMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
@@ -102,13 +100,9 @@ const HELP_CATEGORIES = [
 // Page
 // ──────────────────────────────────────────────
 
-export default async function HelpPage() {
-  const navbarData = await getNavbarData();
-
+export default function HelpPage() {
   return (
-    <>
-      <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-4xl px-4 pb-16 pt-20 sm:px-6">
+      <div className="mx-auto max-w-4xl px-4 pb-16 pt-4 sm:px-6">
         {/* Hero */}
         <div className="mb-10 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
@@ -197,8 +191,6 @@ export default async function HelpPage() {
             お問い合わせ
           </Link>
         </div>
-      </main>
-      <SiteFooter />
-    </>
+      </div>
   );
 }

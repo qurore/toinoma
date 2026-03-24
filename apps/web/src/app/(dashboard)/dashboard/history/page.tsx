@@ -36,7 +36,7 @@ export default async function SubmissionHistoryPage() {
     return {
       id: s.id,
       problemSetId: s.problem_set_id,
-      title: ps?.title ?? "Unknown",
+      title: ps?.title ?? "（不明な問題セット）",
       subject: (ps?.subject ?? null) as Subject | null,
       subjectLabel: ps?.subject
         ? SUBJECT_LABELS[ps.subject as Subject] ?? ps.subject

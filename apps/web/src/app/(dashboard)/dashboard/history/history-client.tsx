@@ -243,15 +243,18 @@ export function SubmissionHistoryClient({
 
       {items.length === 0 ? (
         <Card className="border-dashed">
-          <CardContent className="flex flex-col items-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-              <History className="h-7 w-7 text-primary" />
+          <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+              <History className="h-7 w-7 text-muted-foreground" />
             </div>
             <h2 className="mb-2 text-lg font-semibold">
-              まだ解答履歴がありません
+              最初の一歩を踏み出しましょう
             </h2>
-            <p className="mb-6 max-w-sm text-sm text-muted-foreground">
-              問題セットを購入して解答すると、ここにスコアや成績の推移が表示されます。
+            <p className="mb-2 max-w-md text-sm text-muted-foreground">
+              問題セットを購入して解答を提出すると、AIが自動で採点し、ここにスコアと成績の推移が記録されます。
+            </p>
+            <p className="mb-8 max-w-md text-sm text-muted-foreground">
+              解けば解くほど、自分の得意・苦手が見えてきます。
             </p>
             <Button asChild>
               <Link href="/explore">

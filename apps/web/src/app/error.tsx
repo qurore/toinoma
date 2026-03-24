@@ -44,7 +44,7 @@ export default function ErrorPage({
       {/* Error digest for support reference */}
       {error.digest && (
         <p className="mb-6 rounded-md bg-muted px-3 py-1.5 font-mono text-xs text-muted-foreground">
-          Error ID: {error.digest}
+          エラーID: {error.digest}
         </p>
       )}
 

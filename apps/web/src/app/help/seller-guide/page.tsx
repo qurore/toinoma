@@ -10,8 +10,6 @@ import {
   AlertCircle,
   BookOpen,
 } from "lucide-react";
-import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
-import { SiteFooter } from "@/components/navigation/site-footer";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -148,13 +146,9 @@ const SELLER_FAQ = [
 // Page
 // ──────────────────────────────────────────────
 
-export default async function SellerGuidePage() {
-  const navbarData = await getNavbarData();
-
+export default function SellerGuidePage() {
   return (
-    <>
-      <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-3xl px-4 pb-16 pt-20 sm:px-6">
+      <div className="mx-auto max-w-3xl px-4 pb-16 pt-4 sm:px-6">
         {/* Breadcrumb */}
         <nav aria-label="パンくずリスト" className="mb-6">
           <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
@@ -416,8 +410,6 @@ export default async function SellerGuidePage() {
             </div>
           </CardContent>
         </Card>
-      </main>
-      <SiteFooter />
-    </>
+      </div>
   );
 }

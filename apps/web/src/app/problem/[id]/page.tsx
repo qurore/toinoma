@@ -16,6 +16,8 @@ import {
   BookOpen,
   ChevronRight,
   History,
+  Send,
+  TrendingUp,
 } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { PurchaseSection } from "@/components/marketplace/purchase-section";
@@ -102,7 +104,7 @@ export default async function ProblemDetailPage({
   // Fetch seller separately to avoid type inference issue with joins
   const { data: seller } = await supabase
     .from("seller_profiles")
-    .select("seller_display_name, university, seller_description")
+    .select("seller_display_name, university, circle_name, seller_description")
     .eq("id", ps.seller_id)
     .single();
 
@@ -125,17 +127,22 @@ export default async function ProblemDetailPage({
       ? reviews!.reduce((sum, r) => sum + r.rating, 0) / totalReviewCount
       : null;
 
-  // Fetch purchase count
-  const { count: purchaseCount } = await supabase
-    .from("purchases")
-    .select("id", { count: "exact", head: true })
-    .eq("problem_set_id", id);
-
-  // Fetch question count for this problem set
-  const { count: questionCount } = await supabase
-    .from("problem_set_questions")
-    .select("id", { count: "exact", head: true })
-    .eq("problem_set_id", id);
+  // Fetch purchase count and submission count in parallel
+  const [{ count: purchaseCount }, { count: submissionCount }, { count: questionCount }] =
+    await Promise.all([
+      supabase
+        .from("purchases")
+        .select("id", { count: "exact", head: true })
+        .eq("problem_set_id", id),
+      supabase
+        .from("submissions")
+        .select("id", { count: "exact", head: true })
+        .eq("problem_set_id", id),
+      supabase
+        .from("problem_set_questions")
+        .select("id", { count: "exact", head: true })
+        .eq("problem_set_id", id),
+    ]);
 
   // Count other problem sets by this seller (for seller card)
   const { count: sellerProblemCount } = await supabase
@@ -306,24 +313,23 @@ export default async function ProblemDetailPage({
                 <ShareButton title={ps.title} className="shrink-0" />
               </div>
 
-              {/* Metadata row: badges + rating + stats */}
-              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline">
-                    {SUBJECT_LABELS[ps.subject as Subject]}
-                  </Badge>
-                  <Badge variant="outline">
-                    {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-                  </Badge>
-                  {ps.university && (
-                    <Badge variant="secondary">{ps.university}</Badge>
-                  )}
-                </div>
+              {/* Badge row: subject + difficulty + university */}
+              <div className="mt-4 flex flex-wrap items-center gap-2">
+                <Badge variant="outline">
+                  {SUBJECT_LABELS[ps.subject as Subject]}
+                </Badge>
+                <Badge variant="outline">
+                  {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
+                </Badge>
+                {ps.university && (
+                  <Badge variant="secondary">{ps.university}</Badge>
+                )}
+              </div>
 
-                <Separator orientation="vertical" className="hidden h-5 sm:block" />
-
-                {/* Rating display */}
-                {avgRating != null && totalReviewCount > 0 && (
+              {/* Social proof strip — always visible before scroll */}
+              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-border bg-muted/30 px-4 py-3">
+                {/* Rating */}
+                {avgRating != null && totalReviewCount > 0 ? (
                   <div className="flex items-center gap-1.5">
                     <div className="flex items-center gap-0.5">
                       {[1, 2, 3, 4, 5].map((i) => (
@@ -338,26 +344,41 @@ export default async function ProblemDetailPage({
                         />
                       ))}
                     </div>
-                    <span className="text-sm font-medium">
+                    <span className="text-sm font-semibold">
                       {avgRating.toFixed(1)}
                     </span>
                     <span className="text-sm text-muted-foreground">
                       ({totalReviewCount}件)
                     </span>
                   </div>
-                )}
-
-                {/* Purchase count */}
-                {(purchaseCount ?? 0) > 0 && (
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Users className="h-3.5 w-3.5" />
-                    <span>{purchaseCount}人が購入</span>
+                ) : (
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <Star className="h-4 w-4" />
+                    <span>レビューなし</span>
                   </div>
                 )}
+
+                <Separator orientation="vertical" className="hidden h-5 sm:block" />
+
+                {/* Purchase count */}
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-semibold">{purchaseCount ?? 0}</span>
+                  <span className="text-muted-foreground">人が購入</span>
+                </div>
+
+                <Separator orientation="vertical" className="hidden h-5 sm:block" />
+
+                {/* Submission count */}
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Send className="h-4 w-4 text-muted-foreground" />
+                  <span className="font-semibold">{submissionCount ?? 0}</span>
+                  <span className="text-muted-foreground">回解答</span>
+                </div>
               </div>
 
               {/* Quick stats strip */}
-              <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
+              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                 {(questionCount ?? 0) > 0 && (
                   <span className="flex items-center gap-1">
                     <FileText className="h-3.5 w-3.5" />
@@ -477,39 +498,43 @@ export default async function ProblemDetailPage({
 
             {/* Seller info card */}
             {seller && (
-              <Card>
-                <CardContent className="p-5">
+              <Card className="overflow-hidden">
+                <div className="bg-gradient-to-br from-primary/5 via-transparent to-primary/3 px-5 pb-4 pt-5">
                   <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                     出題者
                   </p>
                   <div className="flex items-center gap-3">
-                    <Avatar className="h-10 w-10">
+                    <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
                       {sellerProfile?.avatar_url && (
                         <AvatarImage
                           src={sellerProfile.avatar_url}
                           alt={seller.seller_display_name ?? ""}
                         />
                       )}
-                      <AvatarFallback>
-                        <GraduationCap className="h-5 w-5" />
+                      <AvatarFallback className="bg-muted">
+                        <GraduationCap className="h-5 w-5 text-muted-foreground" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
                       <Link
                         href={`/seller/${ps.seller_id}`}
-                        className="font-medium text-foreground hover:text-primary hover:underline"
+                        className="font-semibold text-foreground hover:text-primary hover:underline"
                       >
                         {seller.seller_display_name}
                       </Link>
-                      {seller.university && (
+                      {(seller.university || seller.circle_name) && (
                         <p className="truncate text-xs text-muted-foreground">
-                          {seller.university}
+                          {[seller.university, seller.circle_name]
+                            .filter(Boolean)
+                            .join(" / ")}
                         </p>
                       )}
                     </div>
                   </div>
+                </div>
+                <CardContent className="px-5 pb-5 pt-0">
                   {seller.seller_description && (
-                    <p className="mt-3 line-clamp-3 text-sm text-muted-foreground">
+                    <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
                       {seller.seller_description}
                     </p>
                   )}
@@ -521,13 +546,15 @@ export default async function ProblemDetailPage({
                       </span>
                     )}
                   </div>
+                  <Separator className="my-3" />
                   <Button
                     variant="outline"
                     size="sm"
-                    className="mt-3 w-full"
+                    className="w-full"
                     asChild
                   >
                     <Link href={`/seller/${ps.seller_id}`}>
+                      <GraduationCap className="mr-1.5 h-3.5 w-3.5" />
                       プロフィールを見る
                     </Link>
                   </Button>
@@ -553,9 +580,23 @@ export default async function ProblemDetailPage({
 
         {/* MKT-013: Related problem sets (full-width section) */}
         {relatedWithSellers.length > 0 && (
-          <div className="mt-12">
+          <section className="mt-12" aria-labelledby="related-heading">
             <Separator className="mb-8" />
-            <h2 className="mb-6 text-lg font-semibold">関連する問題セット</h2>
+            <div className="mb-6 flex items-center justify-between">
+              <h2
+                id="related-heading"
+                className="flex items-center gap-2 text-lg font-semibold"
+              >
+                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                関連する問題セット
+              </h2>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href={`/explore?subject=${ps.subject}`}>
+                  もっと見る
+                  <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                </Link>
+              </Button>
+            </div>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               {relatedWithSellers.map((related) => (
                 <ProblemSetCard
@@ -565,7 +606,7 @@ export default async function ProblemDetailPage({
                 />
               ))}
             </div>
-          </div>
+          </section>
         )}
 
         {/* JSON-LD structured data */}

@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { SearchX, Sparkles } from "lucide-react";
+import { SearchX, Sparkles, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
@@ -496,6 +496,14 @@ export default async function ExplorePage({
                   </span>
                   件の問題セット
                 </p>
+                {hasFilters && (
+                  <Button asChild variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs text-muted-foreground">
+                    <Link href="/explore">
+                      <X className="h-3 w-3" aria-hidden="true" />
+                      フィルターをクリア
+                    </Link>
+                  </Button>
+                )}
               </div>
               <Suspense fallback={null}>
                 <ExploreSortDropdown />
@@ -507,7 +515,7 @@ export default async function ExplorePage({
               <EmptyState hasFilters={hasFilters} query={rawQ} />
             ) : (
               <>
-                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4 transition-opacity duration-200 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredCards.map((ps) => (
                     <ProblemSetCard
                       key={ps.id}

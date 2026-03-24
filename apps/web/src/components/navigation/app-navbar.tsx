@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { BookOpen, Grid2x2, House, LayoutDashboard, Plus, Store } from "lucide-react";
+import { BookOpen, Plus, Store } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { UserDropdown } from "./user-dropdown";
@@ -123,9 +123,9 @@ export function AppNavbar({
 
         {/* Nav items — hidden on mobile, with active state */}
         <nav className="hidden items-center md:flex" aria-label="メインナビゲーション">
-          <NavItemClient href="/" icon={House} label="ホーム" exact />
-          <NavItemClient href="/explore" icon={Grid2x2} label="問題を探す" />
-          <NavItemClient href="/dashboard" icon={LayoutDashboard} label="マイページ" />
+          <NavItemClient href="/" icon="House" label="ホーム" exact />
+          <NavItemClient href="/explore" icon="Grid2x2" label="問題を探す" />
+          <NavItemClient href="/dashboard" icon="LayoutDashboard" label="マイページ" />
         </nav>
 
         {/* Right-side actions */}

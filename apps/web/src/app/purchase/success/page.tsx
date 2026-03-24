@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import {
   CheckCircle2,
   BookOpen,
+  PenLine,
   Printer,
   FolderPlus,
   ArrowRight,
@@ -141,7 +142,7 @@ export default async function PurchaseSuccessPage({
                 購入が完了しました
               </h1>
               <p className="mb-6 text-sm text-muted-foreground">
-                ご購入ありがとうございます
+                問題セットの購入が完了しました！早速解いてみましょう。
               </p>
 
               {problemSet && (
@@ -188,10 +189,10 @@ export default async function PurchaseSuccessPage({
 
               {/* Primary CTA — large and prominent */}
               {problemSetId && (
-                <Button size="lg" className="mb-4 w-full text-base" asChild>
+                <Button size="lg" className="mb-4 w-full text-base font-bold shadow-md" asChild>
                   <Link href={`/problem/${problemSetId}/solve`}>
-                    <BookOpen className="mr-2 h-5 w-5" />
-                    問題を解き始める
+                    <PenLine className="mr-2 h-5 w-5" />
+                    今すぐ解く
                   </Link>
                 </Button>
               )}

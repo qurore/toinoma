@@ -14,7 +14,12 @@ import {
   ArrowRight,
   PlayCircle,
   ChevronRight,
+  Sparkles,
 } from "lucide-react";
+import {
+  ProblemSetCard,
+  type ProblemSetCardData,
+} from "@/components/marketplace/problem-set-card";
 import { SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject } from "@/types/database";
 import type { Metadata } from "next";
@@ -32,6 +37,7 @@ export default async function DashboardPage() {
 
   // Fetch all dashboard data in a single parallel batch
   const [
+    { data: profile },
     { data: recentPurchases },
     { data: recentSubmissions },
     { count: purchaseCount },
@@ -40,13 +46,18 @@ export default async function DashboardPage() {
     { data: streakSubmissions },
   ] = await Promise.all([
     supabase
+      .from("profiles")
+      .select("display_name, preferred_subjects")
+      .eq("id", user.id)
+      .single(),
+    supabase
       .from("purchases")
       .select(
         "id, problem_set_id, created_at, problem_sets(title, subject, difficulty)"
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false })
-      .limit(5),
+      .limit(10),
     supabase
       .from("submissions")
       .select(
@@ -128,25 +139,46 @@ export default async function DashboardPage() {
   const submittedSetIds = new Set(
     (submissionCounts ?? []).map((s) => s.problem_set_id)
   );
-  const continueItem = (recentPurchases ?? []).find(
-    (p) => !submittedSetIds.has(p.problem_set_id)
-  );
-  const continuePs = continueItem
-    ? (continueItem.problem_sets as unknown as {
-        title: string;
-        subject: string;
-        difficulty: string;
-      } | null)
-    : null;
+  const continueItems = (recentPurchases ?? [])
+    .filter((p) => !submittedSetIds.has(p.problem_set_id))
+    .slice(0, 3);
 
   const isNewUser =
     (purchaseCount ?? 0) === 0 && (submissionCount ?? 0) === 0;
+
+  // Derive display name and preferred subjects from profile
+  const displayName = profile?.display_name ?? null;
+  const preferredSubjects = (profile?.preferred_subjects ?? []) as Subject[];
+
+  // Fetch recommended problem sets based on preferred subjects
+  const allPurchasedSetIds = (recentPurchases ?? []).map(
+    (p) => p.problem_set_id
+  );
+  const { data: recommendedSets } =
+    preferredSubjects.length > 0
+      ? await supabase
+          .from("problem_sets")
+          .select(
+            "id, title, subject, university, difficulty, price, cover_image_url"
+          )
+          .eq("status", "published")
+          .in("subject", preferredSubjects)
+          .order("created_at", { ascending: false })
+          .limit(allPurchasedSetIds.length > 0 ? 20 : 6)
+      : { data: [] };
+
+  // Filter out already-purchased sets and take at most 6
+  const recommendations = (recommendedSets ?? [])
+    .filter((ps) => !allPurchasedSetIds.includes(ps.id))
+    .slice(0, 6) as ProblemSetCardData[];
 
   return (
     <main className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
-          ダッシュボード
+          {displayName
+            ? `こんにちは、${displayName}さん`
+            : "ダッシュボード"}
         </h1>
         <p className="mt-1 text-sm text-muted-foreground">
           学習の進捗を確認しましょう
@@ -267,41 +299,88 @@ export default async function DashboardPage() {
           </div>
 
           {/* Continue studying section */}
-          {continueItem && continuePs && (
-            <Card className="mb-8 border-primary/20 bg-primary/[0.02]">
-              <CardContent className="flex items-center gap-4 p-5">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10">
-                  <PlayCircle className="h-6 w-6 text-primary" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-primary">
-                    学習を続ける
-                  </p>
-                  <p className="mt-0.5 truncate font-semibold">
-                    {continuePs.title}
-                  </p>
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {SUBJECT_LABELS[continuePs.subject as Subject]}
-                    </Badge>
-                    <Progress value={0} className="h-1.5 max-w-[120px]" />
-                    <span className="text-xs text-muted-foreground">
-                      未解答
-                    </span>
-                  </div>
-                </div>
-                <Button asChild size="sm">
-                  <Link
-                    href={`/problem/${continueItem.problem_set_id}/solve`}
-                  >
-                    <ArrowRight className="mr-1.5 h-4 w-4" />
-                    解答する
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+          {continueItems.length > 0 && (
+            <div className="mb-8 space-y-3">
+              <h2 className="flex items-center gap-2 text-base font-semibold">
+                <PlayCircle className="h-5 w-5 text-primary" />
+                学習を続ける
+              </h2>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {continueItems.map((item) => {
+                  const ps = item.problem_sets as unknown as {
+                    title: string;
+                    subject: string;
+                    difficulty: string;
+                  } | null;
+                  if (!ps) return null;
+                  return (
+                    <Card
+                      key={item.id}
+                      className="border-primary/20 bg-primary/[0.02] transition-colors hover:border-primary/30"
+                    >
+                      <CardContent className="flex items-center gap-4 p-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold">
+                            {ps.title}
+                          </p>
+                          <div className="mt-1.5 flex items-center gap-2">
+                            <Badge variant="outline" className="text-xs">
+                              {SUBJECT_LABELS[ps.subject as Subject]}
+                            </Badge>
+                            <Progress
+                              value={0}
+                              className="h-1.5 max-w-[80px]"
+                            />
+                            <span className="text-xs text-muted-foreground">
+                              未解答
+                            </span>
+                          </div>
+                        </div>
+                        <Button asChild size="sm" className="shrink-0">
+                          <Link
+                            href={`/problem/${item.problem_set_id}/solve`}
+                          >
+                            <ArrowRight className="mr-1.5 h-4 w-4" />
+                            解答する
+                          </Link>
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
           )}
         </>
+      )}
+
+      {/* Recommended for you section — based on preferred subjects from onboarding */}
+      {recommendations.length > 0 && (
+        <div className="mb-8 space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-base font-semibold">
+              <Sparkles className="h-5 w-5 text-primary" />
+              おすすめの問題セット
+            </h2>
+            <Button variant="ghost" size="sm" asChild>
+              <Link
+                href={`/explore?subjects=${preferredSubjects.join(",")}`}
+              >
+                もっと見る
+                <ChevronRight className="ml-1 h-3.5 w-3.5" />
+              </Link>
+            </Button>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {recommendations.map((ps) => (
+              <ProblemSetCard
+                key={ps.id}
+                data={ps}
+                userId={user.id}
+              />
+            ))}
+          </div>
+        </div>
       )}
 
       {/* Recent activity cards */}
@@ -330,7 +409,7 @@ export default async function DashboardPage() {
               </div>
             ) : (
               <div className="space-y-2">
-                {recentPurchases.map((p) => {
+                {recentPurchases.slice(0, 5).map((p) => {
                   const ps = p.problem_sets as unknown as {
                     title: string;
                     subject: string;
@@ -343,7 +422,7 @@ export default async function DashboardPage() {
                       className="flex items-center justify-between rounded-lg border border-border p-3 transition-colors hover:bg-muted/50"
                     >
                       <span className="min-w-0 truncate text-sm font-medium">
-                        {ps?.title ?? "Unknown"}
+                        {ps?.title ?? "（不明な問題セット）"}
                       </span>
                       <div className="ml-2 flex shrink-0 items-center gap-1.5">
                         {ps?.subject && (
@@ -405,7 +484,7 @@ export default async function DashboardPage() {
                     >
                       <div className="min-w-0 flex-1">
                         <span className="block truncate text-sm font-medium">
-                          {ps?.title ?? "Unknown"}
+                          {ps?.title ?? "（不明な問題セット）"}
                         </span>
                         <span className="mt-0.5 block text-xs text-muted-foreground">
                           {date}

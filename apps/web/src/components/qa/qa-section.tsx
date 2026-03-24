@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { MessageCircleQuestion } from "lucide-react";
+import { MessageCircleQuestion, Lock } from "lucide-react";
 import { QaQuestionList } from "./qa-question-list";
 import { QaQuestionForm } from "./qa-question-form";
 
@@ -171,9 +171,14 @@ export async function QaSection({
             {totalQuestions > 0 && <Separator />}
           </>
         ) : userId && !hasPurchased ? (
-          <p className="text-center text-sm text-muted-foreground">
-            質問を投稿するにはこの問題セットを購入する必要があります。
-          </p>
+          <div className="flex items-center gap-3 rounded-lg border border-dashed border-muted-foreground/25 bg-muted/30 px-4 py-3">
+            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted">
+              <Lock className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              質問を投稿するにはこの問題セットを購入する必要があります。購入後に質問や回答ができるようになります。
+            </p>
+          </div>
         ) : null}
 
         {/* Question list */}
