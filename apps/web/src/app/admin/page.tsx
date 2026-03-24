@@ -3,6 +3,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TrendingUp, Users, Activity, ShoppingCart } from "lucide-react";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "管理者ダッシュボード - 問の間",
 };
@@ -234,7 +236,6 @@ export default async function AdminDashboardPage() {
   const activeUserCount = activeUserIds.size;
 
   // Conversion rate: purchasers / total users
-  const uniquePurchasers = new Set(purchases.map(() => Math.random())); // approximation from purchase count
   const conversionRate =
     totalUsers > 0
       ? ((purchases.length / Math.max(totalUsers, 1)) * 100).toFixed(1)

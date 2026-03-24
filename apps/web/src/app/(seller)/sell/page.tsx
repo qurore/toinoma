@@ -23,8 +23,6 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SellerTosGate } from "@/components/seller/seller-tos-gate";
 import { ProblemSetList } from "./problem-set-list";
-import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
-import type { Subject, Difficulty } from "@/types/database";
 
 export default async function SellerDashboardPage() {
   const { user, sellerProfile, tosAccepted } = await getSellerTosStatus();

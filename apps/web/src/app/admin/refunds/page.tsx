@@ -8,12 +8,15 @@ export const metadata: Metadata = {
 
 const REFUND_WINDOW_HOURS = 24;
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminRefundsPage() {
   const admin = createAdminClient();
 
   // Fetch recent purchases within 24-hour refund window
+  const now = new Date();
   const cutoffDate = new Date(
-    Date.now() - REFUND_WINDOW_HOURS * 60 * 60 * 1000
+    now.getTime() - REFUND_WINDOW_HOURS * 60 * 60 * 1000
   ).toISOString();
 
   const { data: recentPurchases } = await admin

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Send, Brain, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -53,16 +53,20 @@ export function GradingStatusIndicator({
   status,
 }: GradingStatusIndicatorProps) {
   const [dots, setDots] = useState("");
+  const dotsRef = useRef("");
 
   // Animated dots for grading state
   useEffect(() => {
     if (status !== "grading") {
-      setDots("");
-      return;
+      dotsRef.current = "";
+      // Reset dots asynchronously via a zero-delay timer to avoid synchronous setState in effect
+      const resetTimer = setTimeout(() => setDots(""), 0);
+      return () => clearTimeout(resetTimer);
     }
 
     const interval = setInterval(() => {
-      setDots((prev) => (prev.length >= 3 ? "" : prev + "."));
+      dotsRef.current = dotsRef.current.length >= 3 ? "" : dotsRef.current + ".";
+      setDots(dotsRef.current);
     }, 500);
 
     return () => clearInterval(interval);

@@ -4,7 +4,6 @@ import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { RubyText } from "@/components/text/furigana";
 import { ANSWER_TYPE_LABELS } from "@toinoma/shared/constants";
 import type { ProblemSetRubric, SectionRubric, QuestionRubric } from "@toinoma/shared/schemas";
 
@@ -157,17 +156,25 @@ function QuestionPreviewItem({
           </span>
         </div>
 
-        {/* Question text (rubric elements as hints for what is expected) */}
-        {question.rubric && question.rubric.length > 0 && (
+        {/* Rubric element count hint for essay questions */}
+        {question.type === "essay" &&
+          question.rubricElements.length > 0 && (
           <div className="text-sm text-foreground">
             <p className="text-muted-foreground">
-              {question.rubric.length}つの採点基準
+              {question.rubricElements.length}つの採点基準
             </p>
           </div>
         )}
 
-        {/* Model answer indicator */}
-        {question.modelAnswer && (
+        {/* Choice count for mark-sheet */}
+        {question.type === "mark_sheet" && (
+          <p className="mt-1 text-xs text-muted-foreground">
+            選択肢: {question.choices.length}個
+          </p>
+        )}
+
+        {/* Model answer indicator (essay only) */}
+        {question.type === "essay" && question.modelAnswer && (
           <p className="mt-1 text-xs text-muted-foreground">
             模範解答あり
           </p>
@@ -192,7 +199,10 @@ function QuestionPreviewItem({
       </div>
 
       {/* Answer area placeholder based on question type */}
-      <AnswerAreaPlaceholder type={question.type} />
+      <AnswerAreaPlaceholder
+        type={question.type}
+        choices={question.type === "mark_sheet" ? question.choices : undefined}
+      />
     </div>
   );
 }
@@ -203,14 +213,17 @@ function QuestionPreviewItem({
 
 function AnswerAreaPlaceholder({
   type,
+  choices,
 }: {
   type: string;
+  choices?: string[];
 }) {
   switch (type) {
-    case "mark_sheet":
+    case "mark_sheet": {
+      const labels = choices ?? ["ア", "イ", "ウ", "エ", "オ"];
       return (
         <div className="flex flex-wrap gap-2 py-2">
-          {["ア", "イ", "ウ", "エ", "オ"].map((label) => (
+          {labels.map((label) => (
             <div
               key={label}
               className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-muted-foreground/30 text-sm text-muted-foreground/50"
@@ -220,6 +233,7 @@ function AnswerAreaPlaceholder({
           ))}
         </div>
       );
+    }
 
     case "fill_in_blank":
       return (

@@ -97,7 +97,7 @@ export function RubyText({ children, className }: RubyTextProps) {
 
         return (
           <ruby key={i}>
-            <rb>{segment.text}</rb>
+            {segment.text}
             <rp>(</rp>
             <rt>{segment.reading}</rt>
             <rp>)</rp>
