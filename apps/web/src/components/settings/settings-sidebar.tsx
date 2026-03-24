@@ -10,6 +10,7 @@ import {
   Heart,
   Store,
   Trash2,
+  Monitor,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -25,6 +26,7 @@ interface NavItem {
 const BASE_NAV_ITEMS: NavItem[] = [
   { href: "/settings/profile", label: "プロフィール", icon: User, exact: false },
   { href: "/settings/subscription", label: "サブスクリプション", icon: CreditCard, exact: false },
+  { href: "/settings/sessions", label: "セッション管理", icon: Monitor, exact: false },
   { href: "/dashboard", label: "購入済み問題", icon: ShoppingBag, exact: true, external: true },
   { href: "/dashboard/history", label: "解答履歴", icon: History, exact: false, external: true },
   { href: "/dashboard/favorites", label: "お気に入り", icon: Heart, exact: false, external: true },

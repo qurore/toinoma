@@ -94,12 +94,10 @@ export async function ReviewsSection({
         .single(),
     ]);
 
+    // User can review only if they have BOTH purchased AND submitted at least one answer
     canReview = !!purchaseResult.data && !!submissionResult.data;
 
-    const existing = reviewData.find(
-      (r) => r.id && reviewData.some((rd) => rd === r)
-    );
-    // Check if user already has a review
+    // Check if user already has a review (for edit mode)
     const { data: userReview } = await supabase.from("reviews")
       .select("id, rating, body")
       .eq("user_id", userId)

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getStripe } from "@/lib/stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { notifyPurchase, notifySale } from "@/lib/notifications";
+import { createNotification } from "@/lib/notifications";
 import type Stripe from "stripe";
 
 function mapPriceIdToTier(priceId: string | undefined): "free" | "basic" | "pro" {
@@ -204,10 +205,36 @@ export async function POST(request: Request) {
         : subRef?.id ?? null;
 
       if (subscriptionId) {
-        await supabase
+        // Set grace period: 3 days before auto-cancel (Stripe handles the actual cancel)
+        const gracePeriodEnd = new Date(
+          Date.now() + 3 * 24 * 60 * 60 * 1000
+        ).toISOString();
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
           .from("user_subscriptions")
-          .update({ status: "past_due" })
+          .update({
+            status: "past_due",
+            grace_period_end: gracePeriodEnd,
+          })
           .eq("stripe_subscription_id", subscriptionId);
+
+        // Send notification to the user about payment failure
+        const { data: subRecord } = await supabase
+          .from("user_subscriptions")
+          .select("user_id")
+          .eq("stripe_subscription_id", subscriptionId)
+          .single();
+
+        if (subRecord?.user_id) {
+          await createNotification(
+            subRecord.user_id,
+            "subscription",
+            "お支払いに失敗しました",
+            "お支払いに失敗しました。3日以内に更新してください。更新されない場合、サブスクリプションは自動的にキャンセルされます。",
+            "/settings/subscription"
+          );
+        }
       }
       break;
     }

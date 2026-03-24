@@ -10,11 +10,13 @@ import {
   Megaphone,
   ClipboardList,
   Undo2,
+  Store,
 } from "lucide-react";
 
 const ADMIN_NAV = [
   { href: "/admin", label: "ダッシュボード", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", label: "ユーザー管理", icon: Users, exact: false },
+  { href: "/admin/sellers", label: "出品者管理", icon: Store, exact: false },
   { href: "/admin/reports", label: "報告管理", icon: Flag, exact: false },
   { href: "/admin/refunds", label: "返金管理", icon: Undo2, exact: false },
   { href: "/admin/revenue", label: "売上レポート", icon: DollarSign, exact: false },

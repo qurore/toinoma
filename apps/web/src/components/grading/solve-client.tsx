@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { AnswerForm } from "./answer-form";
 import { GradingResultDisplay } from "./grading-result";
+import { GradingStatusIndicator } from "./grading-status-indicator";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -114,6 +115,9 @@ export function SolveClient({
   const [draftRestored, setDraftRestored] = useState(false);
   const [showValidationDialog, setShowValidationDialog] = useState(false);
   const [unansweredQuestions, setUnansweredQuestions] = useState<string[]>([]);
+  const [gradingStatus, setGradingStatus] = useState<
+    "idle" | "submitting" | "grading" | "complete"
+  >("idle");
 
   // Ref to track latest answers for auto-save without re-rendering
   const answersRef = useRef<Record<string, QuestionAnswer>>({});
@@ -183,28 +187,41 @@ export function SolveClient({
 
   const performSubmit = async (answers: Record<string, QuestionAnswer>) => {
     setError(null);
+    setGradingStatus("submitting");
 
-    const res = await fetch("/api/grading", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ problemSetId, answers }),
-    });
+    try {
+      // Brief delay to show the submitting state
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      setGradingStatus("grading");
 
-    const data = await res.json();
+      const res = await fetch("/api/grading", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ problemSetId, answers }),
+      });
 
-    if (!res.ok) {
-      setError(data.error ?? "採点に失敗しました");
-      return;
-    }
+      const data = await res.json();
 
-    // Clear draft on successful submission
-    clearDraft(draftKey);
+      if (!res.ok) {
+        setError(data.error ?? "採点に失敗しました");
+        setGradingStatus("idle");
+        return;
+      }
 
-    setResult(data.result);
+      // Clear draft on successful submission
+      clearDraft(draftKey);
 
-    // Navigate to result page
-    if (data.submissionId) {
-      router.push(`/problem/${problemSetId}/result/${data.submissionId}`);
+      setGradingStatus("complete");
+      setResult(data.result);
+
+      // Navigate to result page after showing completion state
+      if (data.submissionId) {
+        await new Promise((resolve) => setTimeout(resolve, 1500));
+        router.push(`/problem/${problemSetId}/result/${data.submissionId}`);
+      }
+    } catch {
+      setError("採点リクエストに失敗しました。もう一度お試しください。");
+      setGradingStatus("idle");
     }
   };
 
@@ -224,6 +241,11 @@ export function SolveClient({
     setShowValidationDialog(false);
     await performSubmit(answersRef.current);
   };
+
+  // Show grading status overlay when submitting/grading
+  if (gradingStatus !== "idle") {
+    return <GradingStatusIndicator status={gradingStatus} />;
+  }
 
   if (result) {
     return <GradingResultDisplay result={result} />;

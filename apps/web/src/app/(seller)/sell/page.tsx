@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SellerTosGate } from "@/components/seller/seller-tos-gate";
+import { ProblemSetList } from "./problem-set-list";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
 
@@ -504,59 +505,13 @@ export default async function SellerDashboardPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-3">
-          {sets.map((ps) => (
-            <Card key={ps.id}>
-              <CardContent className="flex items-center justify-between p-4">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/sell/${ps.id}/edit`}
-                      className="truncate font-medium hover:underline"
-                    >
-                      {ps.title}
-                    </Link>
-                    <StatusBadge status={ps.status} />
-                  </div>
-                  <div className="mt-1 flex items-center gap-3 text-sm text-muted-foreground">
-                    <span>
-                      {SUBJECT_LABELS[ps.subject as Subject]}
-                    </span>
-                    <span>
-                      {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-                    </span>
-                    <span>
-                      {ps.price === 0
-                        ? "無料"
-                        : `¥${ps.price.toLocaleString()}`}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/sell/${ps.id}/rubric`}>ルーブリック</Link>
-                  </Button>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/sell/${ps.id}/edit`}>編集</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        <ProblemSetList sets={sets} />
       )}
     </main>
   );
 }
 
 // --- Helper components ---
-
-function StatusBadge({ status }: { status: string }) {
-  if (status === "published") {
-    return <Badge variant="default">公開中</Badge>;
-  }
-  return <Badge variant="secondary">下書き</Badge>;
-}
 
 function StatCardWithTrend({
   label,
