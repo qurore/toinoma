@@ -36,9 +36,9 @@ const STATUS_CONFIG = {
     icon: Brain,
     label: "AI採点中",
     description: "AIが解答を分析し、ルーブリックに基づいて採点しています",
-    color: "text-amber-600",
-    bgColor: "bg-amber-50",
-    ringColor: "border-amber-500/30",
+    color: "text-warning",
+    bgColor: "bg-warning/5",
+    ringColor: "border-warning/30",
   },
   complete: {
     icon: CheckCircle2,
@@ -135,7 +135,7 @@ export function GradingStatusIndicator({
                 strokeLinecap="round"
                 className={cn(
                   "opacity-40",
-                  status === "submitting" ? "text-primary" : "text-amber-500"
+                  status === "submitting" ? "text-primary" : "text-warning"
                 )}
               />
             </svg>
@@ -146,7 +146,7 @@ export function GradingStatusIndicator({
             <div
               className={cn(
                 "absolute inset-2 animate-pulse rounded-full opacity-20",
-                status === "submitting" ? "bg-primary" : "bg-amber-500"
+                status === "submitting" ? "bg-primary" : "bg-warning"
               )}
             />
           )}
@@ -179,6 +179,7 @@ export function GradingStatusIndicator({
               "relative z-10 h-8 w-8 transition-all duration-500",
               config.color
             )}
+            aria-hidden="true"
           />
         </div>
 
@@ -202,8 +203,8 @@ export function GradingStatusIndicator({
 
         {/* Indeterminate progress bar for grading */}
         {status === "grading" && (
-          <div className="mt-6 overflow-hidden rounded-full bg-amber-100">
-            <div className="h-1.5 w-1/3 animate-[grading-slide_2s_ease-in-out_infinite] rounded-full bg-amber-500" />
+          <div className="mt-6 overflow-hidden rounded-full bg-warning/15">
+            <div className="h-1.5 w-1/3 animate-[grading-slide_2s_ease-in-out_infinite] rounded-full bg-warning" />
           </div>
         )}
 

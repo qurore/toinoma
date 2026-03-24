@@ -38,18 +38,13 @@ export default async function RecentlyViewedPage() {
       />
 
       <div className="mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-            <Eye className="h-5 w-5 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">
-              最近閲覧した問題
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              {items.length}件の閲覧履歴
-            </p>
-          </div>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            最近閲覧した問題
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {items.length}件の閲覧履歴
+          </p>
         </div>
         {items.length > 0 && <ClearHistoryButton />}
       </div>
@@ -108,10 +103,10 @@ export default async function RecentlyViewedPage() {
                       </span>
                     </div>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="secondary" className="border border-border text-xs">
                         {SUBJECT_LABELS[ps.subject as Subject]}
                       </Badge>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="secondary" className="border border-border text-xs">
                         {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
                       </Badge>
                       {ps.university && (

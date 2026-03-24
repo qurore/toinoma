@@ -1,11 +1,14 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { RubricEditor } from "@/components/seller/rubric-editor";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { problemSetRubricSchema, type ProblemSetRubric } from "@toinoma/shared/schemas";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ルーブリック編集 - 問の間",
+};
 
 export default async function RubricEditorPage({
   params,
@@ -36,20 +39,20 @@ export default async function RubricEditorPage({
 
   return (
     <div className="container mx-auto max-w-3xl px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={`/sell/${id}/edit`}>
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            編集に戻る
-          </Link>
-        </Button>
-      </div>
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "出品者ダッシュボード", href: "/sell" },
+          { label: ps.title, href: `/sell/${id}/edit` },
+          { label: "ルーブリック編集" },
+        ]}
+      />
 
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">
           ルーブリック編集
         </h1>
-        <p className="mt-1 text-muted-foreground">{ps.title}</p>
+        <p className="mt-1 text-sm text-muted-foreground">{ps.title}</p>
       </div>
 
       <RubricEditor problemSetId={id} initialRubric={rubric} />

@@ -156,12 +156,12 @@ export function CollectionItemList({
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     {ps?.subject && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="secondary" className="border border-border text-xs">
                         {SUBJECT_LABELS[ps.subject as Subject]}
                       </Badge>
                     )}
                     {ps?.difficulty && (
-                      <Badge variant="outline" className="text-xs">
+                      <Badge variant="secondary" className="border border-border text-xs">
                         {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
                       </Badge>
                     )}

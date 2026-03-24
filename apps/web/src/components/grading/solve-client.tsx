@@ -287,7 +287,7 @@ function ExamTimer({
       role="timer"
       aria-label="残り時間"
     >
-      <Clock className="h-3.5 w-3.5" />
+      <Clock className="h-3.5 w-3.5" aria-hidden="true" />
       {timeStr}
     </div>
   );
@@ -490,7 +490,7 @@ function ResizableDivider({
     >
       <div className="h-full w-px bg-border transition-colors group-hover:bg-primary/40" />
       <div className="absolute flex h-8 w-5 items-center justify-center rounded-md bg-muted opacity-0 shadow-sm transition-opacity group-hover:opacity-100">
-        <GripVertical className="h-3.5 w-3.5 text-muted-foreground" />
+        <GripVertical className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
       </div>
     </div>
   );
@@ -1016,7 +1016,7 @@ export function SolveClient({
         <div className="flex items-center gap-2">
           <AutoSaveIndicator lastSaved={lastSavedAt} />
           <Button variant="outline" size="sm" onClick={handleSaveDraft}>
-            <Save className="mr-1.5 h-3.5 w-3.5" />
+            <Save className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
             保存
           </Button>
         </div>
@@ -1040,7 +1040,7 @@ export function SolveClient({
               style={{ width: `${dividerPosition}%` }}
             >
               <div className="flex h-10 items-center border-b border-border bg-muted/50 px-3">
-                <FileText className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                <FileText className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <span className="text-xs font-medium text-muted-foreground">
                   問題用紙
                 </span>
@@ -1064,7 +1064,7 @@ export function SolveClient({
               style={{ width: `${100 - dividerPosition}%` }}
             >
               <div className="mb-3 flex h-10 items-center rounded-t-lg border border-b-0 border-border bg-muted/50 px-3">
-                <Edit3 className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
+                <Edit3 className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <span className="text-xs font-medium text-muted-foreground">
                   解答用紙
                 </span>
@@ -1089,11 +1089,11 @@ export function SolveClient({
             >
               <TabsList className="mb-4 w-full">
                 <TabsTrigger value="problem" className="flex-1">
-                  <FileText className="mr-1.5 h-3.5 w-3.5" />
+                  <FileText className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                   問題文
                 </TabsTrigger>
                 <TabsTrigger value="answers" className="flex-1">
-                  <Edit3 className="mr-1.5 h-3.5 w-3.5" />
+                  <Edit3 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                   解答
                   {progress.totalAnswered > 0 && (
                     <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-primary">
@@ -1147,9 +1147,9 @@ export function SolveClient({
           disabled={isSubmitting}
         >
           {isSubmitting ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
           ) : (
-            <Send className="mr-2 h-4 w-4" />
+            <Send className="mr-2 h-4 w-4" aria-hidden="true" />
           )}
           解答を提出してAI採点
         </Button>
@@ -1169,7 +1169,7 @@ export function SolveClient({
           className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background shadow-md transition-all hover:bg-muted lg:bottom-8 lg:right-8"
           aria-label="トップに戻る"
         >
-          <ChevronUp className="h-5 w-5" />
+          <ChevronUp className="h-5 w-5" aria-hidden="true" />
         </button>
       )}
 
@@ -1182,9 +1182,9 @@ export function SolveClient({
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {unansweredQuestions.length > 0 ? (
-                <AlertTriangle className="h-5 w-5 text-warning" />
+                <AlertTriangle className="h-5 w-5 text-warning" aria-hidden="true" />
               ) : (
-                <CheckCircle2 className="h-5 w-5 text-success" />
+                <CheckCircle2 className="h-5 w-5 text-success" aria-hidden="true" />
               )}
               {unansweredQuestions.length > 0
                 ? "未回答の問題があります"
@@ -1262,7 +1262,7 @@ export function SolveClient({
               戻る
             </Button>
             <Button variant="default" onClick={handleConfirmSubmit}>
-              <Send className="mr-1.5 h-3.5 w-3.5" />
+              <Send className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
               提出する
             </Button>
           </DialogFooter>

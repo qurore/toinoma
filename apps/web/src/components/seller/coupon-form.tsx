@@ -146,7 +146,7 @@ export function CouponForm({ sellerSets, onSuccess }: CouponFormProps) {
           name="min_purchase"
           type="number"
           min={0}
-          step={100}
+          step={1}
           defaultValue={0}
           placeholder="0（制限なし）"
         />

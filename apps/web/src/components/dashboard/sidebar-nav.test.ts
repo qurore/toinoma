@@ -78,8 +78,8 @@ describe("DashboardSidebar", () => {
     expect(sidebarSource).not.toContain("getUser");
   });
 
-  it("positions below navbar with top-14 offset", () => {
-    expect(sidebarSource).toContain("top-14");
+  it("positions below navbar with top offset", () => {
+    expect(sidebarSource).toContain("top-16");
   });
 });
 
@@ -98,9 +98,9 @@ describe("MobileDashboardNav", () => {
     expect(mobileNavSource).toContain("md:hidden");
   });
 
-  it("is fixed below the AppNavbar at top-14", () => {
+  it("is fixed below the AppNavbar at top-16", () => {
     expect(mobileNavSource).toContain("fixed");
-    expect(mobileNavSource).toContain("top-14");
+    expect(mobileNavSource).toContain("top-16");
     expect(mobileNavSource).toContain("h-10");
   });
 

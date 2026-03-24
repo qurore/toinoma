@@ -808,8 +808,8 @@ function ActivityIcon({ type }: { type: ActivityItem["type"] }) {
   switch (type) {
     case "purchase":
       return (
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-success/10">
-          <ShoppingCart className="h-3.5 w-3.5 text-success" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10">
+          <ShoppingCart className="h-3.5 w-3.5 text-primary" />
         </div>
       );
     case "submission":
@@ -820,8 +820,8 @@ function ActivityIcon({ type }: { type: ActivityItem["type"] }) {
       );
     case "review":
       return (
-        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-amber-500/10">
-          <Star className="h-3.5 w-3.5 text-amber-500" />
+        <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted">
+          <Star className="h-3.5 w-3.5 text-foreground/60" />
         </div>
       );
   }
@@ -839,7 +839,7 @@ function ActivityBadge({ type }: { type: ActivityItem["type"] }) {
   switch (type) {
     case "purchase":
       return (
-        <Badge className="shrink-0 border-transparent bg-success/10 text-[10px] text-success">
+        <Badge className="shrink-0 border-transparent bg-primary/10 text-[10px] text-primary">
           購入
         </Badge>
       );
@@ -851,7 +851,7 @@ function ActivityBadge({ type }: { type: ActivityItem["type"] }) {
       );
     case "review":
       return (
-        <Badge className="shrink-0 border-transparent bg-amber-500/10 text-[10px] text-amber-600">
+        <Badge className="shrink-0 border-transparent bg-muted text-[10px] text-muted-foreground">
           レビュー
         </Badge>
       );

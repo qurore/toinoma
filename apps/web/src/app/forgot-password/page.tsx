@@ -118,10 +118,12 @@ export default function ForgotPasswordPage() {
                 autoComplete="email"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="h-12 w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+              ) : (
+                <Mail className="mr-2 h-4 w-4" />
+              )}
               リセットメールを送信
             </Button>
           </form>

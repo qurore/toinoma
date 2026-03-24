@@ -104,14 +104,14 @@ export default async function CouponsPage() {
 
       {/* Stats row */}
       {allCoupons.length > 0 && (
-        <div className="mb-6 grid grid-cols-3 gap-3">
+        <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="rounded-lg border border-border bg-card p-3">
             <p className="text-xs text-muted-foreground">合計</p>
             <p className="text-lg font-bold">{allCoupons.length}</p>
           </div>
           <div className="rounded-lg border border-border bg-card p-3">
             <p className="text-xs text-muted-foreground">有効</p>
-            <p className="text-lg font-bold text-success">{activeCount}</p>
+            <p className="text-lg font-bold text-primary">{activeCount}</p>
           </div>
           <div className="rounded-lg border border-border bg-card p-3">
             <p className="text-xs text-muted-foreground">総利用回数</p>

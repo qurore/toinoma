@@ -13,47 +13,12 @@ import type { Subject, Difficulty } from "@/types/database";
 import { createClient } from "@/lib/supabase/client";
 
 // ──────────────────────────────────────────────
-// Subject visual mappings
+// Visual design — restrained monochromatic palette
+// Subject differentiation via labels, not colors
 // ──────────────────────────────────────────────
 
-const SUBJECT_GRADIENTS: Record<Subject, string> = {
-  math: "from-blue-500/80 to-indigo-600/80",
-  english: "from-emerald-500/80 to-teal-600/80",
-  japanese: "from-rose-500/80 to-pink-600/80",
-  physics: "from-amber-500/80 to-orange-600/80",
-  chemistry: "from-violet-500/80 to-purple-600/80",
-  biology: "from-lime-500/80 to-green-600/80",
-  japanese_history: "from-red-500/80 to-rose-600/80",
-  world_history: "from-cyan-500/80 to-sky-600/80",
-  geography: "from-teal-500/80 to-emerald-600/80",
-};
-
-const SUBJECT_ICONS: Record<Subject, string> = {
-  math: "\u2211",
-  english: "Aa",
-  japanese: "\u3042",
-  physics: "\u26A1",
-  chemistry: "\u2697",
-  biology: "\uD83E\uDDEC",
-  japanese_history: "\u26E9",
-  world_history: "\uD83C\uDF0D",
-  geography: "\uD83D\uDDFA",
-};
-
-const SUBJECT_BADGE_COLORS: Record<Subject, string> = {
-  math: "bg-blue-100 text-blue-700 border-blue-200",
-  english: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  japanese: "bg-rose-100 text-rose-700 border-rose-200",
-  physics: "bg-amber-100 text-amber-700 border-amber-200",
-  chemistry: "bg-violet-100 text-violet-700 border-violet-200",
-  biology: "bg-lime-100 text-lime-700 border-lime-200",
-  japanese_history: "bg-red-100 text-red-700 border-red-200",
-  world_history: "bg-cyan-100 text-cyan-700 border-cyan-200",
-  geography: "bg-teal-100 text-teal-700 border-teal-200",
-};
-
 const DIFFICULTY_COLORS: Record<Difficulty, string> = {
-  easy: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  easy: "bg-primary-50 text-primary-700 border-primary-200",
   medium: "bg-amber-50 text-amber-700 border-amber-200",
   hard: "bg-red-50 text-red-700 border-red-200",
 };
@@ -281,20 +246,17 @@ function CardCover({
   subject,
   coverImageUrl,
   className,
-  iconSize = "text-5xl",
   sizes,
 }: {
   subject: Subject;
   coverImageUrl?: string | null;
   className?: string;
-  iconSize?: string;
   sizes: string;
 }) {
   return (
     <div
       className={cn(
-        "relative flex items-center justify-center bg-gradient-to-br",
-        SUBJECT_GRADIENTS[subject],
+        "relative flex items-center justify-center bg-gradient-to-br from-primary-700 to-primary-900",
         className
       )}
     >
@@ -308,13 +270,10 @@ function CardCover({
         />
       ) : (
         <span
-          className={cn(
-            "select-none text-white/80 transition-transform duration-300 group-hover:scale-110",
-            iconSize
-          )}
+          className="select-none text-3xl font-bold text-white/20"
           aria-hidden="true"
         >
-          {SUBJECT_ICONS[subject]}
+          {SUBJECT_LABELS[subject]}
         </span>
       )}
       {/* Gradient overlay for readability */}
@@ -342,9 +301,8 @@ function BadgesRow({
     <div className="flex items-center gap-1.5">
       <Badge
         className={cn(
-          "border font-medium",
-          textSize,
-          SUBJECT_BADGE_COLORS[subject]
+          "border border-border bg-secondary font-medium text-secondary-foreground",
+          textSize
         )}
       >
         {SUBJECT_LABELS[subject]}
@@ -420,7 +378,6 @@ export function ProblemSetCard({
             subject={data.subject}
             coverImageUrl={data.cover_image_url}
             className="w-28 shrink-0 sm:w-36"
-            iconSize="text-3xl"
             sizes="(max-width: 640px) 112px, 144px"
           />
 
@@ -482,7 +439,6 @@ export function ProblemSetCard({
             subject={data.subject}
             coverImageUrl={data.cover_image_url}
             className="h-40 sm:h-44"
-            iconSize="text-5xl"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
 

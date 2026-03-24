@@ -1,9 +1,11 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getSubscriptionState } from "@/lib/subscription";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DeleteAccountConfirm } from "@/components/settings/delete-account-confirm";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, CreditCard } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -18,6 +20,10 @@ export default async function DeleteAccountPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
+  // Check for active subscription to warn the user
+  const subState = await getSubscriptionState(user.id);
+  const hasActiveSubscription = subState.tier !== "free" && subState.status === "active";
+
   return (
     <div className="space-y-6">
       <Breadcrumbs items={[
@@ -31,6 +37,27 @@ export default async function DeleteAccountPage() {
           アカウントを削除します。この操作は取り消せません。
         </p>
       </div>
+
+      {/* Active subscription warning */}
+      {hasActiveSubscription && (
+        <div className="flex items-start gap-3 rounded-lg border border-warning/30 bg-warning/5 p-4">
+          <CreditCard className="mt-0.5 h-5 w-5 shrink-0 text-warning" />
+          <div>
+            <p className="text-sm font-medium text-warning">
+              有効なサブスクリプションがあります
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              退会前にサブスクリプションをキャンセルすることをおすすめします。退会すると自動的にキャンセルされますが、既に支払い済みの期間分の返金はありません。
+            </p>
+            <Link
+              href="/settings/subscription"
+              className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              サブスクリプション設定へ
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Warning banner */}
       <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4">

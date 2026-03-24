@@ -8,7 +8,7 @@ import { PdfUploader } from "@/components/seller/pdf-uploader";
 import { PublishControls } from "@/components/seller/publish-controls";
 import { PdfPreview } from "@/components/seller/pdf-preview";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Database, Subject, Difficulty } from "@/types/database";
 
 type ProblemSetRow = Database["public"]["Tables"]["problem_sets"]["Row"];
@@ -35,21 +35,26 @@ export default async function EditProblemSetPage({
 
   return (
     <div className="container mx-auto max-w-2xl px-4 py-8">
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "出品者ダッシュボード", href: "/sell" },
+          { label: "問題セット", href: "/sell/sets" },
+          { label: ps.title },
+        ]}
+      />
+
       <div className="mb-6 flex items-center justify-between">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/sell">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            戻る
-          </Link>
-        </Button>
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">
+            問題セット編集
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">{ps.title}</p>
+        </div>
         <Button variant="outline" size="sm" asChild>
           <Link href={`/sell/${id}/rubric`}>ルーブリック編集</Link>
         </Button>
       </div>
-
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">
-        問題セット編集
-      </h1>
 
       <div className="space-y-6">
         <ProblemSetForm

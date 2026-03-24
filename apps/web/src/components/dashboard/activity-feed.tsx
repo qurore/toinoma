@@ -50,29 +50,24 @@ const ACTIVITY_CONFIG: Record<
   ActivityType,
   {
     icon: typeof ShoppingCart;
-    color: string;
-    bgColor: string;
+    className: string;
   }
 > = {
   purchase: {
     icon: ShoppingCart,
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-50",
+    className: "text-muted-foreground bg-muted",
   },
   submission: {
     icon: FileCheck,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
+    className: "text-muted-foreground bg-muted",
   },
   review: {
     icon: Star,
-    color: "text-amber-600",
-    bgColor: "bg-amber-50",
+    className: "text-muted-foreground bg-muted",
   },
   collection_add: {
     icon: FolderPlus,
-    color: "text-violet-600",
-    bgColor: "bg-violet-50",
+    className: "text-muted-foreground bg-muted",
   },
 };
 
@@ -147,10 +142,10 @@ export function ActivityFeed({
                     <div
                       className={cn(
                         "z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
-                        config.bgColor
+                        config.className
                       )}
                     >
-                      <Icon className={cn("h-4 w-4", config.color)} />
+                      <Icon className="h-4 w-4" />
                     </div>
 
                     {/* Content */}

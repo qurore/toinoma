@@ -238,7 +238,7 @@ export function EssayAnswerInput({
               aria-pressed={genkoYoshi}
               className="h-7 px-2"
             >
-              <Grid3X3 className="h-3.5 w-3.5" />
+              <Grid3X3 className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           )}
 
@@ -254,7 +254,7 @@ export function EssayAnswerInput({
               aria-pressed={verticalMode}
               className="h-7 px-2"
             >
-              <AlignVerticalSpaceAround className="h-3.5 w-3.5" />
+              <AlignVerticalSpaceAround className="h-3.5 w-3.5" aria-hidden="true" />
             </Button>
           )}
 
@@ -271,9 +271,9 @@ export function EssayAnswerInput({
               className="h-7 px-2"
             >
               {showLatexPreview ? (
-                <EyeOff className="h-3.5 w-3.5" />
+                <EyeOff className="h-3.5 w-3.5" aria-hidden="true" />
               ) : (
-                <Eye className="h-3.5 w-3.5" />
+                <Eye className="h-3.5 w-3.5" aria-hidden="true" />
               )}
             </Button>
           )}
@@ -285,7 +285,7 @@ export function EssayAnswerInput({
             onClick={() => setMode("text")}
             className="h-7"
           >
-            <Type className="mr-1 h-3.5 w-3.5" />
+            <Type className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             テキスト
           </Button>
           <Button
@@ -295,7 +295,7 @@ export function EssayAnswerInput({
             onClick={() => setMode("image")}
             className="h-7"
           >
-            <Camera className="mr-1 h-3.5 w-3.5" />
+            <Camera className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
             画像
           </Button>
         </div>
@@ -426,7 +426,7 @@ export function EssayAnswerInput({
                 className="absolute right-2 top-2"
                 onClick={clearImage}
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4" aria-hidden="true" />
               </Button>
             </div>
           ) : (
@@ -446,7 +446,7 @@ export function EssayAnswerInput({
                   "transition-colors hover:border-primary/50 hover:bg-muted/50"
                 )}
               >
-                <ImagePlus className="h-8 w-8 text-muted-foreground" />
+                <ImagePlus className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
                 <div className="text-center">
                   <p className="text-sm font-medium">
                     クリックして画像をアップロード
@@ -465,7 +465,7 @@ export function EssayAnswerInput({
                   className="w-full"
                   onClick={handleCameraCapture}
                 >
-                  <Camera className="mr-2 h-4 w-4" />
+                  <Camera className="mr-2 h-4 w-4" aria-hidden="true" />
                   カメラで撮影
                 </Button>
               )}

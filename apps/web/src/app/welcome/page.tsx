@@ -52,7 +52,7 @@ export default async function WelcomePage() {
             href="/"
             className="mb-4 inline-flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            <BookOpen className="h-7 w-7 text-primary" />
+            <BookOpen className="h-7 w-7 text-primary" aria-hidden="true" />
             <div className="flex flex-col leading-none">
               <span className="font-display text-xl font-bold text-foreground">
                 問の間

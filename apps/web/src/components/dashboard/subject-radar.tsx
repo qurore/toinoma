@@ -90,7 +90,7 @@ function SubjectBarChart({ subjects }: { subjects: SubjectScore[] }) {
                 s.averagePercent >= 80
                   ? "bg-primary"
                   : s.averagePercent >= 50
-                    ? "bg-amber-500"
+                    ? "bg-warning"
                     : "bg-destructive"
               )}
               style={{ width: `${s.averagePercent}%` }}

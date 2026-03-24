@@ -8,6 +8,7 @@ import {
   Star,
   RotateCcw,
   FolderPlus,
+  AlertTriangle,
 } from "lucide-react";
 import { gradingResultSchema } from "@toinoma/shared/schemas";
 import { GradingResultDisplay } from "@/components/grading/grading-result";
@@ -127,9 +128,40 @@ export default async function GradingResultPage({
   const parseResult = gradingResultSchema.safeParse(submission.feedback);
   if (!parseResult.success) {
     return (
-      <main id="main-content" className="container mx-auto max-w-3xl px-4 py-8">
-        <p className="text-destructive">採点結果の読み込みに失敗しました</p>
-      </main>
+      <>
+        <AppNavbar {...navbarData} />
+        <main id="main-content" className="container mx-auto max-w-3xl px-4 pb-12 pt-24">
+          <Breadcrumbs
+            items={[
+              { label: "ホーム", href: "/" },
+              { label: ps?.title ?? "問題詳細", href: `/problem/${id}` },
+              { label: "採点結果" },
+            ]}
+            className="mb-6"
+          />
+          <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-8 text-center">
+            <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-destructive" aria-hidden="true" />
+            <h1 className="text-lg font-semibold text-destructive">
+              採点結果の読み込みに失敗しました
+            </h1>
+            <p className="mt-2 text-sm text-muted-foreground">
+              データの形式に問題がある可能性があります。もう一度解答してみてください。
+            </p>
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
+              <Button asChild>
+                <Link href={`/problem/${id}/solve`}>
+                  <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
+                  もう一度解く
+                </Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href={`/problem/${id}`}>問題詳細に戻る</Link>
+              </Button>
+            </div>
+          </div>
+        </main>
+        <SiteFooter />
+      </>
     );
   }
 

@@ -62,7 +62,7 @@ export default async function DashboardLayout({
       <MobileDashboardNav />
       {/*
         Content offset:
-        - Mobile: pt-28 = navbar (h-16=64px) + mobile dashboard nav (h-10=40px) + gap = 112px
+        - Mobile: pt-[6.5rem] = navbar (h-16=64px) + mobile dashboard nav (top-16 h-10=104px bottom) + 0.5rem gap
         - Desktop: pt-16 = navbar (h-16=64px) only, pl-60 = sidebar (w-60=240px)
       */}
       <main id="main-content" className="min-h-[calc(100vh-4rem)] pt-28 md:pl-60 md:pt-16">

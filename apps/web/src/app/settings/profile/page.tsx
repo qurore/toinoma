@@ -64,19 +64,19 @@ export default async function ProfileSettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-[8rem_1fr] items-baseline gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-[8rem_1fr] sm:items-baseline sm:gap-4">
             <span className="text-sm text-muted-foreground">メールアドレス</span>
             <span className="text-sm font-medium">{user.email}</span>
           </div>
           <Separator />
-          <div className="grid grid-cols-[8rem_1fr] items-baseline gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-[8rem_1fr] sm:items-baseline sm:gap-4">
             <span className="text-sm text-muted-foreground">ユーザーID</span>
             <span className="font-mono text-xs text-muted-foreground">
               {user.id.slice(0, 8)}...{user.id.slice(-4)}
             </span>
           </div>
           <Separator />
-          <div className="grid grid-cols-[8rem_1fr] items-baseline gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-[8rem_1fr] sm:items-baseline sm:gap-4">
             <span className="text-sm text-muted-foreground">作成日</span>
             <span className="text-sm font-medium">
               {new Date(user.created_at).toLocaleDateString("ja-JP", {

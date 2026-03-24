@@ -219,7 +219,7 @@ export function CollectionSolveClient({
               {completedCount}/{problems.length} 完了
             </span>
             {previouslyCompletedCount > 0 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="secondary" className="border border-border text-xs">
                 過去: {previouslyCompletedCount}問解答済み
               </Badge>
             )}
@@ -229,9 +229,9 @@ export function CollectionSolveClient({
 
       {/* Unpurchased warning */}
       {unpurchasedCount > 0 && (
-        <div className="flex items-center gap-2 rounded-md border border-amber-500/20 bg-amber-500/5 px-4 py-3">
-          <AlertCircle className="h-4 w-4 shrink-0 text-amber-500" />
-          <p className="text-sm text-amber-700">
+        <div className="flex items-center gap-2 rounded-md border border-warning/20 bg-warning/5 px-4 py-3">
+          <AlertCircle className="h-4 w-4 shrink-0 text-warning" />
+          <p className="text-sm text-warning">
             {unpurchasedCount}問の未購入の問題セットはスキップされます
           </p>
         </div>
@@ -261,7 +261,7 @@ export function CollectionSolveClient({
                     <p className="truncate font-medium">{problem.title}</p>
                     <div className="mt-1 flex items-center gap-2">
                       {prevCompletion && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge variant="secondary" className="border border-border text-xs">
                           前回: {prevCompletion.score}/{prevCompletion.maxScore}
                         </Badge>
                       )}
@@ -469,7 +469,7 @@ export function CollectionSolveClient({
                             pct >= 80
                               ? "text-primary"
                               : pct >= 50
-                                ? "text-amber-600"
+                                ? "text-warning"
                                 : "text-destructive"
                           )}
                         >

@@ -34,6 +34,22 @@ interface ProblemSetInfo {
   seller_display_name: string | null;
 }
 
+// Difficulty badge with semantic colors
+const DIFFICULTY_STYLES: Record<string, string> = {
+  easy: "bg-primary/5 text-primary border-primary/20",
+  medium: "bg-amber-50 text-amber-700 border-amber-200",
+  hard: "bg-red-50 text-red-700 border-red-200",
+};
+
+function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
+  const style = DIFFICULTY_STYLES[difficulty] ?? "bg-secondary text-secondary-foreground border-border";
+  return (
+    <Badge className={`border text-xs ${style}`}>
+      {DIFFICULTY_LABELS[difficulty]}
+    </Badge>
+  );
+}
+
 export default async function PurchaseSuccessPage({
   searchParams,
 }: {
@@ -154,12 +170,10 @@ export default async function PurchaseSuccessPage({
 
                   {/* Metadata badges */}
                   <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                    <Badge variant="secondary" className="text-xs">
+                    <Badge className="border border-border bg-secondary text-xs text-secondary-foreground">
                       {SUBJECT_LABELS[problemSet.subject as Subject]}
                     </Badge>
-                    <Badge variant="outline" className="text-xs">
-                      {DIFFICULTY_LABELS[problemSet.difficulty as Difficulty]}
-                    </Badge>
+                    <DifficultyBadge difficulty={problemSet.difficulty as Difficulty} />
                     {problemSet.total_points && (
                       <Badge variant="outline" className="text-xs">
                         {problemSet.total_points}点満点

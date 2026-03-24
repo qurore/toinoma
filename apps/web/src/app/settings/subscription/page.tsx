@@ -181,7 +181,7 @@ export default async function SubscriptionSettingsPage(props: {
           </div>
 
           {/* Remaining + renewal */}
-          <div className="grid grid-cols-2 gap-4 border-t border-border pt-4">
+          <div className="grid grid-cols-1 gap-4 border-t border-border pt-4 sm:grid-cols-2">
             <div>
               <p className="text-xs text-muted-foreground">残り回数</p>
               <p className="text-base font-semibold">
@@ -231,16 +231,19 @@ export default async function SubscriptionSettingsPage(props: {
                   <th className="pb-3 pr-4 font-medium text-muted-foreground">
                     機能
                   </th>
-                  <th className="pb-3 pr-4 text-center font-medium">
+                  <th className="whitespace-nowrap pb-3 pr-4 text-center font-medium">
                     フリー
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      ¥0
+                    </span>
                   </th>
-                  <th className="pb-3 pr-4 text-center font-medium">
+                  <th className="whitespace-nowrap pb-3 pr-4 text-center font-medium">
                     ベーシック
                     <span className="block text-xs font-normal text-muted-foreground">
                       ¥500/月
                     </span>
                   </th>
-                  <th className="pb-3 text-center font-medium">
+                  <th className="whitespace-nowrap pb-3 text-center font-medium">
                     プロ
                     <span className="block text-xs font-normal text-muted-foreground">
                       ¥2,000/月
@@ -325,7 +328,7 @@ function FeatureRow({
 }) {
   const renderCell = (value: boolean | string) => {
     if (typeof value === "string") {
-      return <span className="text-sm font-medium">{value}</span>;
+      return <span className="whitespace-nowrap text-sm font-medium">{value}</span>;
     }
     return value ? (
       <Check className="mx-auto h-4 w-4 text-primary" />

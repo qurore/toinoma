@@ -56,7 +56,7 @@ function LazyVideo({ url, title }: { url: string; title: string }) {
         </video>
       ) : (
         <div className="flex aspect-video w-full items-center justify-center rounded-md bg-muted">
-          <Film className="h-10 w-10 text-muted-foreground" />
+          <Film className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
         </div>
       )}
     </div>
@@ -74,7 +74,7 @@ export function VideoPlayer({ videos }: VideoPlayerProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <Film className="h-4 w-4" />
+            <Film className="h-4 w-4" aria-hidden="true" />
             解説動画
           </CardTitle>
         </CardHeader>

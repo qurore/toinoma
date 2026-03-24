@@ -88,7 +88,7 @@ export default async function PayoutsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-success">
+            <p className="text-2xl font-bold text-primary">
               ¥{sellerEarnings.toLocaleString()}
             </p>
           </CardContent>
@@ -100,8 +100,8 @@ export default async function PayoutsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">振込設定</CardTitle>
-              <span className="flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
-                <span className="h-1.5 w-1.5 rounded-full bg-success" />
+              <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
+                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                 接続済み
               </span>
             </div>
@@ -183,7 +183,7 @@ export default async function PayoutsPage() {
                       <td className="py-3 pr-4 text-right">
                         ¥{p.amount_paid.toLocaleString()}
                       </td>
-                      <td className="py-3 text-right font-medium text-success">
+                      <td className="py-3 text-right font-medium text-primary">
                         ¥{Math.round(p.amount_paid * 0.85).toLocaleString()}
                       </td>
                     </tr>

@@ -363,7 +363,7 @@ export function SubmissionHistoryClient({
                         <p className="truncate font-medium">{s.title}</p>
                         <div className="mt-1 flex flex-wrap items-center gap-2">
                           {s.subjectLabel && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="secondary" className="border border-border text-xs">
                               {s.subjectLabel}
                             </Badge>
                           )}
@@ -383,9 +383,9 @@ export function SubmissionHistoryClient({
                             className={cn(
                               "min-w-[3rem] justify-center tabular-nums",
                               s.percentage >= 80
-                                ? "bg-success/10 text-success border-success/30"
+                                ? "bg-primary/10 text-primary border-primary/30"
                                 : s.percentage >= 50
-                                  ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
+                                  ? "bg-warning/10 text-warning border-warning/30"
                                   : ""
                             )}
                             variant={

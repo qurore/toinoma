@@ -10,10 +10,10 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
-  DollarSign,
   TrendingUp,
   Receipt,
   Users,
+  Banknote,
 } from "lucide-react";
 import { RevenueFilters } from "./revenue-filters";
 import type { Metadata } from "next";
@@ -256,7 +256,7 @@ export default async function AdminRevenuePage(props: {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <DollarSign className="h-3.5 w-3.5" />
+              <Banknote className="h-3.5 w-3.5" />
               総売上
             </CardTitle>
           </CardHeader>

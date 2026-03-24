@@ -349,7 +349,7 @@ export default async function AdminDashboardPage() {
         />
         <StatCard
           title="総売上"
-          value={`\xA5${totalRevenue.toLocaleString()}`}
+          value={`¥${totalRevenue.toLocaleString()}`}
           icon={TrendingUp}
           subtitle="累計取引額"
         />
@@ -400,8 +400,7 @@ export default async function AdminDashboardPage() {
           </CardHeader>
           <CardContent>
             <p className="text-3xl font-bold">
-              {"\xA5"}
-              {monthRevenue.toLocaleString()}
+              ¥{monthRevenue.toLocaleString()}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
               {monthPurchaseCount}件の購入
@@ -481,14 +480,14 @@ export default async function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <TrendingUp className="h-4 w-4 text-emerald-600" />
+              <TrendingUp className="h-4 w-4 text-primary" />
               売上推移（週次・直近12週間）
             </CardTitle>
           </CardHeader>
           <CardContent>
             <WeeklyBarChart
               data={revenueGrowthData}
-              barColor="hsl(160, 84%, 39%)"
+              barColor="hsl(var(--primary))"
               label="週次売上推移"
             />
           </CardContent>
@@ -499,7 +498,7 @@ export default async function AdminDashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Flag className="h-4 w-4 text-amber-600" />
+            <Flag className="h-4 w-4 text-primary" />
             最近の報告
           </CardTitle>
           <Button variant="ghost" size="sm" asChild>

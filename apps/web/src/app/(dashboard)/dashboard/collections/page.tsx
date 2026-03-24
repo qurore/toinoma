@@ -93,8 +93,8 @@ export default async function CollectionsPage() {
               <Link key={c.id} href={`/dashboard/collections/${c.id}`}>
                 <Card className="h-full transition-all hover:border-primary/20 hover:shadow-sm">
                   <CardContent className="p-5">
-                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                      <FolderOpen className="h-5 w-5 text-primary" />
+                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                      <FolderOpen className="h-5 w-5 text-muted-foreground" />
                     </div>
                     <h3 className="font-semibold">{c.name}</h3>
                     {c.description && (

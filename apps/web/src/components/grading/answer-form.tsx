@@ -345,9 +345,9 @@ export function AnswerForm({
         disabled={isSubmitting}
       >
         {isSubmitting ? (
-          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
         ) : (
-          <Send className="mr-2 h-4 w-4" />
+          <Send className="mr-2 h-4 w-4" aria-hidden="true" />
         )}
         解答を提出してAI採点
       </Button>
@@ -360,7 +360,7 @@ export function AnswerForm({
           className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background shadow-md transition-all hover:bg-muted lg:bottom-8 lg:right-8"
           aria-label="トップに戻る"
         >
-          <ChevronUp className="h-5 w-5" />
+          <ChevronUp className="h-5 w-5" aria-hidden="true" />
         </button>
       )}
     </div>

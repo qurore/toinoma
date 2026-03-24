@@ -6,12 +6,12 @@ import { NAV_ITEMS } from "./sidebar-nav";
 import { cn } from "@/lib/utils";
 
 // Mobile horizontal tab bar — shown below AppNavbar on small screens (md:hidden).
-// Fixed at top-14 (below h-14 AppNavbar), height h-10, z-index below AppNavbar (z-40).
+// Fixed at top-16 (below h-16 AppNavbar), height h-10, z-index below AppNavbar (z-40).
 export function MobileDashboardNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed left-0 right-0 top-14 z-40 h-10 border-b border-border bg-card md:hidden">
+    <nav className="fixed left-0 right-0 top-16 z-40 h-10 border-b border-border bg-card md:hidden">
       <ul className="flex h-full overflow-x-auto">
         {NAV_ITEMS.map((item) => {
           const isActive = item.exact

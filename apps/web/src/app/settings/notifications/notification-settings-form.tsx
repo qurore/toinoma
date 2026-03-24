@@ -136,15 +136,15 @@ export function NotificationSettingsForm({
         <CardContent>
           <div className="space-y-1">
             {/* Header row */}
-            <div className="flex items-center gap-4 border-b pb-3 text-xs font-medium text-muted-foreground">
+            <div className="flex items-center gap-2 border-b pb-3 text-xs font-medium text-muted-foreground sm:gap-4">
               <span className="flex-1">カテゴリ</span>
-              <span className="flex w-20 items-center justify-center gap-1">
-                <Mail className="h-3.5 w-3.5" />
-                メール
+              <span className="flex w-14 items-center justify-center gap-1 sm:w-20">
+                <Mail className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden sm:inline">メール</span>
               </span>
-              <span className="flex w-20 items-center justify-center gap-1">
-                <Bell className="h-3.5 w-3.5" />
-                アプリ
+              <span className="flex w-14 items-center justify-center gap-1 sm:w-20">
+                <Bell className="h-3.5 w-3.5 shrink-0" />
+                <span className="hidden sm:inline">アプリ</span>
               </span>
             </div>
 
@@ -152,17 +152,17 @@ export function NotificationSettingsForm({
             {CATEGORIES.map((cat) => (
               <div
                 key={cat.id}
-                className="flex items-center gap-4 border-b border-border/50 py-4 last:border-b-0"
+                className="flex items-center gap-2 border-b border-border/50 py-4 last:border-b-0 sm:gap-4"
               >
                 <div className="min-w-0 flex-1">
                   <Label className="text-sm font-medium">{cat.label}</Label>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
+                  <p className="mt-0.5 hidden text-xs text-muted-foreground sm:block">
                     {cat.description}
                   </p>
                 </div>
 
                 {/* Email toggle */}
-                <div className="flex w-20 items-center justify-center">
+                <div className="flex w-14 items-center justify-center sm:w-20">
                   <Switch
                     checked={prefs[cat.emailKey]}
                     onCheckedChange={(value) =>
@@ -173,7 +173,7 @@ export function NotificationSettingsForm({
                 </div>
 
                 {/* In-app toggle */}
-                <div className="flex w-20 items-center justify-center">
+                <div className="flex w-14 items-center justify-center sm:w-20">
                   {cat.inappKey ? (
                     <Switch
                       checked={prefs[cat.inappKey]}
@@ -193,13 +193,17 @@ export function NotificationSettingsForm({
       </Card>
 
       {/* Save action bar */}
-      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-4">
+      <div className="flex flex-col gap-3 rounded-lg border border-border bg-muted/30 p-4 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-sm text-muted-foreground">
           {hasChanges
             ? "未保存の変更があります"
             : "すべての変更は保存済みです"}
         </p>
-        <Button onClick={handleSave} disabled={isPending || !hasChanges}>
+        <Button
+          className="w-full shrink-0 sm:w-auto"
+          onClick={handleSave}
+          disabled={isPending || !hasChanges}
+        >
           {isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
           ) : (

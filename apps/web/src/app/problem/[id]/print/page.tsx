@@ -109,7 +109,7 @@ export default async function PrintPage({
             mode={mode}
             date={formatDate(new Date())}
           />
-          <p style={{ color: "#999", textAlign: "center", marginTop: "40pt" }}>
+          <p className="mt-10 text-center text-muted-foreground">
             この問題セットには問題が登録されていません
           </p>
         </div>
@@ -194,14 +194,7 @@ export default async function PrintPage({
             {/* Section title bar */}
             <div className="print-section-title">
               {sectionLabel}
-              <span
-                style={{
-                  fontWeight: 400,
-                  fontSize: "10pt",
-                  marginLeft: "8pt",
-                  color: "#555",
-                }}
-              >
+              <span className="ml-2 text-sm font-normal text-muted-foreground">
                 ({sectionPoints}点)
               </span>
             </div>

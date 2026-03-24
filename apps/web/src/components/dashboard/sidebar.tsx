@@ -13,7 +13,7 @@ export function DashboardSidebar({
   gradingsUsed,
 }: DashboardSidebarProps) {
   return (
-    <aside className="fixed bottom-0 left-0 top-14 z-40 hidden w-60 flex-col border-r border-border bg-card md:flex">
+    <aside className="fixed bottom-0 left-0 top-16 z-40 hidden w-60 flex-col border-r border-border bg-card md:flex">
       <SidebarNav
         subscriptionTier={subscriptionTier}
         gradingsUsed={gradingsUsed}

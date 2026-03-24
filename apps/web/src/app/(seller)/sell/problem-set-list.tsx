@@ -270,13 +270,13 @@ export function ProblemSetList({ sets }: ProblemSetListProps) {
 function StatusBadge({ status }: { status: string }) {
   if (status === "published") {
     return (
-      <Badge className="border-transparent bg-success/15 text-success">
+      <Badge className="border-transparent bg-primary/10 text-primary">
         公開中
       </Badge>
     );
   }
   return (
-    <Badge className="border-transparent bg-amber-500/15 text-amber-600">
+    <Badge variant="secondary" className="border-transparent">
       下書き
     </Badge>
   );

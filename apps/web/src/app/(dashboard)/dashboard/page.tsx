@@ -12,10 +12,9 @@ import {
   Flame,
   Search,
   ArrowRight,
-  PlayCircle,
   ChevronRight,
-  Sparkles,
 } from "lucide-react";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import {
   ProblemSetCard,
   type ProblemSetCardData,
@@ -175,6 +174,12 @@ export default async function DashboardPage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "マイページ", href: "/dashboard" },
+        ]}
+      />
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           {displayName
@@ -190,8 +195,8 @@ export default async function DashboardPage() {
       {isNewUser ? (
         <Card className="mb-8 border-dashed">
           <CardContent className="flex flex-col items-center py-14 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-              <Search className="h-7 w-7 text-primary" />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+              <Search className="h-7 w-7 text-muted-foreground" />
             </div>
             <h2 className="mb-2 text-lg font-semibold">
               問の間へようこそ!
@@ -216,8 +221,8 @@ export default async function DashboardPage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   購入済みセット
                 </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                  <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                  <BookOpen className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 </div>
               </CardHeader>
               <CardContent>
@@ -231,8 +236,8 @@ export default async function DashboardPage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   総解答回数
                 </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-info/10">
-                  <History className="h-4 w-4 text-info" aria-hidden="true" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                  <History className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 </div>
               </CardHeader>
               <CardContent>
@@ -246,8 +251,8 @@ export default async function DashboardPage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   平均正答率
                 </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10">
-                  <Target className="h-4 w-4 text-warning" aria-hidden="true" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                  <Target className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 </div>
               </CardHeader>
               <CardContent>
@@ -265,8 +270,8 @@ export default async function DashboardPage() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   連続学習日数
                 </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                  <Flame className="h-4 w-4 text-primary" aria-hidden="true" />
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                  <Flame className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                 </div>
               </CardHeader>
               <CardContent>
@@ -284,8 +289,7 @@ export default async function DashboardPage() {
           {/* Continue studying section */}
           {continueItems.length > 0 && (
             <div className="mb-8 space-y-3">
-              <h2 className="flex items-center gap-2 text-base font-semibold">
-                <PlayCircle className="h-5 w-5 text-primary" />
+              <h2 className="text-base font-semibold">
                 学習を続ける
               </h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -307,7 +311,7 @@ export default async function DashboardPage() {
                             {ps.title}
                           </p>
                           <div className="mt-1.5 flex items-center gap-2">
-                            <Badge variant="outline" className="text-xs">
+                            <Badge variant="secondary" className="border border-border text-xs">
                               {SUBJECT_LABELS[ps.subject as Subject]}
                             </Badge>
                             <Progress
@@ -341,8 +345,7 @@ export default async function DashboardPage() {
       {recommendations.length > 0 && (
         <div className="mb-8 space-y-3">
           <div className="flex items-center justify-between">
-            <h2 className="flex items-center gap-2 text-base font-semibold">
-              <Sparkles className="h-5 w-5 text-primary" />
+            <h2 className="text-base font-semibold">
               おすすめの問題セット
             </h2>
             <Button variant="ghost" size="sm" asChild>
@@ -409,7 +412,7 @@ export default async function DashboardPage() {
                       </span>
                       <div className="ml-2 flex shrink-0 items-center gap-1.5">
                         {ps?.subject && (
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="secondary" className="border border-border text-xs">
                             {SUBJECT_LABELS[ps.subject as Subject]}
                           </Badge>
                         )}

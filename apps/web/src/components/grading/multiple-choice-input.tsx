@@ -221,7 +221,7 @@ export function MultipleChoiceInput({
             onClick={handleClear}
             className="h-7 px-2 text-xs text-muted-foreground"
           >
-            <RotateCcw className="mr-1 h-3 w-3" />
+            <RotateCcw className="mr-1 h-3 w-3" aria-hidden="true" />
             選択解除
           </Button>
         )}

@@ -55,12 +55,12 @@ const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
 };
 
 const TYPE_COLORS: Record<NotificationType, string> = {
-  purchase: "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30",
-  grading: "text-blue-600 bg-blue-50 dark:bg-blue-950/30",
-  review: "text-amber-600 bg-amber-50 dark:bg-amber-950/30",
-  announcement: "text-purple-600 bg-purple-50 dark:bg-purple-950/30",
-  subscription: "text-rose-600 bg-rose-50 dark:bg-rose-950/30",
-  system: "text-slate-600 bg-slate-50 dark:bg-slate-950/30",
+  purchase: "text-muted-foreground bg-muted",
+  grading: "text-muted-foreground bg-muted",
+  review: "text-muted-foreground bg-muted",
+  announcement: "text-muted-foreground bg-muted",
+  subscription: "text-muted-foreground bg-muted",
+  system: "text-muted-foreground bg-muted",
 };
 
 const FILTER_OPTIONS: Array<{ value: TypeFilter; label: string }> = [
@@ -251,8 +251,8 @@ export function NotificationList({
                         {n.title}
                       </p>
                       <Badge
-                        variant="outline"
-                        className="shrink-0 text-xs"
+                        variant="secondary"
+                        className="shrink-0 border border-border text-xs"
                       >
                         {TYPE_LABELS[n.type]}
                       </Badge>

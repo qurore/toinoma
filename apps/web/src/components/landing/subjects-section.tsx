@@ -11,73 +11,20 @@ import {
   Map,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { SUBJECTS, SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject } from "@toinoma/shared/types";
 
-// Per-subject visual configuration: icon, gradient, and border accent
-const SUBJECT_CONFIG: Record<
-  Subject,
-  { icon: LucideIcon; gradient: string; border: string }
-> = {
-  math: {
-    icon: Sigma,
-    gradient: "from-blue-500/10 to-indigo-500/10 group-hover:from-blue-500/20 group-hover:to-indigo-500/20",
-    border: "group-hover:border-blue-300",
-  },
-  english: {
-    icon: Languages,
-    gradient: "from-emerald-500/10 to-teal-500/10 group-hover:from-emerald-500/20 group-hover:to-teal-500/20",
-    border: "group-hover:border-emerald-300",
-  },
-  japanese: {
-    icon: PenLine,
-    gradient: "from-rose-500/10 to-pink-500/10 group-hover:from-rose-500/20 group-hover:to-pink-500/20",
-    border: "group-hover:border-rose-300",
-  },
-  physics: {
-    icon: Atom,
-    gradient: "from-amber-500/10 to-orange-500/10 group-hover:from-amber-500/20 group-hover:to-orange-500/20",
-    border: "group-hover:border-amber-300",
-  },
-  chemistry: {
-    icon: FlaskConical,
-    gradient: "from-violet-500/10 to-purple-500/10 group-hover:from-violet-500/20 group-hover:to-purple-500/20",
-    border: "group-hover:border-violet-300",
-  },
-  biology: {
-    icon: Dna,
-    gradient: "from-lime-500/10 to-green-500/10 group-hover:from-lime-500/20 group-hover:to-green-500/20",
-    border: "group-hover:border-lime-300",
-  },
-  japanese_history: {
-    icon: Landmark,
-    gradient: "from-red-500/10 to-rose-500/10 group-hover:from-red-500/20 group-hover:to-rose-500/20",
-    border: "group-hover:border-red-300",
-  },
-  world_history: {
-    icon: Globe,
-    gradient: "from-cyan-500/10 to-sky-500/10 group-hover:from-cyan-500/20 group-hover:to-sky-500/20",
-    border: "group-hover:border-cyan-300",
-  },
-  geography: {
-    icon: Map,
-    gradient: "from-teal-500/10 to-emerald-500/10 group-hover:from-teal-500/20 group-hover:to-emerald-500/20",
-    border: "group-hover:border-teal-300",
-  },
-};
-
-// Icon color per subject for the icon itself
-const SUBJECT_ICON_COLORS: Record<Subject, string> = {
-  math: "text-blue-600",
-  english: "text-emerald-600",
-  japanese: "text-rose-600",
-  physics: "text-amber-600",
-  chemistry: "text-violet-600",
-  biology: "text-lime-600",
-  japanese_history: "text-red-600",
-  world_history: "text-cyan-600",
-  geography: "text-teal-600",
+// Per-subject icon configuration — monochromatic design, differentiated by icon shape
+const SUBJECT_ICONS: Record<Subject, LucideIcon> = {
+  math: Sigma,
+  english: Languages,
+  japanese: PenLine,
+  physics: Atom,
+  chemistry: FlaskConical,
+  biology: Dna,
+  japanese_history: Landmark,
+  world_history: Globe,
+  geography: Map,
 };
 
 export function SubjectsSection() {
@@ -100,8 +47,7 @@ export function SubjectsSection() {
         {/* Subject cards grid */}
         <div className="mx-auto grid max-w-4xl grid-cols-3 gap-3 sm:gap-4 lg:grid-cols-9 lg:max-w-none">
           {SUBJECTS.map((subject, index) => {
-            const config = SUBJECT_CONFIG[subject];
-            const IconComponent = config.icon;
+            const IconComponent = SUBJECT_ICONS[subject];
 
             return (
               <Link
@@ -110,25 +56,10 @@ export function SubjectsSection() {
                 className="group block animate-fade-up opacity-0"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div
-                  className={cn(
-                    "flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-lg sm:p-5",
-                    config.border
-                  )}
-                >
-                  {/* Icon with gradient background */}
-                  <div
-                    className={cn(
-                      "flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br transition-all duration-300 group-hover:scale-110 group-hover:shadow-md",
-                      config.gradient
-                    )}
-                  >
-                    <IconComponent
-                      className={cn("h-5 w-5 transition-transform duration-300", SUBJECT_ICON_COLORS[subject])}
-                    />
+                <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md sm:p-5">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 transition-all duration-300 group-hover:bg-primary/15 group-hover:scale-105">
+                    <IconComponent className="h-5 w-5 text-primary transition-transform duration-300" />
                   </div>
-
-                  {/* Label */}
                   <span className="text-xs font-semibold transition-colors group-hover:text-primary">
                     {SUBJECT_LABELS[subject]}
                   </span>

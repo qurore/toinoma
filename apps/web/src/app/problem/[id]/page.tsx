@@ -31,6 +31,7 @@ import { PdfDownloadButton } from "@/components/solving/pdf-download-button";
 import { ReportDialog } from "@/components/marketplace/report-dialog";
 import { ProblemSetCard } from "@/components/marketplace/problem-set-card";
 import { ProblemDetailTabs } from "@/components/marketplace/problem-detail-tabs";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { trackView } from "@/lib/recently-viewed";
 import {
   generateProblemSetMetadata,
@@ -265,40 +266,15 @@ export default async function ProblemDetailPage({
       <AppNavbar {...navbarData} />
       <main id="main-content" className="container mx-auto max-w-7xl px-4 pb-12 pt-16">
         {/* Breadcrumb navigation */}
-        <nav aria-label="パンくずリスト" className="mb-6">
-          <ol className="flex items-center gap-1 text-sm text-muted-foreground">
-            <li>
-              <Link href="/" className="transition-colors hover:text-foreground">
-                ホーム
-              </Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </li>
-            <li>
-              <Link href="/explore" className="transition-colors hover:text-foreground">
-                問題を探す
-              </Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </li>
-            <li>
-              <Link
-                href={`/explore/${ps.subject}`}
-                className="transition-colors hover:text-foreground"
-              >
-                {SUBJECT_LABELS[ps.subject as Subject]}
-              </Link>
-            </li>
-            <li aria-hidden="true">
-              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
-            </li>
-            <li className="max-w-[200px] truncate text-foreground" aria-current="page">
-              {ps.title}
-            </li>
-          </ol>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "問題を探す", href: "/explore" },
+            { label: SUBJECT_LABELS[ps.subject as Subject], href: `/explore?subject=${ps.subject}` },
+            { label: ps.title },
+          ]}
+          className="mb-6"
+        />
 
         {/* 2-column layout: main content + sidebar */}
         <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
@@ -315,10 +291,19 @@ export default async function ProblemDetailPage({
 
               {/* Badge row: subject + difficulty + university */}
               <div className="mt-4 flex flex-wrap items-center gap-2">
-                <Badge variant="outline">
+                <Badge className="border border-border bg-secondary text-secondary-foreground">
                   {SUBJECT_LABELS[ps.subject as Subject]}
                 </Badge>
-                <Badge variant="outline">
+                <Badge
+                  className={cn(
+                    "border font-medium",
+                    ps.difficulty === "easy"
+                      ? "border-primary-200 bg-primary-50 text-primary-700"
+                      : ps.difficulty === "medium"
+                        ? "border-amber-200 bg-amber-50 text-amber-700"
+                        : "border-red-200 bg-red-50 text-red-700"
+                  )}
+                >
                   {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
                 </Badge>
                 {ps.university && (

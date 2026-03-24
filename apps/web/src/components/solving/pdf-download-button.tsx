@@ -27,21 +27,21 @@ export function PdfDownloadButton({ problemSetId }: PdfDownloadButtonProps) {
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="outline" size="sm">
-          <Printer className="mr-1.5 h-3.5 w-3.5" />
+          <Printer className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           PDF
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => handlePrint("problems")}>
-          <FileText className="mr-2 h-4 w-4" />
+          <FileText className="mr-2 h-4 w-4" aria-hidden="true" />
           問題のみ
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handlePrint("answers")}>
-          <FileCheck className="mr-2 h-4 w-4" />
+          <FileCheck className="mr-2 h-4 w-4" aria-hidden="true" />
           模範解答のみ
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => handlePrint("combined")}>
-          <Files className="mr-2 h-4 w-4" />
+          <Files className="mr-2 h-4 w-4" aria-hidden="true" />
           問題 + 模範解答
         </DropdownMenuItem>
       </DropdownMenuContent>

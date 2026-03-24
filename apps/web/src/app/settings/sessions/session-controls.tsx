@@ -79,7 +79,7 @@ export function SessionControls() {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Sign out other sessions */}
-          <div className="flex items-start justify-between gap-4 rounded-md border border-border p-4">
+          <div className="flex flex-col gap-3 rounded-md border border-border p-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="flex items-start gap-3">
               <Monitor className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
               <div>
@@ -94,6 +94,7 @@ export function SessionControls() {
             <Button
               variant="outline"
               size="sm"
+              className="w-full shrink-0 sm:w-auto"
               onClick={() => setConfirmDialog("others")}
               disabled={signingOutOthers}
             >
@@ -107,7 +108,7 @@ export function SessionControls() {
           </div>
 
           {/* Sign out everywhere */}
-          <div className="flex items-start justify-between gap-4 rounded-md border border-destructive/20 bg-destructive/5 p-4">
+          <div className="flex flex-col gap-3 rounded-md border border-destructive/20 bg-destructive/5 p-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
             <div className="flex items-start gap-3">
               <LogOut className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
               <div>
@@ -122,6 +123,7 @@ export function SessionControls() {
             <Button
               variant="destructive"
               size="sm"
+              className="w-full shrink-0 sm:w-auto"
               onClick={() => setConfirmDialog("all")}
               disabled={signingOutAll}
             >

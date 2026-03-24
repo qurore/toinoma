@@ -39,7 +39,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
     id: "buyer",
     title: "購入者向け",
     icon: ShoppingCart,
-    color: "text-blue-600",
+    color: "text-primary",
     items: [
       {
         id: "b1",
@@ -71,7 +71,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
     id: "seller",
     title: "出品者向け",
     icon: Store,
-    color: "text-emerald-600",
+    color: "text-primary",
     items: [
       {
         id: "s1",
@@ -103,7 +103,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
     id: "subscription",
     title: "サブスクリプション",
     icon: CreditCard,
-    color: "text-violet-600",
+    color: "text-primary",
     items: [
       {
         id: "sub1",
@@ -135,7 +135,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
     id: "grading",
     title: "AI採点",
     icon: Brain,
-    color: "text-amber-600",
+    color: "text-primary",
     items: [
       {
         id: "g1",
@@ -161,7 +161,7 @@ const FAQ_CATEGORIES: FaqCategory[] = [
     id: "account",
     title: "アカウント",
     icon: UserCog,
-    color: "text-rose-600",
+    color: "text-primary",
     items: [
       {
         id: "a1",

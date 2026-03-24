@@ -43,27 +43,23 @@ function getSellerTier(publishedCount: number): SellerTier {
 
 const TIER_CONFIG: Record<
   SellerTier,
-  { label: string; color: string; icon: string }
+  { label: string; color: string }
 > = {
   bronze: {
     label: "ブロンズ",
-    color: "bg-orange-100 text-orange-700 border-orange-200",
-    icon: "\uD83E\uDD49",
+    color: "border border-border bg-secondary text-secondary-foreground",
   },
   silver: {
     label: "シルバー",
-    color: "bg-gray-100 text-gray-700 border-gray-300",
-    icon: "\uD83E\uDD48",
+    color: "border border-border bg-secondary text-secondary-foreground",
   },
   gold: {
     label: "ゴールド",
-    color: "bg-amber-100 text-amber-700 border-amber-200",
-    icon: "\uD83E\uDD47",
+    color: "border border-border bg-secondary text-secondary-foreground",
   },
   platinum: {
     label: "プラチナ",
-    color: "bg-violet-100 text-violet-700 border-violet-200",
-    icon: "\uD83D\uDC8E",
+    color: "border border-primary/30 bg-primary/10 text-primary",
   },
 };
 
@@ -298,7 +294,7 @@ export default async function SellerProfilePage({
                   <Badge
                     className={`gap-1 border text-xs font-medium ${tierConfig.color}`}
                   >
-                    <span>{tierConfig.icon}</span>
+                    <Award className="h-3 w-3" />
                     {tierConfig.label}
                   </Badge>
                 </div>
@@ -349,7 +345,7 @@ export default async function SellerProfilePage({
                 <p className="text-xs text-muted-foreground">購入者</p>
               </div>
               <div className="flex flex-col items-center rounded-lg bg-muted/50 p-4">
-                <Star className="mb-1.5 h-5 w-5 text-amber-400" />
+                <Star className="mb-1.5 h-5 w-5 text-primary" />
                 <p className="text-2xl font-bold">
                   {totalReviews > 0 ? averageRating.toFixed(1) : "-"}
                 </p>
@@ -401,7 +397,7 @@ export default async function SellerProfilePage({
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-base">
-                  <Award className="h-5 w-5 text-amber-400" />
+                  <Award className="h-5 w-5 text-primary" />
                   レビューサマリー
                 </CardTitle>
               </CardHeader>

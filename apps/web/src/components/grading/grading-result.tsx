@@ -141,7 +141,7 @@ function RubricMatchIndicator({
             : "border-destructive/20 bg-destructive/5"
       )}
     >
-      <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", iconClass)} />
+      <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", iconClass)} aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-medium">{match.element}</p>
@@ -227,11 +227,11 @@ function SectionResult({
                         )}
                       >
                         {qTier === "high" ? (
-                          <CheckCircle2 className="h-3.5 w-3.5" />
+                          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                         ) : qTier === "low" ? (
-                          <XCircle className="h-3.5 w-3.5" />
+                          <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
                         ) : (
-                          <MinusCircle className="h-3.5 w-3.5" />
+                          <MinusCircle className="h-3.5 w-3.5" aria-hidden="true" />
                         )}
                       </span>
                       <span className="text-sm font-medium">
@@ -345,9 +345,9 @@ function ShareResultButton({
   return (
     <Button variant="outline" size="sm" onClick={handleShare}>
       {copied ? (
-        <Check className="mr-1.5 h-3.5 w-3.5" />
+        <Check className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
       ) : (
-        <Share2 className="mr-1.5 h-3.5 w-3.5" />
+        <Share2 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
       )}
       結果を共有
     </Button>
@@ -469,9 +469,9 @@ export function GradingResultDisplay({
       </Card>
 
       {/* AI grading disclaimer banner */}
-      <div className="flex items-center gap-2 rounded-lg border border-amber-300/50 bg-amber-50/50 dark:bg-amber-950/20 px-4 py-3">
-        <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
-        <p className="text-xs leading-relaxed text-amber-800">
+      <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-4 py-3">
+        <AlertTriangle className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
+        <p className="text-xs leading-relaxed text-muted-foreground">
           AI採点は参考スコアです。最終判断はご自身で行ってください。ルーブリックに基づく自動採点のため、実際の採点と異なる場合があります。
         </p>
       </div>
@@ -480,7 +480,7 @@ export function GradingResultDisplay({
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-base">
-            <AlertCircle className="h-4 w-4 text-primary" />
+            <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
             総合フィードバック
           </CardTitle>
         </CardHeader>
@@ -507,13 +507,13 @@ export function GradingResultDisplay({
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button className="flex-1" asChild>
             <Link href={`/problem/${problemSetId}/solve`}>
-              <RotateCcw className="mr-1.5 h-4 w-4" />
+              <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
               もう一度解く
             </Link>
           </Button>
           <Button variant="outline" className="flex-1" asChild>
             <Link href={`/problem/${problemSetId}/history`}>
-              <Eye className="mr-1.5 h-4 w-4" />
+              <Eye className="mr-1.5 h-4 w-4" aria-hidden="true" />
               解答を確認
             </Link>
           </Button>

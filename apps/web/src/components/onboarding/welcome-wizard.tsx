@@ -28,15 +28,15 @@ import { saveOnboardingProfile } from "@/app/welcome/actions";
 const TOTAL_STEPS = 3;
 
 const SUBJECT_ICONS: Record<Subject, string> = {
-  math: "\u2211",
+  math: "\u03A3",
   english: "Aa",
   japanese: "\u3042",
-  physics: "\u26A1",
+  physics: "\u2699",
   chemistry: "\u2697",
-  biology: "\uD83E\uDDEC",
+  biology: "\u2618",
   japanese_history: "\u26E9",
-  world_history: "\uD83C\uDF0D",
-  geography: "\uD83D\uDDFA",
+  world_history: "\u2605",
+  geography: "\u25CE",
 };
 
 const STUDY_GOALS = [
@@ -157,7 +157,7 @@ function SubjectStep({
         </p>
       </div>
 
-      <div className="mx-auto grid max-w-md grid-cols-3 gap-3">
+      <div className="mx-auto grid max-w-md grid-cols-2 gap-3 sm:grid-cols-3">
         {subjects.map(([key, label]) => {
           const selected = selectedSubjects.has(key);
           return (
@@ -165,6 +165,7 @@ function SubjectStep({
               key={key}
               type="button"
               onClick={() => toggleSubject(key)}
+              aria-pressed={selected}
               className={cn(
                 "group relative flex flex-col items-center gap-2 rounded-xl border-2 p-4 transition-all duration-200",
                 selected
@@ -217,11 +218,13 @@ function StudyGoalStep({
         </p>
       </div>
 
-      <div className="mx-auto max-w-sm space-y-2">
+      <div className="mx-auto max-w-sm space-y-2" role="radiogroup" aria-label="学習目的">
         {STUDY_GOALS.map((goal) => (
           <button
             key={goal.value}
             type="button"
+            role="radio"
+            aria-checked={selectedGoal === goal.value}
             onClick={() => setSelectedGoal(goal.value)}
             className={cn(
               "flex w-full items-center gap-3 rounded-xl border-2 px-4 py-3.5 text-left transition-all duration-200",
@@ -276,7 +279,7 @@ function CelebrationScreen() {
       </div>
       <div>
         <h2 className="text-2xl font-bold tracking-tight">
-          Toinomaへようこそ!
+          Toinomaへようこそ
         </h2>
         <p className="mt-2 text-muted-foreground">
           セットアップが完了しました。さっそく問題を探してみましょう。

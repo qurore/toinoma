@@ -75,7 +75,7 @@ function BlankInput({
         />
       </div>
       {widthHint && (
-        <p className="text-[10px] text-amber-600">
+        <p className="text-[10px] text-warning">
           {widthHint}
         </p>
       )}
@@ -144,7 +144,7 @@ export function FillInBlankInput({
         {/* Width normalization hint */}
         <div className="min-h-[1rem]">
           {widthHint && (
-            <p className="text-[10px] text-amber-600">{widthHint}</p>
+            <p className="text-[10px] text-warning">{widthHint}</p>
           )}
         </div>
       </div>

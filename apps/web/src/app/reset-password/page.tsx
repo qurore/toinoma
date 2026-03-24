@@ -139,10 +139,12 @@ export default function ResetPasswordPage() {
                 autoComplete="new-password"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="h-12 w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
+              ) : (
+                <KeyRound className="mr-2 h-4 w-4" />
+              )}
               パスワードを更新
             </Button>
           </form>

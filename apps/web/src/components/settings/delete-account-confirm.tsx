@@ -52,7 +52,7 @@ export function DeleteAccountConfirm() {
 
   return (
     <>
-      <div className="mt-4 space-y-4 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
+      <div className="mt-4 space-y-4 rounded-lg border-2 border-destructive/30 bg-destructive/5 p-4">
         <div className="flex items-start gap-2 text-sm text-destructive">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <p>
@@ -75,6 +75,7 @@ export function DeleteAccountConfirm() {
             placeholder={`「${CONFIRM_PHRASE}」と入力`}
             className="border-destructive/30 focus-visible:ring-destructive/30"
             autoComplete="off"
+            disabled={isDeleting}
           />
         </div>
 
@@ -82,7 +83,7 @@ export function DeleteAccountConfirm() {
           variant="destructive"
           onClick={() => setShowFinalDialog(true)}
           disabled={!canDelete || isDeleting}
-          className="w-full"
+          className="h-12 w-full"
         >
           {isDeleting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />

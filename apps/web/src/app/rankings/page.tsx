@@ -28,21 +28,8 @@ const RANK_STYLES: Record<number, string> = {
   3: "bg-orange-100 text-orange-600 border-orange-300 font-bold",
 };
 
-// Badge color maps (consistent with explore page ProblemSetCard)
-const SUBJECT_BADGE_COLORS: Record<string, string> = {
-  math: "bg-blue-100 text-blue-700 border-blue-200",
-  english: "bg-emerald-100 text-emerald-700 border-emerald-200",
-  japanese: "bg-rose-100 text-rose-700 border-rose-200",
-  physics: "bg-amber-100 text-amber-700 border-amber-200",
-  chemistry: "bg-violet-100 text-violet-700 border-violet-200",
-  biology: "bg-lime-100 text-lime-700 border-lime-200",
-  japanese_history: "bg-red-100 text-red-700 border-red-200",
-  world_history: "bg-cyan-100 text-cyan-700 border-cyan-200",
-  geography: "bg-teal-100 text-teal-700 border-teal-200",
-};
-
 const DIFFICULTY_COLORS: Record<string, string> = {
-  easy: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  easy: "bg-primary-50 text-primary-700 border-primary-200",
   medium: "bg-amber-50 text-amber-700 border-amber-200",
   hard: "bg-red-50 text-red-700 border-red-200",
 };
@@ -86,9 +73,7 @@ function RankingCard({ ps, rank }: { ps: RankedSet; rank: number }) {
             </p>
             <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
               <Badge
-                className={`border text-[10px] font-medium sm:text-[11px] ${
-                  SUBJECT_BADGE_COLORS[ps.subject] ?? ""
-                }`}
+                className="border border-border bg-secondary text-[10px] font-medium text-secondary-foreground sm:text-[11px]"
               >
                 {SUBJECT_LABELS[ps.subject as Subject]}
               </Badge>
@@ -224,7 +209,7 @@ export default async function RankingsPage({
   const enriched: RankedSet[] = sets.map((s) => ({
     ...s,
     purchaseCount: purchaseCounts[s.id] || 0,
-    sellerName: sellerMap.get(s.seller_id) ?? "\u2014",
+    sellerName: sellerMap.get(s.seller_id) ?? "—",
     avgRating: reviewAgg[s.id]
       ? reviewAgg[s.id].sum / reviewAgg[s.id].count
       : null,

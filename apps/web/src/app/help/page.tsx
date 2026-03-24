@@ -28,8 +28,6 @@ const HELP_CATEGORIES = [
   {
     id: "buyer",
     icon: ShoppingCart,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
     title: "購入者向け",
     description: "問題セットの探し方・購入・解答方法について",
     href: "/help/faq#buyer",
@@ -42,8 +40,6 @@ const HELP_CATEGORIES = [
   {
     id: "seller",
     icon: Store,
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-50",
     title: "出品者向け",
     description: "出品方法・ルブリック作成・収益について",
     href: "/help/faq#seller",
@@ -56,8 +52,6 @@ const HELP_CATEGORIES = [
   {
     id: "subscription",
     icon: CreditCard,
-    color: "text-violet-600",
-    bgColor: "bg-violet-50",
     title: "サブスクリプション",
     description: "プランの選び方・変更・解約について",
     href: "/help/faq#subscription",
@@ -70,8 +64,6 @@ const HELP_CATEGORIES = [
   {
     id: "grading",
     icon: Brain,
-    color: "text-amber-600",
-    bgColor: "bg-amber-50",
     title: "AI採点",
     description: "AI採点の仕組み・精度・対象科目について",
     href: "/help/faq#grading",
@@ -84,8 +76,6 @@ const HELP_CATEGORIES = [
   {
     id: "account",
     icon: UserCog,
-    color: "text-rose-600",
-    bgColor: "bg-rose-50",
     title: "アカウント",
     description: "アカウント設定・プロフィール・退会について",
     href: "/help/faq#account",
@@ -149,10 +139,8 @@ export default function HelpPage() {
                 <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                   <CardContent className="p-5">
                     <div className="mb-3 flex items-center gap-3">
-                      <div
-                        className={`flex h-10 w-10 items-center justify-center rounded-lg ${category.bgColor}`}
-                      >
-                        <Icon className={`h-5 w-5 ${category.color}`} />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                        <Icon className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1">
                         <h2 className="font-semibold group-hover:text-primary">

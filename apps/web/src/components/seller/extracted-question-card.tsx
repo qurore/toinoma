@@ -165,7 +165,7 @@ export function ExtractedQuestionCard({
               {hasEdits && (
                 <Badge
                   variant="outline"
-                  className="text-xs text-blue-600 bg-blue-50 border-blue-200"
+                  className="text-xs text-primary bg-primary-50 border-primary-200"
                 >
                   <Pencil className="mr-1 h-3 w-3" />
                   編集済み

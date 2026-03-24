@@ -17,7 +17,7 @@ import {
 } from "@/components/solving/score-comparison";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
-import { BarChart3, Search } from "lucide-react";
+import { BarChart3, Search, BookOpen, Target, Flame } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -217,7 +217,12 @@ export default async function DashboardAnalyticsPage() {
           { label: "学習分析", href: "/dashboard/analytics" },
         ]}
       />
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">学習分析</h1>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">学習分析</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          科目別の正答率やスコア推移を確認できます
+        </p>
+      </div>
 
       {totalAttempts < 3 ? (
         <Card className="border-dashed">
@@ -247,43 +252,58 @@ export default async function DashboardAnalyticsPage() {
           {/* Stats cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   総回答回数
                 </CardTitle>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                  <BookOpen className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{totalAttempts}</p>
+                <p className="text-3xl font-bold tabular-nums">{totalAttempts}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   平均正答率
                 </CardTitle>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                  <Target className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{overallAverage}%</p>
+                <p className="text-3xl font-bold tabular-nums">{overallAverage}%</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   学習科目数
                 </CardTitle>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                  <BarChart3 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{subjectAverages.length}</p>
+                <p className="text-3xl font-bold tabular-nums">{subjectAverages.length}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="pb-2">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   連続学習日数
                 </CardTitle>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                  <Flame className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{currentStreak}日</p>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-bold tabular-nums">{currentStreak}</p>
+                  <span className="text-sm text-muted-foreground">日</span>
+                </div>
               </CardContent>
             </Card>
           </div>

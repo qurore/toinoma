@@ -8,10 +8,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ExternalLink, Store } from "lucide-react";
 import type { Database } from "@/types/database";
+import type { Metadata } from "next";
 
 type SellerProfile = Database["public"]["Tables"]["seller_profiles"]["Row"];
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "出品者情報 - 問の間",
   description: "問題集の出品・販売に関する設定",
 };
@@ -83,7 +84,7 @@ export default async function SellerSettingsPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-[8rem_1fr] items-baseline gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-[8rem_1fr] sm:items-baseline sm:gap-4">
             <span className="text-sm text-muted-foreground">出品者名</span>
             <span className="text-sm font-medium">
               {sellerProfile.seller_display_name}
@@ -92,7 +93,7 @@ export default async function SellerSettingsPage() {
           {sellerProfile.seller_description && (
             <>
               <Separator />
-              <div className="grid grid-cols-[8rem_1fr] items-baseline gap-4">
+              <div className="grid grid-cols-1 gap-1 sm:grid-cols-[8rem_1fr] sm:items-baseline sm:gap-4">
                 <span className="text-sm text-muted-foreground">自己紹介</span>
                 <span className="text-sm">{sellerProfile.seller_description}</span>
               </div>
@@ -101,7 +102,7 @@ export default async function SellerSettingsPage() {
           {sellerProfile.university && (
             <>
               <Separator />
-              <div className="grid grid-cols-[8rem_1fr] items-baseline gap-4">
+              <div className="grid grid-cols-1 gap-1 sm:grid-cols-[8rem_1fr] sm:items-baseline sm:gap-4">
                 <span className="text-sm text-muted-foreground">大学</span>
                 <span className="text-sm font-medium">{sellerProfile.university}</span>
               </div>
@@ -110,14 +111,14 @@ export default async function SellerSettingsPage() {
           {sellerProfile.circle_name && (
             <>
               <Separator />
-              <div className="grid grid-cols-[8rem_1fr] items-baseline gap-4">
+              <div className="grid grid-cols-1 gap-1 sm:grid-cols-[8rem_1fr] sm:items-baseline sm:gap-4">
                 <span className="text-sm text-muted-foreground">サークル名</span>
                 <span className="text-sm font-medium">{sellerProfile.circle_name}</span>
               </div>
             </>
           )}
           <Separator />
-          <div className="grid grid-cols-[8rem_1fr] items-baseline gap-4">
+          <div className="grid grid-cols-1 gap-1 sm:grid-cols-[8rem_1fr] sm:items-baseline sm:gap-4">
             <span className="text-sm text-muted-foreground">ToS同意日</span>
             <span className="text-sm">
               {new Date(sellerProfile.tos_accepted_at!).toLocaleDateString("ja-JP")}
@@ -126,7 +127,7 @@ export default async function SellerSettingsPage() {
         </CardContent>
       </Card>
 
-      <div className="flex gap-3">
+      <div className="flex flex-col gap-3 sm:flex-row">
         <Button asChild>
           <Link href="/sell" className="flex items-center gap-2">
             <Store className="h-4 w-4" />

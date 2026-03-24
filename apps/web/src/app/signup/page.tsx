@@ -202,7 +202,7 @@ export default function SignupPage() {
       </div>
 
       {/* Right — Signup form */}
-      <main className="flex flex-1 items-center justify-center p-6 lg:p-12">
+      <main className="flex flex-1 items-center justify-center p-6 pb-16 lg:p-12 lg:pb-12">
         <div
           className={cn(
             "w-full max-w-sm",
@@ -384,7 +384,7 @@ export default function SignupPage() {
       </main>
 
       {/* Minimal footer for mobile (desktop has brand panel copyright) */}
-      <footer className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-4 py-4 text-xs text-muted-foreground lg:hidden">
+      <footer className="fixed inset-x-0 bottom-0 flex items-center justify-center gap-4 bg-background/80 py-4 text-xs text-muted-foreground backdrop-blur-sm lg:hidden">
         <Link href="/legal/terms" className="hover:text-foreground transition-colors">
           利用規約
         </Link>

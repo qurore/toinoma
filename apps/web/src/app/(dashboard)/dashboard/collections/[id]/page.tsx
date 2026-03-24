@@ -120,7 +120,7 @@ export default async function CollectionDetailPage({
               {itemCount}問
             </Badge>
             {uniqueSubjects.length > 0 && (
-              <Badge variant="outline" className="gap-1 text-xs">
+              <Badge variant="secondary" className="gap-1 border border-border text-xs">
                 <Tag className="h-3 w-3" />
                 {uniqueSubjects
                   .map((s) => SUBJECT_LABELS[s as Subject])
@@ -149,8 +149,8 @@ export default async function CollectionDetailPage({
       {itemCount === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-              <Search className="h-7 w-7 text-primary" />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
+              <Search className="h-7 w-7 text-muted-foreground" />
             </div>
             <h2 className="mb-2 text-lg font-semibold">
               まだ問題がありません

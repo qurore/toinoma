@@ -98,7 +98,7 @@ export default async function SellerTransactionsPage(props: {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold text-success">
+            <p className="text-2xl font-bold text-primary">
               ¥{summary.net_earnings.toLocaleString()}
             </p>
           </CardContent>
@@ -193,7 +193,7 @@ export default async function SellerTransactionsPage(props: {
                       <td className="whitespace-nowrap px-4 py-3 text-right text-muted-foreground">
                         -¥{tx.platform_fee.toLocaleString()}
                       </td>
-                      <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-success">
+                      <td className="whitespace-nowrap px-4 py-3 text-right font-medium text-primary">
                         ¥{tx.net_revenue.toLocaleString()}
                       </td>
                       <td className="px-4 py-3 text-center">

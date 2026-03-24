@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS, ANSWER_TYPE_LABELS } from "@toinoma/shared/constants";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import { cn } from "@/lib/utils";
 import { PoolFilterBar } from "@/components/seller/pool-filter-bar";
 import type { Subject, Difficulty, AnswerType } from "@/types/database";
 import type { Metadata } from "next";
@@ -227,12 +228,22 @@ export default async function ProblemPoolPage({
                             item.question_type}
                         </Badge>
                         {item.subject && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="border border-border text-xs">
                             {SUBJECT_LABELS[item.subject as Subject]}
                           </Badge>
                         )}
                         {item.difficulty && (
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge
+                            variant="outline"
+                            className={cn(
+                              "text-xs",
+                              item.difficulty === "easy"
+                                ? "border-primary/30 bg-primary/5 text-primary"
+                                : item.difficulty === "hard"
+                                  ? "border-destructive/30 bg-destructive/5 text-destructive"
+                                  : "border-amber-600/30 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
+                            )}
+                          >
                             {DIFFICULTY_LABELS[item.difficulty as Difficulty]}
                           </Badge>
                         )}

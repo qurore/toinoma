@@ -3,7 +3,7 @@ import {
   Store,
   FileText,
   ClipboardCheck,
-  DollarSign,
+  Banknote,
   Lightbulb,
   ArrowRight,
   CheckCircle2,
@@ -14,6 +14,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { generatePageMetadata } from "@/lib/metadata";
 import type { Metadata } from "next";
 
@@ -34,8 +35,6 @@ const ONBOARDING_STEPS = [
     description:
       "出品者としての責任や権利について記載された利用規約をご確認いただき、同意してください。コンテンツの著作権やプラットフォームルールについての重要な情報が含まれています。",
     icon: ClipboardCheck,
-    color: "text-blue-600",
-    bgColor: "bg-blue-50",
   },
   {
     step: 2,
@@ -43,17 +42,13 @@ const ONBOARDING_STEPS = [
     description:
       "出品者名・自己紹介・所属大学・サークル名などを登録します。購入者に信頼性を伝えるため、できるだけ詳しく記入することをおすすめします。",
     icon: FileText,
-    color: "text-emerald-600",
-    bgColor: "bg-emerald-50",
   },
   {
     step: 3,
     title: "Stripe Connectで収益受取設定",
     description:
       "Stripeの安全な本人確認プロセスを完了し、収益の受取口座を登録します。本人確認書類（運転免許証またはマイナンバーカード）が必要です。",
-    icon: DollarSign,
-    color: "text-violet-600",
-    bgColor: "bg-violet-50",
+    icon: Banknote,
   },
 ];
 
@@ -149,37 +144,19 @@ const SELLER_FAQ = [
 export default function SellerGuidePage() {
   return (
       <div className="mx-auto max-w-3xl px-4 pb-16 pt-4 sm:px-6">
-        {/* Breadcrumb */}
-        <nav aria-label="パンくずリスト" className="mb-6">
-          <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-            <li>
-              <Link
-                href="/"
-                className="transition-colors hover:text-foreground"
-              >
-                ホーム
-              </Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li>
-              <Link
-                href="/help"
-                className="transition-colors hover:text-foreground"
-              >
-                ヘルプ
-              </Link>
-            </li>
-            <li aria-hidden="true">/</li>
-            <li aria-current="page" className="font-medium text-foreground">
-              出品者ガイド
-            </li>
-          </ol>
-        </nav>
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "ヘルプ", href: "/help" },
+            { label: "出品者ガイド" },
+          ]}
+          className="mb-6"
+        />
 
         {/* Hero */}
         <div className="mb-10">
-          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50">
-            <Store className="h-7 w-7 text-emerald-600" />
+          <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
+            <Store className="h-7 w-7 text-primary" />
           </div>
           <h1 className="text-3xl font-bold tracking-tight">出品者ガイド</h1>
           <p className="mt-2 text-muted-foreground">
@@ -200,10 +177,8 @@ export default function SellerGuidePage() {
               return (
                 <Card key={step.step}>
                   <CardContent className="flex gap-4 p-5">
-                    <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full ${step.bgColor}`}
-                    >
-                      <Icon className={`h-5 w-5 ${step.color}`} />
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                      <Icon className="h-5 w-5 text-primary" />
                     </div>
                     <div>
                       <div className="mb-1 flex items-center gap-2">
@@ -240,7 +215,7 @@ export default function SellerGuidePage() {
         {/* ──── Section 2: Problem creation best practices ──── */}
         <section className="mb-12">
           <h2 className="mb-6 flex items-center gap-2 text-xl font-bold">
-            <Lightbulb className="h-5 w-5 text-amber-500" />
+            <Lightbulb className="h-5 w-5 text-primary" />
             問題作成のベストプラクティス
           </h2>
 
@@ -254,7 +229,7 @@ export default function SellerGuidePage() {
                   <ul className="space-y-2">
                     {tip.items.map((item, idx) => (
                       <li key={idx} className="flex gap-2 text-sm">
-                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+                        <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                         <span className="text-muted-foreground">{item}</span>
                       </li>
                     ))}
@@ -270,7 +245,7 @@ export default function SellerGuidePage() {
         {/* ──── Section 3: Pricing strategies ──── */}
         <section className="mb-12">
           <h2 className="mb-6 flex items-center gap-2 text-xl font-bold">
-            <DollarSign className="h-5 w-5 text-violet-500" />
+            <Banknote className="h-5 w-5 text-primary" />
             価格設定のヒント
           </h2>
 
@@ -298,9 +273,9 @@ export default function SellerGuidePage() {
             </CardContent>
           </Card>
 
-          <div className="mt-4 flex gap-2 rounded-lg border border-amber-200 bg-amber-50 p-4">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
-            <p className="text-sm text-amber-800">
+          <div className="mt-4 flex gap-2 rounded-lg border border-border bg-muted/50 p-4">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
+            <p className="text-sm text-foreground/80">
               価格は販売開始後も変更可能です。まずは低めの価格で始めて、レビューや実績に応じて調整するのがおすすめです。
             </p>
           </div>
@@ -311,7 +286,7 @@ export default function SellerGuidePage() {
         {/* ──── Section 4: Fee structure ──── */}
         <section className="mb-12">
           <h2 className="mb-6 flex items-center gap-2 text-xl font-bold">
-            <DollarSign className="h-5 w-5 text-emerald-500" />
+            <Banknote className="h-5 w-5 text-primary" />
             手数料について
           </h2>
 
@@ -368,7 +343,7 @@ export default function SellerGuidePage() {
         {/* ──── Section 5: Seller FAQ ──── */}
         <section className="mb-12">
           <h2 className="mb-6 flex items-center gap-2 text-xl font-bold">
-            <Store className="h-5 w-5 text-blue-500" />
+            <Store className="h-5 w-5 text-primary" />
             出品者よくある質問
           </h2>
 
@@ -387,7 +362,7 @@ export default function SellerGuidePage() {
         </section>
 
         {/* CTA */}
-        <Card className="bg-gradient-to-r from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20">
+        <Card className="border-primary/20 bg-primary/5">
           <CardContent className="p-8 text-center">
             <h2 className="text-xl font-bold">
               あなたの問題を待っている学生がいます

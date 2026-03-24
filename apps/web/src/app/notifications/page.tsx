@@ -79,7 +79,7 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="container mx-auto max-w-2xl px-4 py-8 pt-16">
+      <main className="container mx-auto max-w-2xl px-4 pb-8 pt-20">
         <Breadcrumbs
           items={[
             { label: "ホーム", href: "/" },

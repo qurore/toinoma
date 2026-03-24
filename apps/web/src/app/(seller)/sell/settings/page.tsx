@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   AlertCircle,
   CreditCard,
-  Settings,
 } from "lucide-react";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
@@ -51,7 +50,7 @@ export default async function SellerSettingsPage() {
       ]} />
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">出品者設定</h1>
-        <p className="mt-1 text-muted-foreground">
+        <p className="mt-1 text-sm text-muted-foreground">
           プロフィール・支払い・通知に関する設定
         </p>
       </div>
@@ -128,7 +127,7 @@ export default async function SellerSettingsPage() {
                 <span className="text-sm text-muted-foreground">
                   ステータス
                 </span>
-                <span className="text-sm font-medium text-success">
+                <span className="text-sm font-medium text-primary">
                   アクティブ
                 </span>
               </div>
@@ -157,11 +156,10 @@ export default async function SellerSettingsPage() {
                     href="https://dashboard.stripe.com/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-2"
                   >
-                    <CreditCard className="h-3.5 w-3.5" />
+                    <CreditCard className="mr-1.5 h-3.5 w-3.5" />
                     Stripe Expressダッシュボード
-                    <ExternalLink className="h-3 w-3" />
+                    <ExternalLink className="ml-1.5 h-3 w-3" />
                   </a>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
@@ -206,7 +204,7 @@ export default async function SellerSettingsPage() {
               利用規約同意
             </span>
             <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-success">同意済み</span>
+              <span className="text-sm font-medium text-primary">同意済み</span>
               <span className="text-xs text-muted-foreground">
                 {new Date(sellerProfile.tos_accepted_at!).toLocaleDateString(
                   "ja-JP",
@@ -300,12 +298,9 @@ function NotificationRow({
         <p className="text-sm font-medium">{label}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
-      <div className="flex items-center gap-2">
-        <Settings className="h-3.5 w-3.5 text-muted-foreground" />
-        <Badge variant="secondary" className="text-[10px]">
-          {enabled ? "オン" : "オフ"}
-        </Badge>
-      </div>
+      <Badge variant={enabled ? "default" : "secondary"} className="text-[10px]">
+        {enabled ? "オン" : "オフ"}
+      </Badge>
     </div>
   );
 }

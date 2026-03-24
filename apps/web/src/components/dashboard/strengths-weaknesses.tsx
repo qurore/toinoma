@@ -99,7 +99,7 @@ function ScoreBadge({ score }: { score: number }) {
         score >= 80
           ? "bg-primary/10 text-primary"
           : score >= 50
-            ? "bg-amber-500/10 text-amber-600"
+            ? "bg-warning/10 text-warning"
             : "bg-destructive/10 text-destructive"
       )}
     >

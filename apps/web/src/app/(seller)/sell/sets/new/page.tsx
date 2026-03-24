@@ -1,8 +1,6 @@
-import Link from "next/link";
 import { requireSellerTos } from "@/lib/auth/require-seller";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { SetComposer } from "@/components/seller/set-composer";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -15,13 +13,15 @@ export default async function CreateProblemSetFromPoolPage() {
 
   return (
     <div className="container mx-auto flex h-[calc(100vh-3.5rem)] flex-col px-4 py-6">
-      <div className="mb-4 shrink-0">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/sell">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
-          </Link>
-        </Button>
+      <div className="shrink-0">
+        <Breadcrumbs
+          items={[
+            { label: "ホーム", href: "/" },
+            { label: "出品者ダッシュボード", href: "/sell" },
+            { label: "問題セット", href: "/sell/sets" },
+            { label: "新規作成" },
+          ]}
+        />
       </div>
 
       <div className="mb-4 shrink-0">
