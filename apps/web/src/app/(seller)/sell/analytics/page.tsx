@@ -389,7 +389,7 @@ export default async function SalesAnalyticsPage() {
             <CardTitle className="text-base">学生パフォーマンス</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div>
                 <p className="text-xs text-muted-foreground">平均正答率</p>
                 <p className="text-2xl font-bold">

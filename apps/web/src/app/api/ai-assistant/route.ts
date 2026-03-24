@@ -4,6 +4,7 @@ import { google } from "@ai-sdk/google";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getSubscriptionState } from "@/lib/subscription";
+import { rateLimitByUser } from "@/lib/rate-limit";
 
 const DAILY_MESSAGE_LIMIT = 50;
 
@@ -58,6 +59,15 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit: 10 messages per minute per user (burst protection)
+  const rateLimitResult = rateLimitByUser(user.id, 10, 60_000);
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "リクエストが多すぎます。しばらくお待ちください。" },
+      { status: 429 }
+    );
   }
 
   // Subscription tier check: Pro only

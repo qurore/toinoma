@@ -43,7 +43,7 @@ export function PurchaseSection({
   const [error, setError] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
-  // ── Purchased state: prominent solve button ──
+  // ── Purchased state: solve CTA + history link ──
   if (hasPurchased) {
     return (
       <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-transparent">
@@ -56,6 +56,11 @@ export function PurchaseSection({
             <Link href={`/problem/${problemSetId}/solve`}>
               <BookOpen className="mr-2 h-4 w-4" aria-hidden="true" />
               この問題を解く
+            </Link>
+          </Button>
+          <Button variant="outline" size="sm" className="w-full" asChild>
+            <Link href={`/problem/${problemSetId}/history`}>
+              解答履歴を見る
             </Link>
           </Button>
         </CardContent>
@@ -71,7 +76,7 @@ export function PurchaseSection({
           {/* Price display */}
           <div className="text-center">
             <p className="text-3xl font-bold text-foreground">
-              {price === 0 ? "無料" : `¥${price.toLocaleString()}`}
+              {price === 0 ? "無料" : `¥${price.toLocaleString("ja-JP")}`}
             </p>
             {price === 0 && (
               <p className="mt-1 text-xs text-muted-foreground">

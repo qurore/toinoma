@@ -267,7 +267,7 @@ export function VideoUploader({ questionId, initialVideos }: VideoUploaderProps)
               )}
               <p className="mt-0.5 text-xs text-muted-foreground">
                 {formatFileSize(video.size_bytes)}
-                {" \u00b7 "}
+                {" · "}
                 {video.mime_type === "video/webm" ? "WebM" : "MP4"}
               </p>
             </div>

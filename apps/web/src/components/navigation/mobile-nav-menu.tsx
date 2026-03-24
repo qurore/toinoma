@@ -119,7 +119,7 @@ export function MobileNavMenu({ user, isSeller }: MobileNavMenuProps) {
         onClick={() => setOpen(!open)}
         aria-label={open ? "メニューを閉じる" : "メニューを開く"}
         aria-expanded={open}
-        className="h-9 w-9 p-0"
+        className="h-11 w-11 p-0"
       >
         {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>

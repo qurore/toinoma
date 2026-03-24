@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -70,11 +71,20 @@ export default async function SubmissionsPage({
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "出品者ダッシュボード", href: "/sell" },
+          { label: ps.title, href: `/sell/${ps.id}/edit` },
+          { label: "提出一覧" },
+        ]}
+        className="mb-4"
+      />
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
-          <Link href="/sell">
+          <Link href={`/sell/${ps.id}/edit`}>
             <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
+            問題セットに戻る
           </Link>
         </Button>
       </div>

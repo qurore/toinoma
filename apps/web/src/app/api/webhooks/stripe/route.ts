@@ -169,7 +169,7 @@ export async function POST(request: Request) {
       }
 
       default: {
-        console.log(`[webhook] Unhandled event type: ${event.type}`);
+        // Unhandled event types are silently ignored in production
       }
     }
   } catch (err) {

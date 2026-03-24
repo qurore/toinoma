@@ -214,7 +214,7 @@ export default async function PurchaseSuccessPage({
 
               {/* Secondary actions */}
               {problemSetId && (
-                <div className="grid grid-cols-2 gap-2">
+                <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <Button variant="outline" size="sm" asChild>
                     <Link
                       href={`/problem/${problemSetId}/print?mode=problems`}

@@ -135,7 +135,7 @@ export function QuestionNotes({
             <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
           )}
           {saved && (
-            <span className="text-xs text-emerald-600">保存済み</span>
+            <span className="text-xs text-success">保存済み</span>
           )}
           {expanded ? (
             <ChevronUp className="h-4 w-4 text-muted-foreground" />

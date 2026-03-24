@@ -155,7 +155,7 @@ export function SellerSidebarNav() {
 // Wrapper that positions the sidebar fixed on desktop
 export function SellerSidebar() {
   return (
-    <aside className="fixed bottom-0 left-0 top-14 z-40 hidden w-60 flex-col border-r border-border bg-card md:flex">
+    <aside className="fixed bottom-0 left-0 top-16 z-40 hidden w-60 flex-col border-r border-border bg-card md:flex">
       <SellerSidebarNav />
     </aside>
   );
@@ -166,7 +166,7 @@ export function MobileSellerNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed left-0 right-0 top-14 z-40 h-10 border-b border-border bg-card md:hidden">
+    <nav className="fixed left-0 right-0 top-16 z-40 h-10 border-b border-border bg-card md:hidden">
       <ul className="flex h-full overflow-x-auto">
         {SELLER_NAV_ITEMS.map((item) => {
           const isActive = item.exact

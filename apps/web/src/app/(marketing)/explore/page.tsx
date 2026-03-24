@@ -200,8 +200,9 @@ export default async function ExplorePage({
 }) {
   const params = await searchParams;
   const rawQ = params.q ?? "";
-  // Escape PostgREST ilike special characters to prevent filter injection
-  const q = rawQ.replace(/[%_\\]/g, (ch) => `\\${ch}`);
+  // Escape PostgREST ilike wildcards AND filter syntax delimiters (commas, periods, parens)
+  // to prevent filter injection via the .or() method
+  const q = rawQ.replace(/[%_\\.,()]/g, (ch) => `\\${ch}`);
   const subjectParam = params.subject ?? "";
   const difficultyParam = params.difficulty ?? "";
   const freeOnly = params.free === "1";

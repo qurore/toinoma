@@ -51,6 +51,8 @@ export const ANSWER_TYPE_LABELS: Record<AnswerType, string> = {
 } as const;
 
 // Subscription tier constants (FR-026, FR-027)
+// Pricing: Basic 498/4980, Pro 1980/17980 JPY
+// AI cost margins: Basic ~40% (300 JPY raw/month), Pro ~25% (1500 JPY raw/month)
 export const SUBSCRIPTION_TIERS = {
   free: {
     name: "Free",
@@ -59,24 +61,27 @@ export const SUBSCRIPTION_TIERS = {
     annualPrice: 0,
     gradingLimit: 3,
     collectionsLimit: 3,
+    aiCostBudgetJpy: 0,
     description: "月3回までAI採点が利用可能",
   },
   basic: {
     name: "Basic",
     label: "ベーシック",
-    monthlyPrice: 500,
-    annualPrice: 4000,
+    monthlyPrice: 498,
+    annualPrice: 4980,
     gradingLimit: 30,
     collectionsLimit: 20,
+    aiCostBudgetJpy: 300,
     description: "月30回までAI採点が利用可能",
   },
   pro: {
     name: "Pro",
     label: "プロ",
-    monthlyPrice: 2000,
-    annualPrice: 150000,
+    monthlyPrice: 1980,
+    annualPrice: 17980,
     gradingLimit: -1, // unlimited
     collectionsLimit: -1, // unlimited
+    aiCostBudgetJpy: 1500,
     description: "AI採点無制限・AI学習アシスタント利用可能",
   },
 } as const;

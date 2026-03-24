@@ -18,6 +18,7 @@ export default function TokushohoPage() {
         「特定商取引に関する法律」第11条に基づき、以下のとおり表記いたします。
       </p>
 
+      <div className="overflow-x-auto">
       <table className="w-full">
         <tbody>
           <tr>
@@ -88,9 +89,9 @@ export default function TokushohoPage() {
               <br />
               フリープラン: ¥0
               <br />
-              ベーシックプラン: 月額¥500 / 年額¥4,000
+              ベーシックプラン: 月額¥498 / 年額¥4,980
               <br />
-              プロプラン: 月額¥2,000 / 年額¥15,000
+              プロプラン: 月額¥1,980 / 年額¥17,980
             </td>
           </tr>
           <tr>
@@ -211,6 +212,7 @@ export default function TokushohoPage() {
           </tr>
         </tbody>
       </table>
+      </div>
 
       <hr />
       <p className="text-sm text-muted-foreground">

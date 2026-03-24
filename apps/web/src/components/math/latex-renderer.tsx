@@ -21,7 +21,7 @@ export function LatexRenderer({ content, displayMode = false }: LatexRendererPro
         displayMode,
         throwOnError: false,
         strict: false,
-        trust: true,
+        trust: false,
       });
     } catch {
       return content;

@@ -245,7 +245,7 @@ export default async function GradingResultPage({
             </Link>
           </Button>
           <Button variant="outline" className="flex-1" asChild>
-            <Link href={`/problem/${id}#collections`}>
+            <Link href={`/dashboard/collections`}>
               <FolderPlus className="mr-1.5 h-4 w-4" aria-hidden="true" />
               コレクションに追加
             </Link>

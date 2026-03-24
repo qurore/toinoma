@@ -139,7 +139,7 @@ function findMatchingSubjects(term: string): SubjectSuggestion[] {
 // ──────────────────────────────────────────────
 
 function formatPrice(price: number): string {
-  return price === 0 ? "無料" : `¥${price.toLocaleString()}`;
+  return price === 0 ? "無料" : `¥${price.toLocaleString("ja-JP")}`;
 }
 
 // ──────────────────────────────────────────────
@@ -214,8 +214,8 @@ export function SearchAutocomplete({
 
     try {
       const supabase = createClient();
-      // Escape PostgREST ilike special characters
-      const escaped = term.trim().replace(/[%_\\]/g, (ch) => `\\${ch}`);
+      // Escape PostgREST ilike wildcards AND filter syntax delimiters
+      const escaped = term.trim().replace(/[%_\\.,()]/g, (ch) => `\\${ch}`);
       const pattern = `%${escaped}%`;
 
       // Parallel fetch: problem sets + sellers

@@ -129,7 +129,7 @@ export function CouponForm({ sellerSets, onSuccess }: CouponFormProps) {
             required
             min={1}
             max={couponType === "percentage" ? 100 : undefined}
-            step={couponType === "percentage" ? 1 : 100}
+            step={1}
             placeholder={couponType === "percentage" ? "例: 20" : "例: 500"}
           />
           {couponType === "percentage" && (

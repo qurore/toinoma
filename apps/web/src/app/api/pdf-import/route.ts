@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { rateLimitByUser } from "@/lib/rate-limit";
 
 // Maximum PDF size: 50 MB
 const MAX_FILE_SIZE = 50 * 1024 * 1024;
@@ -113,6 +114,15 @@ export async function POST(request: Request) {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit: 3 PDF imports per minute per user
+  const rateLimitResult = rateLimitByUser(user.id, 3, 60_000);
+  if (!rateLimitResult.allowed) {
+    return NextResponse.json(
+      { error: "リクエストが多すぎます。しばらくお待ちください。" },
+      { status: 429 }
+    );
   }
 
   // Verify seller status

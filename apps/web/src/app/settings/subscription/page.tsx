@@ -240,13 +240,13 @@ export default async function SubscriptionSettingsPage(props: {
                   <th className="whitespace-nowrap pb-3 pr-4 text-center font-medium">
                     ベーシック
                     <span className="block text-xs font-normal text-muted-foreground">
-                      ¥500/月
+                      ¥498/月
                     </span>
                   </th>
                   <th className="whitespace-nowrap pb-3 text-center font-medium">
                     プロ
                     <span className="block text-xs font-normal text-muted-foreground">
-                      ¥2,000/月
+                      ¥1,980/月
                     </span>
                   </th>
                 </tr>

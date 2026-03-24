@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
+import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -413,6 +414,7 @@ export default async function SellerProfilePage({
         )}
       </main>
       <SiteFooter />
+      <MobileAppTabBar />
     </>
   );
 }

@@ -97,7 +97,7 @@ export function NotificationBell({
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <button
-          className="relative rounded-md p-1.5 text-foreground/60 transition-colors hover:text-foreground"
+          className="relative flex h-11 w-11 items-center justify-center rounded-md text-foreground/60 transition-colors hover:text-foreground"
           aria-label={`通知 ${unreadCount > 0 ? `(${unreadCount}件の未読)` : ""}`}
         >
           <Bell className="h-5 w-5" />

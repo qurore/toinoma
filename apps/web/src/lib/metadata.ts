@@ -220,7 +220,8 @@ export function buildProductJsonLd(ps: ProblemSetMetadataInput): string {
     ps.description ??
     `${subjectLabel}の問題セット`;
 
-  return JSON.stringify({
+  // Escape </script> sequences to prevent XSS in JSON-LD embedded in <script> tags
+  const raw = JSON.stringify({
     "@context": "https://schema.org",
     "@type": "Product",
     name: ps.title,
@@ -241,4 +242,5 @@ export function buildProductJsonLd(ps: ProblemSetMetadataInput): string {
     }),
     category: subjectLabel,
   });
+  return raw.replace(/<\//g, "<\\/");
 }

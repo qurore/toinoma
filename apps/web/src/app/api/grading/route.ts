@@ -1,12 +1,25 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeSubmission } from "@/lib/ai/grading-engine";
 import { getSubscriptionState } from "@/lib/subscription";
 import { notifyGrading } from "@/lib/notifications";
 import { checkAndNotifyUsage } from "@/lib/usage-warnings";
+import { rateLimitByUser } from "@/lib/rate-limit";
 import { problemSetRubricSchema, type QuestionAnswer } from "@toinoma/shared/schemas";
 import type { Json } from "@/types/database";
+
+// Input validation schema
+const gradingRequestSchema = z.object({
+  problemSetId: z.string().uuid(),
+  answers: z.record(
+    z.string(),
+    z.object({
+      type: z.enum(["essay", "mark_sheet", "fill_in_blank", "multiple_choice"]),
+    }).passthrough()
+  ),
+});
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -19,18 +32,37 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body = await request.json();
-  const { problemSetId, answers } = body as {
-    problemSetId: string;
-    answers: Record<string, QuestionAnswer>;
-  };
-
-  if (!problemSetId || !answers) {
+  // Rate limit: 5 grading requests per minute per user
+  const rateLimitResult = rateLimitByUser(user.id, 5, 60_000);
+  if (!rateLimitResult.allowed) {
     return NextResponse.json(
-      { error: "Missing problemSetId or answers" },
+      { error: "リクエストが多すぎます。しばらくお待ちください。" },
+      { status: 429 }
+    );
+  }
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
       { status: 400 }
     );
   }
+
+  const parsed = gradingRequestSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Invalid request format", details: parsed.error.issues },
+      { status: 400 }
+    );
+  }
+
+  const { problemSetId, answers } = parsed.data as {
+    problemSetId: string;
+    answers: Record<string, QuestionAnswer>;
+  };
 
   // FR-030: Check subscription grading limits
   const subState = await getSubscriptionState(user.id);

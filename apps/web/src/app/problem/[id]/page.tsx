@@ -24,6 +24,7 @@ import { PurchaseSection } from "@/components/marketplace/purchase-section";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
+import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
 import { ShareButton } from "@/components/navigation/share-button";
 import { ReviewsSection } from "@/components/reviews/reviews-section";
 import { QaSection } from "@/components/qa/qa-section";
@@ -419,20 +420,12 @@ export default async function ProblemDetailPage({
                       </p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/problem/${id}/history`}>
-                        <History className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                        履歴
-                      </Link>
-                    </Button>
-                    <Button size="sm" asChild>
-                      <Link href={`/problem/${id}/solve`}>
-                        <BookOpen className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                        解答する
-                      </Link>
-                    </Button>
-                  </div>
+                  <Button variant="outline" size="sm" asChild>
+                    <Link href={`/problem/${id}/history`}>
+                      <History className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                      履歴を見る
+                    </Link>
+                  </Button>
                 </CardContent>
               </Card>
             )}
@@ -613,6 +606,7 @@ export default async function ProblemDetailPage({
         />
       </main>
       <SiteFooter />
+      <MobileAppTabBar />
     </>
   );
 }

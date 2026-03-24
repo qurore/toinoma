@@ -54,6 +54,10 @@ vi.mock("@/lib/supabase/admin", () => ({
   }),
 }));
 
+vi.mock("@/lib/rate-limit", () => ({
+  rateLimitByUser: vi.fn().mockReturnValue({ allowed: true, remaining: 4 }),
+}));
+
 // Import the mocked modules so we can configure them per test
 const { createClient } = await import("@/lib/supabase/server");
 const { gradeSubmission } = await import("@/lib/ai/grading-engine");
@@ -66,7 +70,7 @@ const { POST } = await import("./route");
 // ---------------------------------------------------------------------------
 
 const MOCK_USER_ID = "user-uuid-123";
-const MOCK_PROBLEM_SET_ID = "ps-uuid-456";
+const MOCK_PROBLEM_SET_ID = "00000000-0000-4000-8000-000000000456";
 const MOCK_SUBMISSION_ID = "sub-uuid-789";
 
 const validRubric: ProblemSetRubric = {
@@ -244,7 +248,7 @@ describe("POST /api/grading", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Missing problemSetId or answers");
+    expect(json.error).toBe("Invalid request format");
   });
 
   it("should return 400 when answers are missing", async () => {
@@ -256,7 +260,7 @@ describe("POST /api/grading", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Missing problemSetId or answers");
+    expect(json.error).toBe("Invalid request format");
   });
 
   it("should return 400 when both problemSetId and answers are missing", async () => {
@@ -266,7 +270,7 @@ describe("POST /api/grading", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Missing problemSetId or answers");
+    expect(json.error).toBe("Invalid request format");
   });
 
   // -----------------------------------------------------------------------

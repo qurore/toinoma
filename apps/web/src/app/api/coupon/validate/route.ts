@@ -26,6 +26,17 @@ interface ValidateRequest {
 export async function POST(request: Request) {
   const supabase = await createClient();
 
+  // Require authentication to prevent anonymous coupon enumeration
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json(
+      { valid: false, error: "認証が必要です" },
+      { status: 401 }
+    );
+  }
+
   let body: ValidateRequest;
   try {
     body = await request.json();

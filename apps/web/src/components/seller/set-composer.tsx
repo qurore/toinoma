@@ -230,7 +230,7 @@ export function SetComposer({ sellerId }: SetComposerProps) {
             {metadata.price > 0 && (
               <>
                 <Separator orientation="vertical" className="h-3" />
-                <span>{metadata.price.toLocaleString()}円</span>
+                <span>¥{metadata.price.toLocaleString("ja-JP")}</span>
               </>
             )}
           </div>
@@ -470,7 +470,7 @@ function SetPreview({
             </Badge>
           )}
           {metadata.price > 0 ? (
-            <Badge>{metadata.price.toLocaleString()}円</Badge>
+            <Badge>¥{metadata.price.toLocaleString("ja-JP")}</Badge>
           ) : (
             <Badge variant="secondary">無料</Badge>
           )}

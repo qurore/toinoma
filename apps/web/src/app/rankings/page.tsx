@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { SiteFooter } from "@/components/navigation/site-footer";
+import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Flame, Star, TrendingUp, Trophy } from "lucide-react";
@@ -238,7 +239,7 @@ export default async function RankingsPage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-4xl px-4 pb-12 pt-20 sm:px-6">
+      <main className="mx-auto max-w-4xl px-4 pb-24 pt-20 sm:px-6 md:pb-12">
         <Breadcrumbs
           items={[
             { label: "ホーム", href: "/" },
@@ -337,6 +338,7 @@ export default async function RankingsPage({
         )}
       </main>
       <SiteFooter />
+      <MobileAppTabBar />
     </>
   );
 }

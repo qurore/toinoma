@@ -162,8 +162,8 @@ export default async function SubjectExplorePage({
   const sp = await searchParams;
   const subjectLabel = SUBJECT_LABELS[subject];
   const rawQ = sp.q ?? "";
-  // Escape PostgREST ilike special characters to prevent filter injection
-  const q = rawQ.replace(/[%_\\]/g, (ch) => `\\${ch}`);
+  // Escape PostgREST ilike wildcards AND filter syntax delimiters
+  const q = rawQ.replace(/[%_\\.,()]/g, (ch) => `\\${ch}`);
   const difficultyParam = sp.difficulty ?? "";
   const freeOnly = sp.free === "1";
   const priceMin = sp.price_min ? parseInt(sp.price_min, 10) : null;

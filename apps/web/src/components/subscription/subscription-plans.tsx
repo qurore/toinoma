@@ -527,7 +527,7 @@ export function SubscriptionPlans({
                   ベーシックプランへのダウングレードはいかがですか？
                 </p>
                 <p className="text-xs text-muted-foreground">
-                  月¥500で、AI採点月30回・優先サポートを引き続きご利用いただけます。
+                  月¥498で、AI採点月30回・優先サポートを引き続きご利用いただけます。
                 </p>
                 <Button
                   variant="outline"

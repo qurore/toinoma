@@ -689,7 +689,7 @@ export default async function SellerDashboardPage() {
               <p className="mb-8 text-sm text-muted-foreground">
                 問題プールに問題を追加し、セットにまとめて公開すると、すぐに販売を開始できます
               </p>
-              <div className="mb-8 grid grid-cols-3 gap-4 text-center">
+              <div className="mb-8 grid grid-cols-1 gap-4 text-center sm:grid-cols-3">
                 <div className="flex flex-col items-center gap-2 rounded-lg border border-border/50 bg-muted/30 p-4">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
                     <BookOpen className="h-5 w-5 text-primary" />
