@@ -304,9 +304,13 @@ function AutoSaveIndicator({ lastSaved }: { lastSaved: number | null }) {
   useEffect(() => {
     if (lastSaved && lastSaved !== prevSaved.current) {
       prevSaved.current = lastSaved;
-      setShowPulse(true);
+      // Schedule pulse asynchronously to avoid synchronous setState in effect body
+      const rafId = requestAnimationFrame(() => setShowPulse(true));
       const timer = setTimeout(() => setShowPulse(false), 2000);
-      return () => clearTimeout(timer);
+      return () => {
+        cancelAnimationFrame(rafId);
+        clearTimeout(timer);
+      };
     }
   }, [lastSaved]);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useTransition, useMemo } from "react";
+import { useState, useCallback, useTransition, useMemo, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { SlidersHorizontal, Star, RotateCcw, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -63,7 +63,7 @@ export interface FilterState {
   q: string;
 }
 
-const EMPTY_FILTER: FilterState = {
+export const EMPTY_FILTER: FilterState = {
   subjects: [],
   difficulties: [],
   freeOnly: false,
@@ -78,7 +78,7 @@ const EMPTY_FILTER: FilterState = {
 // Helpers
 // ──────────────────────────────────────────────
 
-function parseFilterStateFromParams(params: URLSearchParams): FilterState {
+export function parseFilterStateFromParams(params: URLSearchParams): FilterState {
   const subjectParam = params.get("subject") ?? "";
   const difficultyParam = params.get("difficulty") ?? "";
   const subjects = subjectParam
@@ -108,7 +108,7 @@ function parseFilterStateFromParams(params: URLSearchParams): FilterState {
   };
 }
 
-function buildSearchParams(state: FilterState): URLSearchParams {
+export function buildSearchParams(state: FilterState): URLSearchParams {
   const params = new URLSearchParams();
   if (state.q) params.set("q", state.q);
   if (state.subjects.length > 0)
@@ -481,39 +481,60 @@ export function ExploreFiltersSidebar() {
     parseFilterStateFromParams(searchParams)
   );
 
+  // Ref that always holds the latest state — prevents stale closure in handleChange
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  // Guard flag: skip redundant useEffect sync when navigation was self-initiated
+  const isInternalNavigation = useRef(false);
+
+  // Sync local filter state when URL searchParams change externally (e.g., back/forward navigation).
+  // This is a valid use of setState in an effect — we are subscribing to an external system (the URL).
+  useEffect(() => {
+    if (isInternalNavigation.current) {
+      isInternalNavigation.current = false;
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from external URL state
+    setState(parseFilterStateFromParams(searchParams));
+  }, [searchParams]);
+
   const handleChange = useCallback(
     (update: Partial<FilterState>) => {
-      setState((prev) => {
-        const next = { ...prev, ...update };
-        // Auto-apply filters on desktop
-        startTransition(() => {
-          const params = buildSearchParams(next);
-          router.push(`/explore?${params.toString()}`);
-        });
-        return next;
+      const next = { ...stateRef.current, ...update };
+      setState(next);
+      // Auto-apply filters on desktop — startTransition must be a sibling of setState, not nested
+      isInternalNavigation.current = true;
+      startTransition(() => {
+        const params = buildSearchParams(next);
+        router.push(`/explore?${params.toString()}`);
       });
     },
     [router]
   );
 
   const handleApply = useCallback(() => {
+    isInternalNavigation.current = true;
     startTransition(() => {
-      const params = buildSearchParams(state);
+      const params = buildSearchParams(stateRef.current);
       router.push(`/explore?${params.toString()}`);
     });
-  }, [state, router]);
+  }, [router]);
 
   const handleClear = useCallback(() => {
     const cleared: FilterState = {
       ...EMPTY_FILTER,
-      q: state.q, // preserve search query
+      q: stateRef.current.q, // preserve search query
     };
     setState(cleared);
+    isInternalNavigation.current = true;
     startTransition(() => {
       const params = buildSearchParams(cleared);
       router.push(`/explore?${params.toString()}`);
     });
-  }, [state.q, router]);
+  }, [router]);
 
   return (
     <aside
@@ -553,6 +574,26 @@ export function ExploreFiltersMobile() {
     parseFilterStateFromParams(searchParams)
   );
 
+  // Ref that always holds the latest state — prevents stale closure in handleChange
+  const stateRef = useRef(state);
+  useEffect(() => {
+    stateRef.current = state;
+  }, [state]);
+
+  // Guard flag: skip redundant useEffect sync when navigation was self-initiated
+  const isInternalNavigation = useRef(false);
+
+  // Sync local filter state when URL searchParams change externally (e.g., back/forward navigation).
+  // This is a valid use of setState in an effect — we are subscribing to an external system (the URL).
+  useEffect(() => {
+    if (isInternalNavigation.current) {
+      isInternalNavigation.current = false;
+      return;
+    }
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from external URL state
+    setState(parseFilterStateFromParams(searchParams));
+  }, [searchParams]);
+
   const activeFilterCount = countActiveFilters(state);
   const activeFilterDescription = useMemo(
     () => describeActiveFilters(state),
@@ -560,29 +601,32 @@ export function ExploreFiltersMobile() {
   );
 
   const handleChange = useCallback((update: Partial<FilterState>) => {
-    setState((prev) => ({ ...prev, ...update }));
+    const next = { ...stateRef.current, ...update };
+    setState(next);
   }, []);
 
   const handleApply = useCallback(() => {
+    isInternalNavigation.current = true;
     startTransition(() => {
-      const params = buildSearchParams(state);
+      const params = buildSearchParams(stateRef.current);
       router.push(`/explore?${params.toString()}`);
     });
     setIsOpen(false);
-  }, [state, router]);
+  }, [router]);
 
   const handleClear = useCallback(() => {
     const cleared: FilterState = {
       ...EMPTY_FILTER,
-      q: state.q,
+      q: stateRef.current.q,
     };
     setState(cleared);
+    isInternalNavigation.current = true;
     startTransition(() => {
       const params = buildSearchParams(cleared);
       router.push(`/explore?${params.toString()}`);
     });
     setIsOpen(false);
-  }, [state.q, router]);
+  }, [router]);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
