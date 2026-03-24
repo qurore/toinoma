@@ -45,7 +45,7 @@ export function ProblemDetailTabs({
           value="overview"
           className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
         >
-          <Eye className="mr-1.5 h-3.5 w-3.5" />
+          <Eye className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           概要
         </TabsTrigger>
         {(previewQuestions.length > 0 || problemPdfUrl) && (
@@ -53,7 +53,7 @@ export function ProblemDetailTabs({
             value="sample"
             className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
-            <FileText className="mr-1.5 h-3.5 w-3.5" />
+            <FileText className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
             問題プレビュー
           </TabsTrigger>
         )}
@@ -61,7 +61,7 @@ export function ProblemDetailTabs({
           value="reviews"
           className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
         >
-          <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
+          <MessageSquare className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           レビュー
           {reviewCount != null && reviewCount > 0 && (
             <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
@@ -73,7 +73,7 @@ export function ProblemDetailTabs({
           value="qa"
           className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
         >
-          <HelpCircle className="mr-1.5 h-3.5 w-3.5" />
+          <HelpCircle className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           Q&A
           {qaCount != null && qaCount > 0 && (
             <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
@@ -116,7 +116,7 @@ export function ProblemDetailTabs({
             <Card>
               <CardHeader>
                 <h2 className="flex items-center gap-2 font-display text-base font-semibold leading-none tracking-tight">
-                  <FileText className="h-4 w-4" />
+                  <FileText className="h-4 w-4" aria-hidden="true" />
                   問題PDF
                 </h2>
               </CardHeader>
@@ -135,7 +135,7 @@ export function ProblemDetailTabs({
                         download
                         className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
                       >
-                        <Download className="h-3 w-3" />
+                        <Download className="h-3 w-3" aria-hidden="true" />
                         ダウンロード
                       </a>
                       {" "}してください
@@ -143,7 +143,7 @@ export function ProblemDetailTabs({
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/50 py-16">
-                    <FileText className="mb-3 h-8 w-8 text-muted-foreground/50" />
+                    <FileText className="mb-3 h-8 w-8 text-muted-foreground/50" aria-hidden="true" />
                     <p className="text-sm text-muted-foreground">
                       購入後に問題PDFを閲覧できます
                     </p>

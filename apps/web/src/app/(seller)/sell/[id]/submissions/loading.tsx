@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SubmissionsLoading() {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <Skeleton className="mb-4 h-4 w-64" />
       <Skeleton className="mb-1 h-8 w-36" />
       <Skeleton className="mb-8 h-4 w-48" />
@@ -23,6 +23,6 @@ export default function SubmissionsLoading() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

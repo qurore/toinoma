@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PoolLoading() {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       {/* Breadcrumbs */}
       <Skeleton className="mb-4 h-4 w-56" />
 
@@ -48,6 +48,6 @@ export default function PoolLoading() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

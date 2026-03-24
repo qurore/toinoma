@@ -95,7 +95,7 @@ export default async function ProblemHistoryPage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-3xl px-4 pb-12 pt-20 sm:px-6">
+      <main id="main-content" className="mx-auto max-w-3xl px-4 pb-12 pt-20 sm:px-6">
         <Breadcrumbs
           items={[
             { label: "ホーム", href: "/" },
@@ -112,7 +112,7 @@ export default async function ProblemHistoryPage({
           </div>
           <Button className="shrink-0" asChild>
             <Link href={`/problem/${id}/solve`}>
-              <RotateCcw className="mr-1.5 h-4 w-4" />
+              <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
               もう一度解く
             </Link>
           </Button>
@@ -124,7 +124,7 @@ export default async function ProblemHistoryPage({
             {/* Best score */}
             <Card className="border-amber-500/20">
               <CardContent className="flex flex-col items-center py-4">
-                <Trophy className="mb-1.5 h-5 w-5 text-amber-500" />
+                <Trophy className="mb-1.5 h-5 w-5 text-amber-500" aria-hidden="true" />
                 <span className="text-xs text-muted-foreground">最高スコア</span>
                 <span
                   className={cn(
@@ -144,7 +144,7 @@ export default async function ProblemHistoryPage({
             {/* Average score */}
             <Card>
               <CardContent className="flex flex-col items-center py-4">
-                <TrendingUp className="mb-1.5 h-5 w-5 text-muted-foreground" />
+                <TrendingUp className="mb-1.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
                 <span className="text-xs text-muted-foreground">平均スコア</span>
                 <span className="text-2xl font-bold tabular-nums">{averageScore}%</span>
               </CardContent>
@@ -153,7 +153,7 @@ export default async function ProblemHistoryPage({
             {/* Attempt count */}
             <Card>
               <CardContent className="flex flex-col items-center py-4">
-                <BookOpen className="mb-1.5 h-5 w-5 text-muted-foreground" />
+                <BookOpen className="mb-1.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
                 <span className="text-xs text-muted-foreground">解答回数</span>
                 <span className="text-2xl font-bold tabular-nums">
                   {allSubmissions.length}
@@ -168,14 +168,14 @@ export default async function ProblemHistoryPage({
         {allSubmissions.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="flex flex-col items-center py-16 text-center">
-              <BookOpen className="mb-3 h-10 w-10 text-muted-foreground/40" />
+              <BookOpen className="mb-3 h-10 w-10 text-muted-foreground/40" aria-hidden="true" />
               <p className="font-medium text-muted-foreground">まだ解答履歴がありません</p>
               <p className="mt-1 text-sm text-muted-foreground/60">
                 問題を解いてAI採点を受けてみましょう
               </p>
               <Button className="mt-5" asChild>
                 <Link href={`/problem/${id}/solve`}>
-                  <BookOpen className="mr-1.5 h-4 w-4" />
+                  <BookOpen className="mr-1.5 h-4 w-4" aria-hidden="true" />
                   解答を始める
                 </Link>
               </Button>
@@ -195,6 +195,7 @@ export default async function ProblemHistoryPage({
                 <Link
                   key={s.id}
                   href={`/problem/${id}/result/${s.id}`}
+                  aria-label={`第${attemptNumber}回目の採点結果を見る${pct !== null ? ` (${pct}%)` : ""}`}
                   className={cn(
                     "group flex items-center justify-between rounded-lg border bg-card p-4 transition-all hover:border-primary/30 hover:shadow-sm",
                     isBest ? "border-amber-500/30 bg-amber-500/5" : "border-border"
@@ -224,7 +225,7 @@ export default async function ProblemHistoryPage({
                             variant="outline"
                             className="border-amber-500/50 text-amber-600 text-xs"
                           >
-                            <Trophy className="mr-0.5 h-3 w-3" />
+                            <Trophy className="mr-0.5 h-3 w-3" aria-hidden="true" />
                             最高
                           </Badge>
                         )}
@@ -258,7 +259,7 @@ export default async function ProblemHistoryPage({
                         {pct}%
                       </span>
                     )}
-                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition-colors group-hover:text-foreground" />
+                    <ChevronRight className="h-4 w-4 text-muted-foreground/40 transition-colors group-hover:text-foreground" aria-hidden="true" />
                   </div>
                 </Link>
               );

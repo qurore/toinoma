@@ -35,7 +35,7 @@ export default async function RubricEditorPage({
   }
 
   return (
-    <main className="container mx-auto max-w-3xl px-4 py-8">
+    <div className="container mx-auto max-w-3xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between">
         <Button variant="ghost" size="sm" asChild>
           <Link href={`/sell/${id}/edit`}>
@@ -53,6 +53,6 @@ export default async function RubricEditorPage({
       </div>
 
       <RubricEditor problemSetId={id} initialRubric={rubric} />
-    </main>
+    </div>
   );
 }

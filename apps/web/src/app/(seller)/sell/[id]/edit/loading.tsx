@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function EditProblemSetLoading() {
   return (
-    <main className="container mx-auto max-w-3xl px-4 py-8">
+    <div className="container mx-auto max-w-3xl px-4 py-8">
       <Skeleton className="mb-4 h-4 w-56" />
       <Skeleton className="mb-1 h-8 w-48" />
       <Skeleton className="mb-8 h-4 w-72" />
@@ -31,6 +31,6 @@ export default function EditProblemSetLoading() {
           <Skeleton className="h-10 w-32 rounded-md" />
         </div>
       </div>
-    </main>
+    </div>
   );
 }

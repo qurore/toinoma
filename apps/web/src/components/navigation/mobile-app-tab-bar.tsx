@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, BookOpen, Store, User } from "lucide-react";
+import { Home, Search, Trophy, BookOpen, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TabItem {
@@ -16,13 +16,13 @@ interface TabItem {
 const TABS: TabItem[] = [
   { href: "/", label: "ホーム", icon: Home, exact: true },
   { href: "/explore", label: "探す", icon: Search },
+  { href: "/rankings", label: "ランキング", icon: Trophy },
   { href: "/dashboard", label: "学習", icon: BookOpen },
-  { href: "/sell", label: "出品", icon: Store },
   { href: "/settings", label: "マイページ", icon: User },
 ];
 
 /**
- * App-level mobile bottom tab bar.
+ * App-level mobile bottom tab bar for public/marketing pages.
  * Visible only on mobile (md:hidden). Fixed at the bottom of the viewport.
  * 44px min-height touch targets per WCAG 2.1 AA.
  */
@@ -31,7 +31,7 @@ export function MobileAppTabBar() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-white/95 backdrop-blur-sm md:hidden"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm safe-area-pb md:hidden"
       aria-label="モバイルナビゲーション"
     >
       <ul className="mx-auto flex h-14 max-w-lg items-stretch justify-around">
@@ -45,8 +45,9 @@ export function MobileAppTabBar() {
             <li key={tab.href} className="flex flex-1 items-stretch">
               <Link
                 href={tab.href}
+                aria-current={isActive ? "page" : undefined}
                 className={cn(
-                  "relative flex min-h-[44px] w-full flex-col items-center justify-center gap-0.5 rounded-lg px-3 py-1 text-[10px] font-medium transition-colors",
+                  "relative flex min-h-[44px] w-full flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-1 text-[10px] font-medium transition-colors",
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground hover:text-foreground"
@@ -60,6 +61,7 @@ export function MobileAppTabBar() {
                     "h-5 w-5 transition-colors",
                     isActive ? "text-primary" : "text-muted-foreground"
                   )}
+                  aria-hidden="true"
                 />
                 <span>{tab.label}</span>
               </Link>

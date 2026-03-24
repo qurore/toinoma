@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function PayoutsLoading() {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <Skeleton className="mb-4 h-4 w-48" />
       <Skeleton className="mb-1 h-8 w-28" />
       <Skeleton className="mb-8 h-4 w-56" />
@@ -33,6 +33,6 @@ export default function PayoutsLoading() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RubricEditorLoading() {
   return (
-    <main className="container mx-auto max-w-4xl px-4 py-8">
+    <div className="container mx-auto max-w-4xl px-4 py-8">
       <Skeleton className="mb-4 h-4 w-64" />
       <Skeleton className="mb-1 h-8 w-40" />
       <Skeleton className="mb-8 h-4 w-56" />
@@ -26,6 +26,6 @@ export default function RubricEditorLoading() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

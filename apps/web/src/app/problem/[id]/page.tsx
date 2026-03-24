@@ -263,7 +263,7 @@ export default async function ProblemDetailPage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="container mx-auto max-w-7xl px-4 pb-12 pt-16">
+      <main id="main-content" className="container mx-auto max-w-7xl px-4 pb-12 pt-16">
         {/* Breadcrumb navigation */}
         <nav aria-label="パンくずリスト" className="mb-6">
           <ol className="flex items-center gap-1 text-sm text-muted-foreground">
@@ -273,7 +273,7 @@ export default async function ProblemDetailPage({
               </Link>
             </li>
             <li aria-hidden="true">
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             </li>
             <li>
               <Link href="/explore" className="transition-colors hover:text-foreground">
@@ -281,7 +281,7 @@ export default async function ProblemDetailPage({
               </Link>
             </li>
             <li aria-hidden="true">
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             </li>
             <li>
               <Link
@@ -292,7 +292,7 @@ export default async function ProblemDetailPage({
               </Link>
             </li>
             <li aria-hidden="true">
-              <ChevronRight className="h-3.5 w-3.5" />
+              <ChevronRight className="h-3.5 w-3.5" aria-hidden="true" />
             </li>
             <li className="max-w-[200px] truncate text-foreground" aria-current="page">
               {ps.title}
@@ -331,7 +331,7 @@ export default async function ProblemDetailPage({
                 {/* Rating */}
                 {avgRating != null && totalReviewCount > 0 ? (
                   <div className="flex items-center gap-1.5">
-                    <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-0.5" aria-hidden="true">
                       {[1, 2, 3, 4, 5].map((i) => (
                         <Star
                           key={i}
@@ -353,7 +353,7 @@ export default async function ProblemDetailPage({
                   </div>
                 ) : (
                   <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Star className="h-4 w-4" />
+                    <Star className="h-4 w-4" aria-hidden="true" />
                     <span>レビューなし</span>
                   </div>
                 )}
@@ -362,7 +362,7 @@ export default async function ProblemDetailPage({
 
                 {/* Purchase count */}
                 <div className="flex items-center gap-1.5 text-sm">
-                  <Users className="h-4 w-4 text-muted-foreground" />
+                  <Users className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   <span className="font-semibold">{purchaseCount ?? 0}</span>
                   <span className="text-muted-foreground">人が購入</span>
                 </div>
@@ -371,7 +371,7 @@ export default async function ProblemDetailPage({
 
                 {/* Submission count */}
                 <div className="flex items-center gap-1.5 text-sm">
-                  <Send className="h-4 w-4 text-muted-foreground" />
+                  <Send className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                   <span className="font-semibold">{submissionCount ?? 0}</span>
                   <span className="text-muted-foreground">回解答</span>
                 </div>
@@ -381,19 +381,19 @@ export default async function ProblemDetailPage({
               <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                 {(questionCount ?? 0) > 0 && (
                   <span className="flex items-center gap-1">
-                    <FileText className="h-3.5 w-3.5" />
+                    <FileText className="h-3.5 w-3.5" aria-hidden="true" />
                     全{questionCount}問
                   </span>
                 )}
                 {ps.total_points > 0 && (
                   <span className="flex items-center gap-1">
-                    <BookOpen className="h-3.5 w-3.5" />
+                    <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
                     {ps.total_points}点満点
                   </span>
                 )}
                 {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
                   <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" />
+                    <Clock className="h-3.5 w-3.5" aria-hidden="true" />
                     {ps.time_limit_minutes}分
                   </span>
                 )}
@@ -437,13 +437,13 @@ export default async function ProblemDetailPage({
                   <div className="flex items-center gap-2">
                     <Button variant="outline" size="sm" asChild>
                       <Link href={`/problem/${id}/history`}>
-                        <History className="mr-1.5 h-3.5 w-3.5" />
+                        <History className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                         履歴
                       </Link>
                     </Button>
                     <Button size="sm" asChild>
                       <Link href={`/problem/${id}/solve`}>
-                        <BookOpen className="mr-1.5 h-3.5 w-3.5" />
+                        <BookOpen className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                         解答する
                       </Link>
                     </Button>
@@ -512,7 +512,7 @@ export default async function ProblemDetailPage({
                         />
                       )}
                       <AvatarFallback className="bg-muted">
-                        <GraduationCap className="h-5 w-5 text-muted-foreground" />
+                        <GraduationCap className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                       </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0">
@@ -541,7 +541,7 @@ export default async function ProblemDetailPage({
                   <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
                     {(sellerProblemCount ?? 0) > 0 && (
                       <span className="flex items-center gap-1">
-                        <FileText className="h-3 w-3" />
+                        <FileText className="h-3 w-3" aria-hidden="true" />
                         {sellerProblemCount}セット公開中
                       </span>
                     )}
@@ -554,7 +554,7 @@ export default async function ProblemDetailPage({
                     asChild
                   >
                     <Link href={`/seller/${ps.seller_id}`}>
-                      <GraduationCap className="mr-1.5 h-3.5 w-3.5" />
+                      <GraduationCap className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                       プロフィールを見る
                     </Link>
                   </Button>
@@ -569,7 +569,7 @@ export default async function ProblemDetailPage({
                 targetId={id}
                 trigger={
                   <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-                    <Flag className="mr-1 h-3 w-3" />
+                    <Flag className="mr-1 h-3 w-3" aria-hidden="true" />
                     この問題セットを報告
                   </Button>
                 }
@@ -587,13 +587,13 @@ export default async function ProblemDetailPage({
                 id="related-heading"
                 className="flex items-center gap-2 text-lg font-semibold"
               >
-                <TrendingUp className="h-5 w-5 text-muted-foreground" />
+                <TrendingUp className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                 関連する問題セット
               </h2>
               <Button variant="ghost" size="sm" asChild>
                 <Link href={`/explore?subject=${ps.subject}`}>
                   もっと見る
-                  <ChevronRight className="ml-1 h-3.5 w-3.5" />
+                  <ChevronRight className="ml-1 h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </Button>
             </div>

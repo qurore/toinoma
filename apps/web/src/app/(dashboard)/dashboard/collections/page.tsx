@@ -42,7 +42,7 @@ export default async function CollectionsPage() {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <Breadcrumbs
         items={[
           { label: "ホーム", href: "/" },
@@ -119,6 +119,6 @@ export default async function CollectionsPage() {
           })}
         </div>
       )}
-    </main>
+    </div>
   );
 }

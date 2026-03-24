@@ -58,11 +58,11 @@ export default function ResetPasswordPage() {
 
   if (isSuccess) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-4">
+      <main className="flex min-h-screen items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-success/10">
-              <CheckCircle2 className="h-7 w-7 text-success" />
+              <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
             </div>
             <CardTitle className="text-2xl">
               パスワードを更新しました
@@ -82,11 +82,11 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
+    <main className="flex min-h-screen items-center justify-center px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-            <KeyRound className="h-7 w-7 text-primary" />
+            <KeyRound className="h-7 w-7 text-primary" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl">新しいパスワードを設定</CardTitle>
           <CardDescription>
@@ -95,7 +95,7 @@ export default function ResetPasswordPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <div role="alert" className="space-y-2 rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
+            <div role="alert" className="space-y-2 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-center text-sm text-destructive">
               <p>{error}</p>
               {error.includes("有効期限") && (
                 <Link

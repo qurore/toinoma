@@ -76,7 +76,7 @@ export default async function CouponsPage() {
   const totalUses = allCoupons.reduce((sum, c) => sum + c.current_uses, 0);
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <Breadcrumbs items={[
         { label: "ホーム", href: "/" },
         { label: "出品者ダッシュボード", href: "/sell" },
@@ -211,6 +211,6 @@ export default async function CouponsPage() {
           })}
         </div>
       )}
-    </main>
+    </div>
   );
 }

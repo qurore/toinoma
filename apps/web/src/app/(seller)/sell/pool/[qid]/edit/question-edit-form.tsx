@@ -273,7 +273,7 @@ export function QuestionEditForm({ question }: QuestionEditFormProps) {
   }, [question.id]);
 
   return (
-    <main className="container mx-auto max-w-2xl px-4 py-8">
+    <div className="container mx-auto max-w-2xl px-4 py-8">
       {/* Header */}
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
@@ -744,6 +744,6 @@ export function QuestionEditForm({ question }: QuestionEditFormProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </main>
+    </div>
   );
 }

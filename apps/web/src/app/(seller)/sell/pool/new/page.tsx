@@ -292,7 +292,7 @@ export default function CreateQuestionPage() {
   // Render
   // ======================================================================
   return (
-    <main className="container mx-auto max-w-3xl px-4 py-8">
+    <div className="container mx-auto max-w-3xl px-4 py-8">
       {/* Back navigation */}
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
@@ -975,7 +975,7 @@ export default function CreateQuestionPage() {
           </div>
         </form>
       )}
-    </main>
+    </div>
   );
 }
 

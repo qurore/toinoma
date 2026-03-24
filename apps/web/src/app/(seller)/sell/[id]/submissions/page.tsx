@@ -69,7 +69,7 @@ export default async function SubmissionsPage({
       : null;
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/sell">
@@ -154,6 +154,6 @@ export default async function SubmissionsPage({
           )}
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AnalyticsLoading() {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       {/* Breadcrumbs */}
       <Skeleton className="mb-4 h-4 w-48" />
 
@@ -49,6 +49,6 @@ export default function AnalyticsLoading() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

@@ -50,11 +50,11 @@ export default function ForgotPasswordPage() {
 
   if (isSent) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-4">
+      <main className="flex min-h-screen items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-              <Mail className="h-7 w-7 text-primary" />
+              <Mail className="h-7 w-7 text-primary" aria-hidden="true" />
             </div>
             <CardTitle className="text-2xl">メールを確認してください</CardTitle>
             <CardDescription>
@@ -75,7 +75,7 @@ export default function ForgotPasswordPage() {
             </Button>
             <Button variant="ghost" className="w-full" asChild>
               <Link href="/login">
-                <ArrowLeft className="mr-1 h-4 w-4" />
+                <ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" />
                 ログインに戻る
               </Link>
             </Button>
@@ -86,11 +86,11 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
+    <main className="flex min-h-screen items-center justify-center px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-            <Mail className="h-7 w-7 text-primary" />
+            <Mail className="h-7 w-7 text-primary" aria-hidden="true" />
           </div>
           <CardTitle className="text-2xl">パスワードをリセット</CardTitle>
           <CardDescription>
@@ -99,9 +99,9 @@ export default function ForgotPasswordPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && (
-            <p role="alert" className="rounded-md bg-destructive/10 p-3 text-center text-sm text-destructive">
+            <div role="alert" className="rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-center text-sm text-destructive">
               {error}
-            </p>
+            </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -128,7 +128,7 @@ export default function ForgotPasswordPage() {
 
           <Button variant="ghost" className="w-full" asChild>
             <Link href="/login">
-              <ArrowLeft className="mr-1 h-4 w-4" />
+              <ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" />
               ログインに戻る
             </Link>
           </Button>

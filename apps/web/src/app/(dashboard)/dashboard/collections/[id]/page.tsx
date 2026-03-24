@@ -85,7 +85,7 @@ export default async function CollectionDetailPage({
   ];
 
   return (
-    <main className="container mx-auto max-w-3xl px-4 py-8">
+    <div className="container mx-auto max-w-3xl px-4 py-8">
       <Breadcrumbs
         items={[
           { label: "ホーム", href: "/" },
@@ -166,6 +166,6 @@ export default async function CollectionDetailPage({
       ) : (
         <CollectionItemList collectionId={id} items={typedItems} />
       )}
-    </main>
+    </div>
   );
 }

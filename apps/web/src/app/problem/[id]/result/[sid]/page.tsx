@@ -127,7 +127,7 @@ export default async function GradingResultPage({
   const parseResult = gradingResultSchema.safeParse(submission.feedback);
   if (!parseResult.success) {
     return (
-      <main className="container mx-auto max-w-3xl px-4 py-8">
+      <main id="main-content" className="container mx-auto max-w-3xl px-4 py-8">
         <p className="text-destructive">採点結果の読み込みに失敗しました</p>
       </main>
     );
@@ -152,7 +152,7 @@ export default async function GradingResultPage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="container mx-auto max-w-3xl px-4 pb-12 pt-24">
+      <main id="main-content" className="container mx-auto max-w-3xl px-4 pb-12 pt-24">
         <Breadcrumbs
           items={[
             { label: "ホーム", href: "/" },
@@ -176,7 +176,7 @@ export default async function GradingResultPage({
             <PdfDownloadButton problemSetId={id} />
             <Button variant="outline" size="sm" asChild>
               <Link href={`/problem/${id}/history`}>
-                <History className="mr-1 h-3.5 w-3.5" />
+                <History className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 履歴
               </Link>
             </Button>
@@ -202,19 +202,19 @@ export default async function GradingResultPage({
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Button className="flex-1" asChild>
             <Link href={`/problem/${id}/solve`}>
-              <RotateCcw className="mr-1.5 h-4 w-4" />
+              <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
               もう一度解く
             </Link>
           </Button>
           <Button variant="outline" className="flex-1" asChild>
             <Link href={`/problem/${id}/history`}>
-              <History className="mr-1.5 h-4 w-4" />
+              <History className="mr-1.5 h-4 w-4" aria-hidden="true" />
               履歴を見る
             </Link>
           </Button>
           <Button variant="outline" className="flex-1" asChild>
             <Link href={`/problem/${id}#collections`}>
-              <FolderPlus className="mr-1.5 h-4 w-4" />
+              <FolderPlus className="mr-1.5 h-4 w-4" aria-hidden="true" />
               コレクションに追加
             </Link>
           </Button>
@@ -234,7 +234,7 @@ export default async function GradingResultPage({
               </div>
               <Button variant="outline" size="sm" asChild>
                 <Link href={`/problem/${id}#reviews`}>
-                  <Star className="mr-1.5 h-3.5 w-3.5" />
+                  <Star className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                   レビューを書く
                 </Link>
               </Button>
@@ -260,7 +260,7 @@ export default async function GradingResultPage({
         </div>
 
         {/* Grading disclaimer */}
-        <p className="mt-4 text-center text-xs text-muted-foreground">
+        <p role="note" className="mt-4 text-center text-xs text-muted-foreground">
           ※ AI採点は参考スコアです。最終的な判断はご自身でお願いいたします。
         </p>
 

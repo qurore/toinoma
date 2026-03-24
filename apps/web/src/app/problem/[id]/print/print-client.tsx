@@ -78,7 +78,7 @@ export function PrintClient({
             <div style={dividerStyle} />
 
             {/* Settings icon */}
-            <Settings2 style={{ width: 16, height: 16, color: "#6b7280", flexShrink: 0 }} />
+            <Settings2 style={{ width: 16, height: 16, color: "#6b7280", flexShrink: 0 }} aria-hidden="true" />
 
             {/* Mode selector */}
             <div style={fieldStyle}>

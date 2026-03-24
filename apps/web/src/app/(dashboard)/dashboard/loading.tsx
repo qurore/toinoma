@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function DashboardLoading() {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       {/* Page title skeleton */}
       <Skeleton className="mb-6 h-9 w-48" />
 
@@ -47,6 +47,6 @@ export default function DashboardLoading() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

@@ -52,7 +52,7 @@ export default async function SellerTransactionsPage(props: {
   }
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <Breadcrumbs items={[
         { label: "ホーム", href: "/" },
         { label: "出品者ダッシュボード", href: "/sell" },
@@ -271,6 +271,6 @@ export default async function SellerTransactionsPage(props: {
           )}
         </Card>
       )}
-    </main>
+    </div>
   );
 }

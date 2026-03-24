@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function SellerLoading() {
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       {/* Page title + action button skeleton */}
       <div className="mb-6 flex items-center justify-between">
         <Skeleton className="h-9 w-40" />
@@ -50,6 +50,6 @@ export default function SellerLoading() {
           </div>
         ))}
       </div>
-    </main>
+    </div>
   );
 }

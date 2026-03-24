@@ -49,12 +49,12 @@ export function PurchaseSection({
       <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-transparent">
         <CardContent className="space-y-3 p-5">
           <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-success" />
+            <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
             <span className="text-sm font-medium text-success">購入済み</span>
           </div>
           <Button size="lg" className="w-full" asChild>
             <Link href={`/problem/${problemSetId}/solve`}>
-              <BookOpen className="mr-2 h-4 w-4" />
+              <BookOpen className="mr-2 h-4 w-4" aria-hidden="true" />
               この問題を解く
             </Link>
           </Button>
@@ -81,12 +81,12 @@ export function PurchaseSection({
           </div>
           <Button size="lg" className="w-full" asChild>
             <Link href={`/login?next=/problem/${problemSetId}`}>
-              <LogIn className="mr-2 h-4 w-4" />
+              <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
               ログインして購入
             </Link>
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            <Shield className="mr-1 inline h-3 w-3" />
+            <Shield className="mr-1 inline h-3 w-3" aria-hidden="true" />
             安全なお支払い（Stripe）
           </p>
         </CardContent>
@@ -177,11 +177,11 @@ export function PurchaseSection({
           className="w-full"
         >
           {isLoading ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
           ) : isFree ? (
-            <Sparkles className="mr-2 h-4 w-4" />
+            <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
           ) : (
-            <ShoppingCart className="mr-2 h-4 w-4" />
+            <ShoppingCart className="mr-2 h-4 w-4" aria-hidden="true" />
           )}
           この問題を入手する
         </Button>
@@ -189,7 +189,7 @@ export function PurchaseSection({
         {/* Trust signals */}
         {!isFree && (
           <p className="text-center text-xs text-muted-foreground">
-            <Shield className="mr-1 inline h-3 w-3" />
+            <Shield className="mr-1 inline h-3 w-3" aria-hidden="true" />
             安全なお支払い（Stripe）
           </p>
         )}

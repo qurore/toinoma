@@ -101,11 +101,12 @@ export default async function DashboardPage() {
         )
       : null;
 
-  // Calculate current study streak
+  // Calculate current study streak (timezone-aware using JST)
+  const toLocalDate = (date: Date): string =>
+    date.toLocaleDateString("sv-SE", { timeZone: "Asia/Tokyo" });
+
   const submissionDates = new Set(
-    (streakSubmissions ?? []).map((s) =>
-      new Date(s.created_at).toISOString().split("T")[0]
-    )
+    (streakSubmissions ?? []).map((s) => toLocalDate(new Date(s.created_at)))
   );
 
   let currentStreak = 0;
@@ -113,7 +114,7 @@ export default async function DashboardPage() {
   for (let i = 0; i < 365; i++) {
     const d = new Date(today);
     d.setDate(d.getDate() - i);
-    const dateStr = d.toISOString().split("T")[0];
+    const dateStr = toLocalDate(d);
     if (submissionDates.has(dateStr)) {
       currentStreak++;
     } else if (i > 0) {
@@ -173,7 +174,7 @@ export default async function DashboardPage() {
     .slice(0, 6) as ProblemSetCardData[];
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           {displayName
@@ -208,94 +209,76 @@ export default async function DashboardPage() {
         </Card>
       ) : (
         <>
-          {/* 4 stat cards */}
+          {/* 4 stat cards — display only, not links */}
           <div className="stagger-children mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Link href="/dashboard/history" className="group">
-              <Card className="card-hover transition-colors group-hover:border-primary/30">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    購入済みセット
-                  </CardTitle>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/15">
-                    <BookOpen className="h-4 w-4 text-primary" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold tabular-nums">
-                    {purchaseCount ?? 0}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    購入した問題セット
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  購入済みセット
+                </CardTitle>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                  <BookOpen className="h-4 w-4 text-primary" aria-hidden="true" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold tabular-nums">{purchaseCount ?? 0}</p>
+                <p className="mt-1 text-xs text-muted-foreground">購入した問題セット</p>
+              </CardContent>
+            </Card>
 
-            <Link href="/dashboard/history" className="group">
-              <Card className="card-hover transition-colors group-hover:border-primary/30">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    総解答回数
-                  </CardTitle>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-info/10 transition-colors group-hover:bg-info/15">
-                    <History className="h-4 w-4 text-info" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold tabular-nums">
-                    {submissionCount ?? 0}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    これまでの解答数
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  総解答回数
+                </CardTitle>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-info/10">
+                  <History className="h-4 w-4 text-info" aria-hidden="true" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold tabular-nums">{submissionCount ?? 0}</p>
+                <p className="mt-1 text-xs text-muted-foreground">これまでの解答数</p>
+              </CardContent>
+            </Card>
 
-            <Link href="/dashboard/analytics" className="group">
-              <Card className="card-hover transition-colors group-hover:border-primary/30">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    平均正答率
-                  </CardTitle>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10 transition-colors group-hover:bg-warning/15">
-                    <Target className="h-4 w-4 text-warning" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold tabular-nums">
-                    {averageScore !== null ? `${averageScore}%` : "—"}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {averageScore !== null ? "全科目の平均" : "解答データなし"}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  平均正答率
+                </CardTitle>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-warning/10">
+                  <Target className="h-4 w-4 text-warning" aria-hidden="true" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold tabular-nums">
+                  {averageScore !== null ? `${averageScore}%` : "—"}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {averageScore !== null ? "全科目の平均" : "解答データなし"}
+                </p>
+              </CardContent>
+            </Card>
 
-            <Link href="/dashboard/analytics" className="group">
-              <Card className="card-hover transition-colors group-hover:border-primary/30">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    連続学習日数
-                  </CardTitle>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-destructive/10 transition-colors group-hover:bg-destructive/15">
-                    <Flame className="h-4 w-4 text-destructive" />
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-baseline gap-1">
-                    <p className="text-3xl font-bold tabular-nums">
-                      {currentStreak}
-                    </p>
-                    <span className="text-sm text-muted-foreground">日</span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {currentStreak > 0 ? "継続中!" : "今日から始めましょう"}
-                  </p>
-                </CardContent>
-              </Card>
-            </Link>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  連続学習日数
+                </CardTitle>
+                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                  <Flame className="h-4 w-4 text-primary" aria-hidden="true" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-baseline gap-1">
+                  <p className="text-3xl font-bold tabular-nums">{currentStreak}</p>
+                  <span className="text-sm text-muted-foreground">日</span>
+                </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {currentStreak > 0 ? "継続中!" : "今日から始めましょう"}
+                </p>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Continue studying section */}
@@ -519,6 +502,6 @@ export default async function DashboardPage() {
           </CardContent>
         </Card>
       </div>
-    </main>
+    </div>
   );
 }

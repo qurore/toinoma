@@ -57,7 +57,7 @@ export default async function SettingsLayout({
           </aside>
 
           {/* Content */}
-          <main className="flex-1 py-8 md:pl-8">{children}</main>
+          <main id="main-content" className="flex-1 py-8 md:pl-8">{children}</main>
         </div>
       </div>
     </>

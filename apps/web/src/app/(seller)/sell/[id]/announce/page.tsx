@@ -32,7 +32,7 @@ export default async function AnnouncePage({
     .eq("problem_set_id", id);
 
   return (
-    <main className="container mx-auto max-w-2xl px-4 py-8">
+    <div className="container mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
           <Link href={`/sell/${id}/edit`}>
@@ -53,6 +53,6 @@ export default async function AnnouncePage({
         problemSetId={id}
         purchaserCount={purchaserCount ?? 0}
       />
-    </main>
+    </div>
   );
 }

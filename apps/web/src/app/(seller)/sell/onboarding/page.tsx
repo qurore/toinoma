@@ -68,7 +68,7 @@ export default async function SellerOnboardingPage({
   ];
 
   return (
-    <main className="container mx-auto max-w-3xl px-4 py-12">
+    <div className="container mx-auto max-w-3xl px-4 py-12">
       <div className="mb-12">
         <h1 className="mb-1 text-center text-2xl font-bold tracking-tight">
           販売者登録
@@ -95,6 +95,6 @@ export default async function SellerOnboardingPage({
           stripeAccountId={profile?.stripe_account_id}
         />
       )}
-    </main>
+    </div>
   );
 }

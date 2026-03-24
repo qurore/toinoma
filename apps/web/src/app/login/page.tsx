@@ -177,7 +177,7 @@ function LoginContent() {
           href="/"
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
-          <BookOpen className="h-6 w-6 text-white" />
+          <BookOpen className="h-6 w-6 text-white" aria-hidden="true" />
           <div className="flex flex-col leading-none">
             <span className="font-display text-lg font-bold text-white">
               問の間
@@ -198,7 +198,7 @@ function LoginContent() {
           <ul className="space-y-3">
             {benefits.map((b) => (
               <li key={b} className="flex items-start gap-2 text-white/80">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-light" />
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-light" aria-hidden="true" />
                 <span className="text-sm">{b}</span>
               </li>
             ))}
@@ -212,7 +212,7 @@ function LoginContent() {
       </div>
 
       {/* Right — Login form */}
-      <div className="flex flex-1 items-center justify-center p-6 lg:p-12">
+      <main className="flex flex-1 items-center justify-center p-6 lg:p-12">
         <div
           className={cn(
             "w-full max-w-sm",
@@ -224,7 +224,7 @@ function LoginContent() {
             href="/"
             className="mb-8 flex items-center gap-2 lg:hidden"
           >
-            <BookOpen className="h-6 w-6 text-primary" />
+            <BookOpen className="h-6 w-6 text-primary" aria-hidden="true" />
             <div className="flex flex-col leading-none">
               <span className="font-display text-lg font-bold">問の間</span>
               <span className="text-[10px] font-medium tracking-wider text-muted-foreground">
@@ -360,7 +360,7 @@ function LoginContent() {
                 key={b}
                 className="flex items-start gap-2 text-muted-foreground"
               >
-                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" />
+                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
                 <span className="text-xs">{b}</span>
               </li>
             ))}
@@ -385,7 +385,7 @@ function LoginContent() {
             に同意したものとみなされます。
           </p>
         </div>
-      </div>
+      </main>
 
       {/* Minimal footer for mobile (desktop has brand panel copyright) */}
       <footer className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-4 py-4 text-xs text-muted-foreground lg:hidden">
@@ -412,8 +412,9 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex min-h-screen items-center justify-center" role="status">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+          <span className="sr-only">読み込み中</span>
         </div>
       }
     >

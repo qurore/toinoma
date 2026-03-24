@@ -76,9 +76,9 @@ export default async function ProblemSolvePage({
   const rubricResult = problemSetRubricSchema.safeParse(ps.rubric);
   if (!rubricResult.success) {
     return (
-      <main className="container mx-auto max-w-3xl px-4 py-8">
+      <main id="main-content" className="container mx-auto max-w-3xl px-4 py-8">
         <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center">
-          <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-destructive" />
+          <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-destructive" aria-hidden="true" />
           <p className="text-sm font-medium text-destructive">
             この問題セットのルーブリックが無効です
           </p>
@@ -99,9 +99,9 @@ export default async function ProblemSolvePage({
 
   if (!subState.canGrade) {
     return (
-      <main className="container mx-auto max-w-lg px-4 py-12">
+      <main id="main-content" className="container mx-auto max-w-lg px-4 py-12">
         <div className="rounded-lg border border-border p-8 text-center">
-          <Lock className="mx-auto mb-4 h-10 w-10 text-muted-foreground" />
+          <Lock className="mx-auto mb-4 h-10 w-10 text-muted-foreground" aria-hidden="true" />
           <h2 className="text-lg font-semibold">
             今月のAI採点回数の上限に達しました
           </h2>
@@ -139,11 +139,11 @@ export default async function ProblemSolvePage({
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
           {/* Left: Breadcrumb + Title */}
           <div className="min-w-0 flex-1">
-            <nav className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">
+            <nav aria-label="パンくずリスト" className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">
               <Link href={`/problem/${id}`} className="hover:text-foreground">
                 {ps.title}
               </Link>
-              <ChevronRight className="h-3 w-3" />
+              <ChevronRight className="h-3 w-3" aria-hidden="true" />
               <span className="text-foreground">解答</span>
             </nav>
             <h1 className="truncate text-sm font-semibold text-foreground sm:hidden">
@@ -177,7 +177,7 @@ export default async function ProblemSolvePage({
           {/* Right: Exit button */}
           <Button variant="outline" size="sm" className="shrink-0" asChild>
             <Link href={`/problem/${id}`}>
-              <LogOut className="mr-1.5 h-3.5 w-3.5" />
+              <LogOut className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
               終了する
             </Link>
           </Button>
@@ -207,7 +207,7 @@ export default async function ProblemSolvePage({
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 pb-8 pt-24 sm:px-6 md:pt-20">
+      <main id="main-content" className="mx-auto max-w-7xl px-4 pb-8 pt-24 sm:px-6 md:pt-20">
         <div className="mb-6 rounded-lg border border-border bg-muted/30 px-4 py-3">
           <p className="text-sm text-muted-foreground">
             各問題に解答を入力し、「採点する」ボタンを押してAI採点を受けましょう。途中保存されるので安心して取り組めます。

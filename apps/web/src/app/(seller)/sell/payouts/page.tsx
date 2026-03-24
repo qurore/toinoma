@@ -43,7 +43,7 @@ export default async function PayoutsPage() {
   const hasStripe = !!sellerProfile?.stripe_account_id;
 
   return (
-    <main className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8">
       <Breadcrumbs items={[
         { label: "ホーム", href: "/" },
         { label: "出品者ダッシュボード", href: "/sell" },
@@ -194,6 +194,6 @@ export default async function PayoutsPage() {
           )}
         </CardContent>
       </Card>
-    </main>
+    </div>
   );
 }

@@ -45,8 +45,8 @@ export function SiteFooter() {
         <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-5">
           {/* Brand */}
           <div className="lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5 text-primary" />
+            <Link href="/" className="flex items-center gap-2" aria-label="問の間 トップページ">
+              <BookOpen className="h-5 w-5 text-primary" aria-hidden="true" />
               <div className="flex flex-col leading-none">
                 <span className="font-display text-base font-bold">問の間</span>
                 <span className="text-[9px] font-medium tracking-wider text-muted-foreground">

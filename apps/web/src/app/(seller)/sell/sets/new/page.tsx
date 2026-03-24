@@ -14,7 +14,7 @@ export default async function CreateProblemSetFromPoolPage() {
   const { user } = await requireSellerTos();
 
   return (
-    <main className="container mx-auto flex h-[calc(100vh-3.5rem)] flex-col px-4 py-6">
+    <div className="container mx-auto flex h-[calc(100vh-3.5rem)] flex-col px-4 py-6">
       <div className="mb-4 shrink-0">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/sell">
@@ -36,6 +36,6 @@ export default async function CreateProblemSetFromPoolPage() {
       <div className="min-h-0 flex-1">
         <SetComposer sellerId={user.id} />
       </div>
-    </main>
+    </div>
   );
 }
