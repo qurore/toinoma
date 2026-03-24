@@ -7,6 +7,7 @@ import {
   History,
   Heart,
   FolderOpen,
+  BarChart3,
   Settings,
   Sparkles,
 } from "lucide-react";
@@ -37,6 +38,12 @@ export const NAV_ITEMS = [
     href: "/dashboard/collections",
     label: "コレクション",
     icon: FolderOpen,
+    exact: false,
+  },
+  {
+    href: "/dashboard/analytics",
+    label: "学習分析",
+    icon: BarChart3,
     exact: false,
   },
   {

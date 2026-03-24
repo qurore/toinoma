@@ -1,19 +1,43 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function CTASection() {
   return (
-    <section className="relative overflow-hidden bg-hero py-20 sm:py-28">
+    <section className="relative overflow-hidden bg-hero py-24 sm:py-32">
+      {/* Background effects */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,hsl(142_71%_38%/0.2),transparent_60%)]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,hsl(235_60%_52%/0.1),transparent_50%)]" />
+      {/* Floating decorative orb */}
+      <div
+        className="absolute -right-20 top-1/2 h-64 w-64 -translate-y-1/2 rounded-full bg-green/15 blur-3xl animate-float"
+        aria-hidden="true"
+      />
+      <div
+        className="absolute -left-20 top-1/3 h-48 w-48 rounded-full bg-indigo/10 blur-3xl animate-float [animation-delay:2s]"
+        aria-hidden="true"
+      />
+
       <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
-        <h2 className="text-3xl font-bold text-white sm:text-4xl">
-          今すぐ、学習を始めよう
+        {/* Decorative sparkle */}
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
+          <Sparkles className="h-3.5 w-3.5 text-green-light" />
+          <span className="text-xs font-medium text-white/70">
+            今すぐ無料で始められます
+          </span>
+        </div>
+
+        <h2 className="text-3xl font-bold tracking-tight text-white sm:text-4xl lg:text-5xl">
+          あなたの学習を、
+          <br className="hidden sm:block" />
+          次のレベルへ
         </h2>
-        <p className="mt-4 text-lg text-white/70">
+        <p className="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/70">
           無料で問題を解いて、AI採点の実力を体験してみませんか？
+          <br className="hidden sm:block" />
+          登録はかんたん、すぐに始められます。
         </p>
-        <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+        <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
           <Button variant="hero" size="lg" asChild>
             <Link href="/login">
               無料で始める

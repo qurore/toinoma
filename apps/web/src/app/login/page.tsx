@@ -230,6 +230,20 @@ function LoginContent() {
           </p>
         </div>
       </div>
+
+      {/* Minimal footer for mobile (desktop has brand panel copyright) */}
+      <footer className="absolute inset-x-0 bottom-0 flex items-center justify-center gap-4 py-4 text-xs text-muted-foreground lg:hidden">
+        <Link href="/legal/terms" className="hover:text-foreground transition-colors">
+          利用規約
+        </Link>
+        <Link href="/legal/privacy" className="hover:text-foreground transition-colors">
+          プライバシー
+        </Link>
+        <Link href="/help" className="hover:text-foreground transition-colors">
+          ヘルプ
+        </Link>
+        <span>&copy; {new Date().getFullYear()} Toinoma</span>
+      </footer>
     </div>
   );
 }

@@ -8,6 +8,7 @@ import { Clock, Eye, Search } from "lucide-react";
 import { getRecentlyViewed } from "@/lib/recently-viewed";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import { ClearHistoryButton } from "./clear-history-button";
 import type { Subject, Difficulty } from "@/types/database";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
@@ -36,24 +37,29 @@ export default async function RecentlyViewedPage() {
         ]}
       />
 
-      <div className="mb-6 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-          <Eye className="h-5 w-5 text-primary" />
+      <div className="mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+            <Eye className="h-5 w-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-bold tracking-tight">
+              最近閲覧した問題
+            </h1>
+            <p className="text-sm text-muted-foreground">
+              {items.length}件の閲覧履歴
+            </p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">
-            最近閲覧した問題
-          </h1>
-          <p className="text-sm text-muted-foreground">
-            {items.length}件の閲覧履歴
-          </p>
-        </div>
+        {items.length > 0 && <ClearHistoryButton />}
       </div>
 
       {items.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-center">
-            <Clock className="mb-4 h-12 w-12 text-muted-foreground/50" />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+              <Clock className="h-7 w-7 text-primary" />
+            </div>
             <h2 className="mb-2 text-lg font-semibold">
               まだ閲覧履歴がありません
             </h2>
@@ -69,7 +75,7 @@ export default async function RecentlyViewedPage() {
           </CardContent>
         </Card>
       ) : (
-        <div className="space-y-2">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {items.map((item) => {
             const ps = item.problem_set;
             if (!ps) return null;
@@ -88,35 +94,32 @@ export default async function RecentlyViewedPage() {
                 href={`/problem/${ps.id}`}
                 className="group block"
               >
-                <Card className="transition-all hover:border-primary/20 hover:shadow-sm">
-                  <CardContent className="flex items-center justify-between gap-4 p-4">
-                    <div className="min-w-0 flex-1">
-                      <h2 className="truncate font-semibold group-hover:text-primary">
+                <Card className="h-full transition-all hover:border-primary/20 hover:shadow-sm">
+                  <CardContent className="p-4">
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <h2 className="line-clamp-2 font-semibold leading-snug group-hover:text-primary">
                         {ps.title}
                       </h2>
-                      <div className="mt-1.5 flex flex-wrap items-center gap-2">
-                        <Badge variant="outline" className="text-xs">
-                          {SUBJECT_LABELS[ps.subject as Subject]}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-                        </Badge>
-                        {ps.university && (
-                          <span className="text-xs text-muted-foreground">
-                            {ps.university}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="shrink-0 text-right">
-                      <span className="block text-sm font-bold text-primary">
+                      <span className="shrink-0 text-sm font-bold text-primary">
                         {priceLabel}
                       </span>
-                      <span className="mt-0.5 flex items-center justify-end gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
-                        {viewedAgo}
-                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <Badge variant="outline" className="text-xs">
+                        {SUBJECT_LABELS[ps.subject as Subject]}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
+                      </Badge>
+                      {ps.university && (
+                        <span className="text-xs text-muted-foreground">
+                          {ps.university}
+                        </span>
+                      )}
+                    </div>
+                    <div className="mt-2.5 flex items-center gap-1 text-xs text-muted-foreground">
+                      <Clock className="h-3 w-3" />
+                      {viewedAgo}
                     </div>
                   </CardContent>
                 </Card>

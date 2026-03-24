@@ -114,23 +114,31 @@ export default async function PurchaseSuccessPage({
       <main className="flex min-h-screen items-center justify-center px-4 pb-20 pt-14">
         <div className="w-full max-w-lg">
           {/* Success card */}
-          <Card className="overflow-hidden">
-            {/* Green accent top bar */}
-            <div className="h-1.5 bg-gradient-to-r from-primary to-green-light" />
+          <Card className="overflow-hidden shadow-lg">
+            {/* Animated gradient top bar */}
+            <div className="h-2 bg-gradient-to-r from-primary via-green-light to-primary bg-[length:200%_auto] animate-[gradient-slide_3s_linear_infinite]" />
 
             <CardContent className="px-8 pb-8 pt-10 text-center">
-              {/* Success icon with pulse animation */}
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-success/10">
-                <CheckCircle2 className="h-10 w-10 text-success animate-in zoom-in-50 duration-500" />
+              {/* Success icon with celebration ring */}
+              <div className="relative mx-auto mb-6 h-24 w-24">
+                {/* Outer pulsing ring */}
+                <div className="absolute inset-0 rounded-full bg-success/10 animate-in zoom-in-75 duration-700" />
+                <div className="absolute inset-2 rounded-full bg-success/5" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <CheckCircle2 className="h-12 w-12 text-success animate-in zoom-in-50 duration-500" />
+                </div>
               </div>
 
-              <h1 className="mb-2 text-2xl font-bold tracking-tight">
-                購入完了
+              <h1 className="mb-1 text-2xl font-bold tracking-tight">
+                購入が完了しました
               </h1>
+              <p className="mb-6 text-sm text-muted-foreground">
+                ご購入ありがとうございます
+              </p>
 
-              {problemSet ? (
-                <div className="mb-6">
-                  <p className="text-base font-medium text-foreground">
+              {problemSet && (
+                <div className="mb-6 rounded-lg bg-muted/50 p-4">
+                  <p className="text-base font-semibold text-foreground">
                     {problemSet.title}
                   </p>
 
@@ -163,27 +171,19 @@ export default async function PurchaseSuccessPage({
 
                   {/* Amount paid */}
                   {amountPaid != null && amountPaid > 0 && stripeVerified && (
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-2 text-sm font-medium text-foreground">
                       お支払い金額: ¥{amountPaid.toLocaleString()}
                     </p>
                   )}
-
-                  <p className="mt-3 text-sm text-muted-foreground">
-                    ご購入ありがとうございます。今すぐ学習を始めましょう！
-                  </p>
                 </div>
-              ) : (
-                <p className="mb-6 text-sm text-muted-foreground">
-                  ご購入ありがとうございます！
-                </p>
               )}
 
-              {/* Primary CTA */}
+              {/* Primary CTA — large and prominent */}
               {problemSetId && (
-                <Button size="lg" className="mb-4 w-full" asChild>
+                <Button size="lg" className="mb-4 w-full text-base" asChild>
                   <Link href={`/problem/${problemSetId}/solve`}>
-                    <BookOpen className="mr-2 h-4 w-4" />
-                    今すぐ解答する
+                    <BookOpen className="mr-2 h-5 w-5" />
+                    問題を解き始める
                   </Link>
                 </Button>
               )}
@@ -211,18 +211,20 @@ export default async function PurchaseSuccessPage({
           </Card>
 
           {/* Next steps */}
-          <div className="mt-6 space-y-2">
-            <p className="text-center text-xs font-medium text-muted-foreground">
+          <div className="mt-8 space-y-3">
+            <p className="text-center text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               次のステップ
             </p>
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               {problemSetId && (
                 <Link
                   href={`/problem/${problemSetId}`}
-                  className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-sm transition-colors hover:bg-muted/50"
+                  className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3.5 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
                 >
-                  <span className="flex items-center gap-2">
-                    <Sparkles className="h-4 w-4 text-primary" />
+                  <span className="flex items-center gap-2.5">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                    </span>
                     問題セットの詳細を見る
                   </span>
                   <ArrowRight className="h-4 w-4 text-muted-foreground" />
@@ -230,16 +232,26 @@ export default async function PurchaseSuccessPage({
               )}
               <Link
                 href="/dashboard"
-                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-sm transition-colors hover:bg-muted/50"
+                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3.5 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
               >
-                <span>マイページで学習状況を確認</span>
+                <span className="flex items-center gap-2.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                    <BookOpen className="h-4 w-4 text-muted-foreground" />
+                  </span>
+                  マイページで学習状況を確認
+                </span>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </Link>
               <Link
                 href="/explore"
-                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3 text-sm transition-colors hover:bg-muted/50"
+                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3.5 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
               >
-                <span>他の問題セットを探す</span>
+                <span className="flex items-center gap-2.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
+                    <Sparkles className="h-4 w-4 text-muted-foreground" />
+                  </span>
+                  他の問題セットを探す
+                </span>
                 <ArrowRight className="h-4 w-4 text-muted-foreground" />
               </Link>
             </div>

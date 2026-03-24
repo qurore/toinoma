@@ -254,6 +254,15 @@
   }
 }
 
+@keyframes gradient-slide {
+  0% {
+    background-position: 0% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
 @layer utilities {
   .text-gradient-green {
     background-image: var(--gradient-green);

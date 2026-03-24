@@ -11,7 +11,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Heart, Search, ArrowUpDown, Filter } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Heart, Search, ArrowUpDown, Filter, Loader2 } from "lucide-react";
 import { ProblemSetCard } from "@/components/marketplace/problem-set-card";
 import type { ProblemSetCardData } from "@/components/marketplace/problem-set-card";
 import { createClient } from "@/lib/supabase/client";
@@ -51,8 +61,13 @@ export function FavoritesClient({
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
   const [sortMode, setSortMode] = useState<SortMode>("newest");
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [confirmTarget, setConfirmTarget] = useState<{
+    favoriteId: string;
+    problemSetId: string;
+    title: string;
+  } | null>(null);
 
-  const handleRemove = useCallback(
+  const executeRemove = useCallback(
     async (favoriteId: string, problemSetId: string) => {
       setRemovingId(problemSetId);
       try {
@@ -79,6 +94,14 @@ export function FavoritesClient({
       }
     },
     [userId]
+  );
+
+  // Show confirmation before removing
+  const handleRemove = useCallback(
+    (favoriteId: string, problemSetId: string, title: string) => {
+      setConfirmTarget({ favoriteId, problemSetId, title });
+    },
+    []
   );
 
   const filtered = useMemo(() => {
@@ -130,9 +153,11 @@ export function FavoritesClient({
       {items.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-center">
-            <Heart className="mb-4 h-12 w-12 text-muted-foreground/50" />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+              <Heart className="h-7 w-7 text-primary" />
+            </div>
             <h2 className="mb-2 text-lg font-semibold">
-              お気に入りがありません
+              まだお気に入りがありません
             </h2>
             <p className="mb-6 max-w-sm text-sm text-muted-foreground">
               気になる問題セットのハートアイコンをタップして、お気に入りに追加しましょう。
@@ -212,13 +237,21 @@ export function FavoritesClient({
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      handleRemove(fav.favoriteId, fav.problemSetId);
+                      handleRemove(
+                        fav.favoriteId,
+                        fav.problemSetId,
+                        fav.card?.title ?? ""
+                      );
                     }}
                     disabled={removingId === fav.problemSetId}
                     aria-label="お気に入りから削除"
                     className="absolute left-2 top-2 z-10 rounded-full bg-white/90 p-1.5 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100"
                   >
-                    <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                    {removingId === fav.problemSetId ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-red-500" />
+                    ) : (
+                      <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                    )}
                   </button>
                 </div>
               );
@@ -226,6 +259,38 @@ export function FavoritesClient({
           </div>
         </>
       )}
+
+      {/* Unfavorite confirmation dialog */}
+      <AlertDialog
+        open={confirmTarget !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmTarget(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>お気に入りから削除</AlertDialogTitle>
+            <AlertDialogDescription>
+              「{confirmTarget?.title}」をお気に入りから削除しますか？
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (confirmTarget) {
+                  executeRemove(
+                    confirmTarget.favoriteId,
+                    confirmTarget.problemSetId
+                  );
+                }
+              }}
+            >
+              削除する
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

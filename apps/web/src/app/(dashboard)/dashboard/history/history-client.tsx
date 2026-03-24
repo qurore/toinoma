@@ -19,9 +19,13 @@ import {
   TrendingDown,
   Search,
   Filter,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Subject } from "@/types/database";
+
+const ITEMS_PER_PAGE = 15;
 
 // ─── Types ────────────────────────────────────────────────────────────
 
@@ -43,6 +47,7 @@ interface SubjectOption {
 }
 
 type SortMode = "newest" | "oldest" | "score_high" | "score_low";
+type ScoreRange = "all" | "high" | "mid" | "low";
 
 interface SubmissionHistoryClientProps {
   items: HistoryItem[];
@@ -133,7 +138,9 @@ export function SubmissionHistoryClient({
   subjectOptions,
 }: SubmissionHistoryClientProps) {
   const [subjectFilter, setSubjectFilter] = useState<string>("all");
+  const [scoreRange, setScoreRange] = useState<ScoreRange>("all");
   const [sortMode, setSortMode] = useState<SortMode>("newest");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const filtered = useMemo(() => {
     let result = [...items];
@@ -141,6 +148,23 @@ export function SubmissionHistoryClient({
     // Filter by subject
     if (subjectFilter !== "all") {
       result = result.filter((i) => i.subject === subjectFilter);
+    }
+
+    // Filter by score range
+    if (scoreRange !== "all") {
+      result = result.filter((i) => {
+        if (i.percentage === null) return false;
+        switch (scoreRange) {
+          case "high":
+            return i.percentage >= 80;
+          case "mid":
+            return i.percentage >= 50 && i.percentage < 80;
+          case "low":
+            return i.percentage < 50;
+          default:
+            return true;
+        }
+      });
     }
 
     // Sort
@@ -166,7 +190,29 @@ export function SubmissionHistoryClient({
     }
 
     return result;
-  }, [items, subjectFilter, sortMode]);
+  }, [items, subjectFilter, scoreRange, sortMode]);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const safeCurrentPage = Math.min(currentPage, totalPages);
+  const paginatedItems = filtered.slice(
+    (safeCurrentPage - 1) * ITEMS_PER_PAGE,
+    safeCurrentPage * ITEMS_PER_PAGE
+  );
+
+  // Reset page when filters change
+  const handleSubjectChange = (v: string) => {
+    setSubjectFilter(v);
+    setCurrentPage(1);
+  };
+  const handleScoreRangeChange = (v: string) => {
+    setScoreRange(v as ScoreRange);
+    setCurrentPage(1);
+  };
+  const handleSortChange = (v: string) => {
+    setSortMode(v as SortMode);
+    setCurrentPage(1);
+  };
 
   return (
     <div>
@@ -187,12 +233,14 @@ export function SubmissionHistoryClient({
       {items.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-center">
-            <History className="mb-4 h-12 w-12 text-muted-foreground/50" />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+              <History className="h-7 w-7 text-primary" />
+            </div>
             <h2 className="mb-2 text-lg font-semibold">
               まだ解答履歴がありません
             </h2>
             <p className="mb-6 max-w-sm text-sm text-muted-foreground">
-              問題セットを購入して解答すると、ここに履歴が表示されます。
+              問題セットを購入して解答すると、ここにスコアや成績の推移が表示されます。
             </p>
             <Button asChild>
               <Link href="/explore">
@@ -210,7 +258,7 @@ export function SubmissionHistoryClient({
               <Filter className="h-4 w-4 text-muted-foreground" />
               <Select
                 value={subjectFilter}
-                onValueChange={setSubjectFilter}
+                onValueChange={handleSubjectChange}
               >
                 <SelectTrigger className="h-8 w-[140px] text-xs">
                   <SelectValue placeholder="科目で絞り込み" />
@@ -226,11 +274,26 @@ export function SubmissionHistoryClient({
               </Select>
             </div>
 
+            <Select
+              value={scoreRange}
+              onValueChange={handleScoreRangeChange}
+            >
+              <SelectTrigger className="h-8 w-[140px] text-xs">
+                <SelectValue placeholder="得点率" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">すべての得点率</SelectItem>
+                <SelectItem value="high">80%以上</SelectItem>
+                <SelectItem value="mid">50%〜79%</SelectItem>
+                <SelectItem value="low">50%未満</SelectItem>
+              </SelectContent>
+            </Select>
+
             <div className="flex items-center gap-2">
               <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
               <Select
                 value={sortMode}
-                onValueChange={(v) => setSortMode(v as SortMode)}
+                onValueChange={handleSortChange}
               >
                 <SelectTrigger className="h-8 w-[140px] text-xs">
                   <SelectValue />
@@ -253,7 +316,7 @@ export function SubmissionHistoryClient({
 
           {/* Submission list */}
           <div className="space-y-2">
-            {filtered.map((s) => {
+            {paginatedItems.map((s) => {
               const date = new Date(s.createdAt).toLocaleDateString("ja-JP", {
                 year: "numeric",
                 month: "short",
@@ -316,6 +379,68 @@ export function SubmissionHistoryClient({
               );
             })}
           </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between">
+              <p className="text-xs text-muted-foreground">
+                {filtered.length}件中{" "}
+                {(safeCurrentPage - 1) * ITEMS_PER_PAGE + 1}〜
+                {Math.min(safeCurrentPage * ITEMS_PER_PAGE, filtered.length)}
+                件を表示
+              </p>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={safeCurrentPage <= 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    // Show first, last, and pages around current
+                    if (page === 1 || page === totalPages) return true;
+                    return Math.abs(page - safeCurrentPage) <= 1;
+                  })
+                  .map((page, idx, arr) => {
+                    // Insert ellipsis markers
+                    const prev = arr[idx - 1];
+                    const showEllipsis = prev !== undefined && page - prev > 1;
+                    return (
+                      <span key={page} className="flex items-center">
+                        {showEllipsis && (
+                          <span className="px-1 text-xs text-muted-foreground">
+                            ...
+                          </span>
+                        )}
+                        <Button
+                          variant={
+                            page === safeCurrentPage ? "default" : "outline"
+                          }
+                          size="sm"
+                          className="h-8 w-8 p-0 text-xs"
+                          onClick={() => setCurrentPage(page)}
+                        >
+                          {page}
+                        </Button>
+                      </span>
+                    );
+                  })}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={safeCurrentPage >= totalPages}
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(totalPages, p + 1))
+                  }
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

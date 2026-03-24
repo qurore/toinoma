@@ -27,30 +27,51 @@ const steps = [
 
 export function HowItWorksSection() {
   return (
-    <section className="py-24 md:py-32">
+    <section className="bg-secondary/30 py-24 md:py-32">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section header */}
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="mb-3 text-sm font-semibold tracking-widest text-primary">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">
             使い方
           </p>
           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
             3ステップで始める
           </h2>
-          <p className="mt-4 text-muted-foreground">
+          <p className="mt-4 text-base leading-relaxed text-muted-foreground">
             アカウント登録後、すぐに問題を解いてAI採点を受けられます。
           </p>
         </div>
 
         {/* Steps */}
         <div className="mx-auto max-w-4xl">
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 md:gap-0">
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-0">
             {steps.map((item, index) => (
-              <div key={item.step} className="relative flex flex-col items-center text-center">
+              <div
+                key={item.step}
+                className="relative flex flex-col items-center text-center animate-fade-up opacity-0"
+                style={{ animationDelay: `${index * 150}ms` }}
+              >
                 {/* Connecting line between steps (desktop only) */}
                 {index < steps.length - 1 && (
                   <div
-                    className="absolute left-[calc(50%+2.5rem)] top-8 hidden h-[2px] w-[calc(100%-5rem)] bg-gradient-to-r from-primary/30 to-primary/10 md:block"
+                    className="absolute left-[calc(50%+2.5rem)] top-8 hidden h-[2px] w-[calc(100%-5rem)] md:block"
+                    aria-hidden="true"
+                  >
+                    {/* Dashed connecting line with gradient */}
+                    <div className="h-full w-full border-t-2 border-dashed border-primary/25" />
+                    {/* Animated chevron indicator */}
+                    <div className="absolute -right-1.5 -top-[5px] text-primary/40">
+                      <svg width="8" height="12" viewBox="0 0 8 12" fill="none" aria-hidden="true">
+                        <path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                    </div>
+                  </div>
+                )}
+
+                {/* Vertical connecting line between steps (mobile only) */}
+                {index < steps.length - 1 && (
+                  <div
+                    className="absolute -bottom-8 left-1/2 h-6 w-px border-l-2 border-dashed border-primary/25 md:hidden"
                     aria-hidden="true"
                   />
                 )}
@@ -58,10 +79,10 @@ export function HowItWorksSection() {
                 {/* Step number badge + icon container */}
                 <div className="relative mb-6">
                   {/* Outer glow ring */}
-                  <div className="absolute -inset-2 rounded-full bg-primary/5" />
+                  <div className="absolute -inset-3 rounded-full bg-primary/5" />
 
                   {/* Icon circle */}
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-primary/20 bg-card shadow-sm">
+                  <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-primary/20 bg-card shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-md">
                     <item.icon className="h-6 w-6 text-primary" />
                   </div>
 

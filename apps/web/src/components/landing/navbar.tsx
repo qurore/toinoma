@@ -37,11 +37,11 @@ export function Navbar() {
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-300",
         scrolled
-          ? "border-b border-white/15 bg-forest/95 shadow-lg shadow-black/10 backdrop-blur-lg"
-          : "border-b border-transparent bg-forest/80 backdrop-blur-md"
+          ? "border-b border-white/15 bg-forest/95 shadow-lg shadow-black/10 backdrop-blur-xl"
+          : "border-b border-transparent bg-transparent backdrop-blur-sm"
       )}
     >
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2">
           <BookOpen className="h-6 w-6 text-green" />
@@ -72,7 +72,7 @@ export function Navbar() {
               >
                 {link.label}
                 {isActive && (
-                  <span className="absolute inset-x-3 -bottom-[13px] h-0.5 rounded-full bg-green" />
+                  <span className="absolute inset-x-3 -bottom-[17px] h-0.5 rounded-full bg-green" />
                 )}
               </Link>
             );
@@ -112,7 +112,7 @@ export function Navbar() {
               </DialogPrimitive.Title>
 
               {/* Sheet header */}
-              <div className="flex h-14 items-center justify-between border-b border-white/10 px-6">
+              <div className="flex h-16 items-center justify-between border-b border-white/10 px-6">
                 <Link href="/" className="flex items-center gap-2" onClick={() => setMobileOpen(false)}>
                   <BookOpen className="h-5 w-5 text-green" />
                   <span className="font-display text-base font-bold text-white">問の間</span>

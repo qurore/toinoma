@@ -38,28 +38,32 @@ export function ValueSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section header */}
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="mb-3 text-sm font-semibold tracking-widest text-primary">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">
             特徴
           </p>
           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
             学習を加速する4つの強み
           </h2>
-          <p className="mt-4 text-muted-foreground">
+          <p className="mt-4 text-base leading-relaxed text-muted-foreground">
             問の間は、問題の発見から解答・採点・分析まで一気通貫で支援します。
           </p>
         </div>
 
         {/* Value cards grid */}
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {values.map((item) => (
+          {values.map((item, index) => (
             <div
               key={item.title}
-              className="group relative rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-lg"
+              className="group relative rounded-xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/20 hover:shadow-[0_8px_30px_hsl(152_40%_14%/0.08)] animate-fade-up opacity-0"
+              style={{ animationDelay: `${index * 100}ms` }}
             >
+              {/* Subtle top accent line */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+
               {/* Icon container */}
               <div
                 className={cn(
-                  "mb-5 flex h-12 w-12 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110",
+                  "mb-5 flex h-12 w-12 items-center justify-center rounded-xl transition-all duration-300 group-hover:scale-110 group-hover:shadow-md",
                   item.accent
                 )}
               >

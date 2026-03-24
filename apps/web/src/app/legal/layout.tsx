@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
+import { SiteFooter } from "@/components/navigation/site-footer";
 
 const LEGAL_NAV = [
   { href: "/legal/terms", label: "利用規約" },
@@ -48,6 +49,7 @@ export default async function LegalLayout({
           </main>
         </div>
       </div>
+      <SiteFooter />
     </>
   );
 }

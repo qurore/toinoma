@@ -65,7 +65,7 @@ export default function SignupPage() {
 
   if (isSuccess) {
     return (
-      <main className="flex min-h-screen items-center justify-center px-4">
+      <main className="flex min-h-screen flex-col items-center justify-center px-4">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
             <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-success/10">
@@ -83,12 +83,24 @@ export default function SignupPage() {
             </Button>
           </CardContent>
         </Card>
+        <footer className="mt-8 flex items-center gap-4 text-xs text-muted-foreground">
+          <Link href="/legal/terms" className="hover:text-foreground transition-colors">
+            利用規約
+          </Link>
+          <Link href="/legal/privacy" className="hover:text-foreground transition-colors">
+            プライバシー
+          </Link>
+          <Link href="/help" className="hover:text-foreground transition-colors">
+            ヘルプ
+          </Link>
+          <span>&copy; {new Date().getFullYear()} Toinoma</span>
+        </footer>
       </main>
     );
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
+    <main className="flex min-h-screen flex-col items-center justify-center px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
@@ -176,6 +188,18 @@ export default function SignupPage() {
           </p>
         </CardContent>
       </Card>
+      <footer className="mt-8 flex items-center gap-4 text-xs text-muted-foreground">
+        <Link href="/legal/terms" className="hover:text-foreground transition-colors">
+          利用規約
+        </Link>
+        <Link href="/legal/privacy" className="hover:text-foreground transition-colors">
+          プライバシー
+        </Link>
+        <Link href="/help" className="hover:text-foreground transition-colors">
+          ヘルプ
+        </Link>
+        <span>&copy; {new Date().getFullYear()} Toinoma</span>
+      </footer>
     </main>
   );
 }

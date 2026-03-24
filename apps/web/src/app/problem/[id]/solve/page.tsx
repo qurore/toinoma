@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, AlertTriangle, Lock } from "lucide-react";
+import { LogOut, AlertTriangle, Lock, ChevronRight } from "lucide-react";
 import { problemSetRubricSchema } from "@toinoma/shared/schemas";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
 import { SolveClient } from "@/components/grading/solve-client";
@@ -134,16 +134,25 @@ export default async function ProblemSolvePage({
   // ── Render ──
   return (
     <>
-      {/* Minimal exam-mode header bar */}
+      {/* Exam-mode header bar */}
       <header className="fixed top-0 z-50 w-full border-b border-border bg-white/95 backdrop-blur-sm">
         <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
-          {/* Left: Title */}
-          <h1 className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
-            {ps.title}
-          </h1>
+          {/* Left: Breadcrumb + Title */}
+          <div className="min-w-0 flex-1">
+            <nav className="hidden items-center gap-1 text-xs text-muted-foreground sm:flex">
+              <Link href={`/problem/${id}`} className="hover:text-foreground">
+                {ps.title}
+              </Link>
+              <ChevronRight className="h-3 w-3" />
+              <span className="text-foreground">解答</span>
+            </nav>
+            <h1 className="truncate text-sm font-semibold text-foreground sm:hidden">
+              {ps.title}
+            </h1>
+          </div>
 
           {/* Center: Metadata badges */}
-          <div className="mx-4 hidden shrink-0 items-center gap-2 sm:flex">
+          <div className="mx-4 hidden shrink-0 items-center gap-2 md:flex">
             <Badge variant="outline" className="text-xs tabular-nums">
               全{totalQuestions}問
             </Badge>
@@ -173,12 +182,37 @@ export default async function ProblemSolvePage({
             </Link>
           </Button>
         </div>
+
+        {/* Mobile metadata strip */}
+        <div className="flex items-center gap-2 border-t border-border/50 bg-muted/30 px-4 py-1.5 sm:px-6 md:hidden">
+          <span className="text-xs tabular-nums text-muted-foreground">
+            全{totalQuestions}問
+          </span>
+          {ps.total_points > 0 && (
+            <>
+              <span className="text-xs text-muted-foreground/50">|</span>
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {ps.total_points}点満点
+              </span>
+            </>
+          )}
+          {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
+            <>
+              <span className="text-xs text-muted-foreground/50">|</span>
+              <span className="text-xs tabular-nums text-muted-foreground">
+                {ps.time_limit_minutes}分
+              </span>
+            </>
+          )}
+        </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 pb-8 pt-20 sm:px-6">
-        <p className="mb-6 text-sm text-muted-foreground">
-          解答を入力してAI採点を受けましょう
-        </p>
+      <main className="mx-auto max-w-7xl px-4 pb-8 pt-24 sm:px-6 md:pt-20">
+        <div className="mb-6 rounded-lg border border-border bg-muted/30 px-4 py-3">
+          <p className="text-sm text-muted-foreground">
+            各問題に解答を入力し、「採点する」ボタンを押してAI採点を受けましょう。途中保存されるので安心して取り組めます。
+          </p>
+        </div>
 
         <SolveClient
           problemSetId={id}

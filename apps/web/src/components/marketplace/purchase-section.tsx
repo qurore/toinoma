@@ -5,7 +5,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader2, BookOpen, ShoppingCart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
+  BookOpen,
+  ShoppingCart,
+  CheckCircle2,
+  Shield,
+  Sparkles,
+  LogIn,
+} from "lucide-react";
 import { CouponInput } from "@/components/marketplace/coupon-input";
 
 interface AppliedCoupon {
@@ -34,15 +43,19 @@ export function PurchaseSection({
   const [error, setError] = useState<string | null>(null);
   const [appliedCoupon, setAppliedCoupon] = useState<AppliedCoupon | null>(null);
 
+  // ── Purchased state: prominent solve button ──
   if (hasPurchased) {
     return (
-      <Card>
-        <CardContent className="p-6 text-center">
-          <p className="mb-4 text-sm text-muted-foreground">購入済み</p>
-          <Button size="lg" asChild>
+      <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-transparent">
+        <CardContent className="space-y-3 p-5">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 text-success" />
+            <span className="text-sm font-medium text-success">購入済み</span>
+          </div>
+          <Button size="lg" className="w-full" asChild>
             <Link href={`/problem/${problemSetId}/solve`}>
               <BookOpen className="mr-2 h-4 w-4" />
-              解答を始める
+              この問題を解く
             </Link>
           </Button>
         </CardContent>
@@ -50,23 +63,38 @@ export function PurchaseSection({
     );
   }
 
+  // ── Not logged in state ──
   if (!isLoggedIn) {
     return (
       <Card>
-        <CardContent className="p-6 text-center">
-          <p className="mb-4 text-muted-foreground">
-            問題を購入するにはログインが必要です
-          </p>
-          <Button size="lg" asChild>
+        <CardContent className="space-y-4 p-5">
+          {/* Price display */}
+          <div className="text-center">
+            <p className="text-3xl font-bold text-foreground">
+              {price === 0 ? "無料" : `¥${price.toLocaleString()}`}
+            </p>
+            {price === 0 && (
+              <p className="mt-1 text-xs text-muted-foreground">
+                アカウントを作成して無料で始めましょう
+              </p>
+            )}
+          </div>
+          <Button size="lg" className="w-full" asChild>
             <Link href={`/login?redirect=/problem/${problemSetId}`}>
+              <LogIn className="mr-2 h-4 w-4" />
               ログインして購入
             </Link>
           </Button>
+          <p className="text-center text-xs text-muted-foreground">
+            <Shield className="mr-1 inline h-3 w-3" />
+            安全なお支払い（Stripe）
+          </p>
         </CardContent>
       </Card>
     );
   }
 
+  // ── Purchase flow ──
   const handlePurchase = async () => {
     setIsLoading(true);
     setError(null);
@@ -87,10 +115,8 @@ export function PurchaseSection({
       }
 
       if (data.checkoutUrl) {
-        // Redirect to Stripe Checkout for paid problems
         window.location.href = data.checkoutUrl;
       } else {
-        // Free purchase — reload to show solve button
         router.refresh();
       }
     } finally {
@@ -101,42 +127,69 @@ export function PurchaseSection({
   const effectivePrice = appliedCoupon
     ? Math.max(0, price - appliedCoupon.discountAmount)
     : price;
+  const isFree = effectivePrice === 0;
+  const hasDiscount = appliedCoupon && appliedCoupon.discountAmount > 0;
 
   return (
     <Card>
-      <CardContent className="p-6 text-center">
-        <p className="mb-2 text-3xl font-bold text-primary">
-          {effectivePrice === 0 ? "無料" : `¥${effectivePrice.toLocaleString()}`}
-        </p>
+      <CardContent className="space-y-4 p-5">
+        {/* Price display */}
+        <div className="text-center">
+          {hasDiscount && (
+            <p className="text-sm text-muted-foreground line-through">
+              ¥{price.toLocaleString()}
+            </p>
+          )}
+          <p className="text-3xl font-bold text-foreground">
+            {isFree ? "無料" : `¥${effectivePrice.toLocaleString()}`}
+          </p>
+          {hasDiscount && (
+            <Badge variant="destructive" className="mt-1 text-xs">
+              {appliedCoupon!.couponType === "percentage"
+                ? `${appliedCoupon!.discountValue}%OFF`
+                : `¥${appliedCoupon!.discountAmount.toLocaleString()}OFF`}
+            </Badge>
+          )}
+        </div>
 
         {/* Coupon input for paid problem sets */}
         {price > 0 && sellerId && (
-          <div className="mx-auto mb-4 max-w-xs">
-            <CouponInput
-              problemSetId={problemSetId}
-              sellerId={sellerId}
-              originalPrice={price}
-              onCouponApplied={setAppliedCoupon}
-            />
-          </div>
+          <CouponInput
+            problemSetId={problemSetId}
+            sellerId={sellerId}
+            originalPrice={price}
+            onCouponApplied={setAppliedCoupon}
+          />
         )}
 
         {error && (
-          <p className="mb-3 text-sm text-destructive">{error}</p>
+          <p className="text-center text-sm text-destructive">{error}</p>
         )}
+
+        {/* Purchase button — text never changes per button stability rule */}
         <Button
           size="lg"
           onClick={handlePurchase}
           disabled={isLoading}
-          className="w-full max-w-xs"
+          className="w-full"
         >
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : isFree ? (
+            <Sparkles className="mr-2 h-4 w-4" />
           ) : (
             <ShoppingCart className="mr-2 h-4 w-4" />
           )}
-          {price === 0 ? "無料で入手" : "購入する"}
+          {isFree ? "無料で始める" : "購入する"}
         </Button>
+
+        {/* Trust signals */}
+        {!isFree && (
+          <p className="text-center text-xs text-muted-foreground">
+            <Shield className="mr-1 inline h-3 w-3" />
+            安全なお支払い（Stripe）
+          </p>
+        )}
       </CardContent>
     </Card>
   );

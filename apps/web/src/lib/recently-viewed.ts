@@ -50,6 +50,17 @@ export interface RecentlyViewedItem {
   } | null;
 }
 
+// Clear all recently viewed records for a user
+export async function clearRecentlyViewed(userId: string): Promise<void> {
+  const supabase = await createClient();
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase as any)
+    .from("recently_viewed")
+    .delete()
+    .eq("user_id", userId);
+}
+
 export async function getRecentlyViewed(
   userId: string,
   limit: number = 20
