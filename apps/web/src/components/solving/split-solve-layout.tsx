@@ -141,7 +141,7 @@ export function SplitSolveLayout({
   const [dividerPct, setDividerPct] = useState(DEFAULT_DIVIDER_PCT);
 
   return (
-    <div className="flex h-[calc(100vh-3.5rem)] flex-col">
+    <div className="flex h-[calc(100dvh-4rem)] flex-col">
       {/* Header */}
       <div className="shrink-0 border-b border-border bg-card px-4 py-2">
         {header}
@@ -182,12 +182,12 @@ export function SplitSolveLayout({
         </button>
       </div>
 
-      {/* ── Mobile: content ── */}
-      <div className="flex flex-1 overflow-hidden md:hidden">
+      {/* ── Mobile: content (invisible + absolute keeps scroll position) ── */}
+      <div className="relative flex flex-1 overflow-hidden md:hidden">
         <div
           className={cn(
             "w-full overflow-y-auto",
-            activeTab !== "problem" && "hidden"
+            activeTab !== "problem" && "invisible absolute inset-0 overflow-auto"
           )}
         >
           {problemSheet}
@@ -195,7 +195,7 @@ export function SplitSolveLayout({
         <div
           className={cn(
             "w-full overflow-y-auto",
-            activeTab !== "answer" && "hidden"
+            activeTab !== "answer" && "invisible absolute inset-0 overflow-auto"
           )}
         >
           {answerSheet}

@@ -137,7 +137,7 @@ function RubricMatchIndicator({
         color === "success"
           ? "border-success/20 bg-success/5"
           : color === "amber"
-            ? "border-amber-500/20 bg-amber-50"
+            ? "border-amber-500/20 bg-amber-500/10"
             : "border-destructive/20 bg-destructive/5"
       )}
     >
@@ -431,12 +431,13 @@ export function GradingResultDisplay({
                 )}
               />
             </svg>
-            <div className="relative">
-              <span className={cn("text-3xl font-bold", colors.text)}>
+            <span className="relative" aria-live="polite" aria-atomic="true">
+              <span className="sr-only">採点結果: {percentage}%</span>
+              <span className={cn("text-3xl font-bold", colors.text)} aria-hidden="true">
                 {percentage}
               </span>
-              <span className={cn("text-lg font-semibold", colors.text)}>%</span>
-            </div>
+              <span className={cn("text-lg font-semibold", colors.text)} aria-hidden="true">%</span>
+            </span>
           </div>
           <p className="text-lg font-semibold text-foreground">
             {result.totalScore} / {result.maxScore} 点
@@ -468,7 +469,7 @@ export function GradingResultDisplay({
       </Card>
 
       {/* AI grading disclaimer banner */}
-      <div className="flex items-center gap-2 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3">
+      <div className="flex items-center gap-2 rounded-lg border border-amber-300/50 bg-amber-50/50 dark:bg-amber-950/20 px-4 py-3">
         <AlertTriangle className="h-4 w-4 shrink-0 text-amber-600" />
         <p className="text-xs leading-relaxed text-amber-800">
           AI採点は参考スコアです。最終判断はご自身で行ってください。ルーブリックに基づく自動採点のため、実際の採点と異なる場合があります。

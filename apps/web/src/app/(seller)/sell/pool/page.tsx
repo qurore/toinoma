@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS, ANSWER_TYPE_LABELS } from "@toinoma/shared/constants";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import { PoolFilterBar } from "@/components/seller/pool-filter-bar";
 import type { Subject, Difficulty, AnswerType } from "@/types/database";
 import type { Metadata } from "next";
 
@@ -141,66 +142,12 @@ export default async function ProblemPoolPage({
       {/* Filter bar */}
       <Card className="mb-6">
         <CardContent className="flex flex-wrap gap-3 py-4">
-          <form
-            className="flex flex-1 flex-wrap gap-3"
-            action="/sell/pool"
-            method="get"
-          >
-            {/* Search input */}
-            <div className="relative min-w-[200px] flex-1">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <input
-                type="text"
-                name="q"
-                defaultValue={q}
-                placeholder="問題テキストで検索..."
-                className="h-9 w-full rounded-md border border-input bg-background pl-9 pr-3 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              />
-            </div>
-
-            {/* Subject filter */}
-            <select
-              name="subject"
-              defaultValue={subjectFilter}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">全科目</option>
-              <option value="math">数学</option>
-              <option value="english">英語</option>
-              <option value="japanese">国語</option>
-              <option value="physics">物理</option>
-              <option value="chemistry">化学</option>
-              <option value="biology">生物</option>
-              <option value="japanese_history">日本史</option>
-              <option value="world_history">世界史</option>
-              <option value="geography">地理</option>
-            </select>
-
-            {/* Question type filter */}
-            <select
-              name="type"
-              defaultValue={typeFilter}
-              className="h-9 rounded-md border border-input bg-background px-3 text-sm"
-            >
-              <option value="">全タイプ</option>
-              <option value="essay">記述式</option>
-              <option value="mark_sheet">マークシート</option>
-              <option value="fill_in_blank">穴埋め</option>
-              <option value="multiple_choice">選択式</option>
-            </select>
-
-            <Button type="submit" size="sm">
-              <Search className="mr-1.5 h-3.5 w-3.5" />
-              検索
-            </Button>
-
-            {/* Clear filters link — only shown when filters are active */}
-            {hasActiveFilters && (
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/sell/pool">クリア</Link>
-              </Button>
-            )}
-          </form>
+          <PoolFilterBar
+            defaultSubject={subjectFilter}
+            defaultType={typeFilter}
+            defaultQuery={q}
+            hasActiveFilters={hasActiveFilters}
+          />
         </CardContent>
       </Card>
 

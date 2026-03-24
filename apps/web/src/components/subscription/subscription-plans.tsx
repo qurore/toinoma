@@ -416,9 +416,7 @@ export function SubscriptionPlans({
                       {loadingTier === "cancel" ? (
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       ) : null}
-                      {cancelAtPeriodEnd
-                        ? "キャンセル済み"
-                        : "プランをキャンセル"}
+                      プランをキャンセル
                     </Button>
                   ) : (
                     <Button

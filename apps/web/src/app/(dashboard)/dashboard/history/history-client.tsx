@@ -21,6 +21,7 @@ import {
   Filter,
   ChevronLeft,
   ChevronRight,
+  RotateCcw,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Subject } from "@/types/database";
@@ -214,6 +215,16 @@ export function SubmissionHistoryClient({
     setCurrentPage(1);
   };
 
+  const isFilterActive =
+    subjectFilter !== "all" || scoreRange !== "all" || sortMode !== "newest";
+
+  const handleResetFilters = () => {
+    setSubjectFilter("all");
+    setScoreRange("all");
+    setSortMode("newest");
+    setCurrentPage(1);
+  };
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -312,6 +323,19 @@ export function SubmissionHistoryClient({
                 {filtered.length}件表示中
               </span>
             )}
+
+            {isFilterActive && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={handleResetFilters}
+                className="h-8 px-2 text-xs text-muted-foreground"
+              >
+                <RotateCcw className="mr-1 h-3 w-3" />
+                フィルターをリセット
+              </Button>
+            )}
           </div>
 
           {/* Submission list */}
@@ -356,9 +380,9 @@ export function SubmissionHistoryClient({
                             className={cn(
                               "min-w-[3rem] justify-center tabular-nums",
                               s.percentage >= 80
-                                ? ""
+                                ? "bg-success/10 text-success border-success/30"
                                 : s.percentage >= 50
-                                  ? ""
+                                  ? "bg-amber-500/10 text-amber-600 border-amber-500/30"
                                   : ""
                             )}
                             variant={

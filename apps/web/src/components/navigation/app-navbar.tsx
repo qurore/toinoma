@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { UserDropdown } from "./user-dropdown";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { SearchAutocomplete } from "@/components/marketplace/search-autocomplete";
+import { MobileNavMenu } from "./mobile-nav-menu";
 import type { SubscriptionTier } from "@/types/database";
 
 interface NotificationData {
@@ -104,8 +105,8 @@ export function AppNavbar({
   const createHref = isSeller ? "/sell/new" : "/sell/onboarding";
 
   return (
-    <header className="fixed top-0 z-50 w-full border-b border-border bg-white/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-14 max-w-7xl items-center gap-3 px-4 sm:px-6">
+    <header className="fixed top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <BookOpen className="h-5 w-5 text-primary" />
@@ -131,23 +132,23 @@ export function AppNavbar({
         <div className="ml-auto flex shrink-0 items-center gap-2">
           {user ? (
             <>
-              {/* Seller mode toggle — visible to ALL authenticated users */}
+              {/* Seller mode toggle — hidden on small mobile */}
               <Button
                 variant="outline"
                 size="sm"
-                className="items-center gap-1.5 border-primary/20 text-primary hover:bg-primary/5 hover:text-primary"
+                className="hidden items-center gap-1.5 border-primary/20 text-primary hover:bg-primary/5 hover:text-primary sm:flex"
                 asChild
               >
                 <Link href="/sell" aria-label="出品者モード">
                   <Store className="h-4 w-4" />
-                  <span className="hidden sm:inline">出品者モード</span>
+                  <span className="hidden lg:inline">出品者モード</span>
                 </Link>
               </Button>
               {isSeller && (
                 <Button
                   variant="outline"
                   size="sm"
-                  className="hidden items-center gap-1.5 sm:flex"
+                  className="hidden items-center gap-1.5 lg:flex"
                   asChild
                 >
                   <Link href={createHref}>
@@ -167,15 +168,19 @@ export function AppNavbar({
                 avatarUrl={avatarUrl}
                 subscriptionTier={subscriptionTier}
               />
+              {/* Mobile hamburger menu */}
+              <MobileNavMenu user={user} isSeller={isSeller} />
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" asChild>
+              <Button variant="ghost" size="sm" className="hidden sm:flex" asChild>
                 <Link href="/login">ログイン</Link>
               </Button>
               <Button size="sm" asChild>
                 <Link href="/login">無料で始める</Link>
               </Button>
+              {/* Mobile hamburger menu for unauthenticated users */}
+              <MobileNavMenu user={null} isSeller={false} />
             </>
           )}
         </div>

@@ -244,6 +244,7 @@ function EssayFields({
                 type="button"
                 variant="ghost"
                 size="sm"
+                aria-label="削除"
                 onClick={() => {
                   const updated = question.rubricElements.filter(
                     (_, j) => j !== i
@@ -329,6 +330,7 @@ function MarkSheetFields({
                 type="button"
                 variant="ghost"
                 size="sm"
+                aria-label="削除"
                 onClick={() => {
                   const updated = question.choices.filter(
                     (_, j) => j !== i
@@ -448,6 +450,7 @@ function FillInBlankFields({
                   type="button"
                   variant="ghost"
                   size="sm"
+                  aria-label="削除"
                   onClick={() => {
                     const updated = question.acceptedAnswers.filter(
                       (_, j) => j !== i
@@ -670,6 +673,7 @@ export function RubricEditor({
                     type="button"
                     variant="ghost"
                     size="sm"
+                    aria-label="削除"
                     onClick={() => {
                       setSections(
                         sections.filter(
@@ -757,6 +761,7 @@ export function RubricEditor({
                     type="button"
                     variant="ghost"
                     size="sm"
+                    aria-label="削除"
                     onClick={() => {
                       const updated =
                         section.questions.filter(

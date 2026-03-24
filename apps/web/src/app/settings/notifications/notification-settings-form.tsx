@@ -102,12 +102,14 @@ export function NotificationSettingsForm({
 }: NotificationSettingsFormProps) {
   const [prefs, setPrefs] =
     useState<NotificationPreferences>(initialPreferences);
+  const [savedPrefs, setSavedPrefs] =
+    useState<NotificationPreferences>(initialPreferences);
   const [isPending, startTransition] = useTransition();
-  const [hasChanges, setHasChanges] = useState(false);
+
+  const hasChanges = JSON.stringify(prefs) !== JSON.stringify(savedPrefs);
 
   function handleToggle(key: keyof NotificationPreferences, value: boolean) {
     setPrefs((prev) => ({ ...prev, [key]: value }));
-    setHasChanges(true);
   }
 
   function handleSave() {
@@ -117,7 +119,7 @@ export function NotificationSettingsForm({
         toast.error(result.error);
       } else {
         toast.success("通知設定を保存しました");
-        setHasChanges(false);
+        setSavedPrefs(prefs);
       }
     });
   }

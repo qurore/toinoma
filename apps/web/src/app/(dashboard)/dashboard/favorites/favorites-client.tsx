@@ -245,7 +245,7 @@ export function FavoritesClient({
                     }}
                     disabled={removingId === fav.problemSetId}
                     aria-label="お気に入りから削除"
-                    className="absolute left-2 top-2 z-10 rounded-full bg-white/90 p-1.5 opacity-0 shadow-sm backdrop-blur-sm transition-opacity group-hover:opacity-100"
+                    className="absolute left-2 top-2 z-10 rounded-full bg-background/90 p-1.5 shadow-sm backdrop-blur-sm transition-opacity sm:opacity-0 sm:group-hover:opacity-100"
                   >
                     {removingId === fav.problemSetId ? (
                       <Loader2 className="h-4 w-4 animate-spin text-red-500" />

@@ -256,7 +256,7 @@ export default async function ProblemDetailPage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="container mx-auto max-w-6xl px-4 pb-12 pt-16">
+      <main className="container mx-auto max-w-7xl px-4 pb-12 pt-16">
         {/* Breadcrumb navigation */}
         <nav aria-label="パンくずリスト" className="mb-6">
           <ol className="flex items-center gap-1 text-sm text-muted-foreground">

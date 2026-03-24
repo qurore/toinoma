@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import type { Metadata } from "next";
 import { Navbar } from "@/components/landing/navbar";
 import { HeroSection } from "@/components/landing/hero-section";
 import { ValueSection } from "@/components/landing/value-section";
@@ -11,6 +12,16 @@ import {
   NewArrivalsSection,
   TopRatedSection,
 } from "@/components/landing/featured-sections";
+
+export const metadata: Metadata = {
+  title: "問の間 (Toinoma) — AI採点付き入試問題マーケットプレイス",
+  description: "大学受験生のための、AI採点付き問題マーケットプレイス。大学生作問者がつくる本格入試問題で、実戦力を鍛えよう。9科目対応、記述式の部分点をAIが即座に判定。",
+  openGraph: {
+    title: "問の間 (Toinoma) — AI採点付き入試問題マーケットプレイス",
+    description: "大学受験生のための、AI採点付き問題マーケットプレイス。",
+    siteName: "Toinoma",
+  },
+};
 
 // Skeleton for featured sections while they load asynchronously
 function SectionSkeleton() {

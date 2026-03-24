@@ -1,6 +1,6 @@
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SellerSidebar, MobileSellerNav } from "@/components/seller/seller-sidebar";
-import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
+
 import { requireAuth } from "@/lib/auth/require-seller";
 
 export default async function SellerLayout({
@@ -21,14 +21,12 @@ export default async function SellerLayout({
       <MobileSellerNav />
       {/*
         Content offset:
-        - Mobile: pt-24 = navbar (h-14=56px) + mobile tab bar (h-10=40px) = 96px
-        - Desktop: pt-14 = navbar (h-14=56px) only, pl-60 = sidebar (w-60=240px)
+        - Mobile: pt-28 = navbar (h-16=64px) + mobile seller nav (h-10=40px) + gap = 112px
+        - Desktop: pt-16 = navbar (h-16=64px) only, pl-60 = sidebar (w-60=240px)
       */}
-      <div id="main-content" className="pb-16 pt-24 md:pb-0 md:pl-60 md:pt-14">
+      <div id="main-content" className="pt-28 md:pl-60 md:pt-16">
         {children}
       </div>
-      {/* Mobile app-level bottom tab bar */}
-      <MobileAppTabBar />
     </>
   );
 }

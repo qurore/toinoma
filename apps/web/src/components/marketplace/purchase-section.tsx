@@ -80,7 +80,7 @@ export function PurchaseSection({
             )}
           </div>
           <Button size="lg" className="w-full" asChild>
-            <Link href={`/login?redirect=/problem/${problemSetId}`}>
+            <Link href={`/login?next=/problem/${problemSetId}`}>
               <LogIn className="mr-2 h-4 w-4" />
               ログインして購入
             </Link>
@@ -117,8 +117,11 @@ export function PurchaseSection({
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
-        router.refresh();
+        // Free purchase — redirect to success-like state
+        router.push(`/problem/${problemSetId}/solve`);
       }
+    } catch {
+      setError("ネットワークエラーが発生しました。もう一度お試しください。");
     } finally {
       setIsLoading(false);
     }
@@ -163,7 +166,7 @@ export function PurchaseSection({
         )}
 
         {error && (
-          <p className="text-center text-sm text-destructive">{error}</p>
+          <p role="alert" className="text-center text-sm text-destructive">{error}</p>
         )}
 
         {/* Purchase button — text never changes per button stability rule */}
@@ -180,7 +183,7 @@ export function PurchaseSection({
           ) : (
             <ShoppingCart className="mr-2 h-4 w-4" />
           )}
-          {isFree ? "無料で始める" : "購入する"}
+          この問題を入手する
         </Button>
 
         {/* Trust signals */}

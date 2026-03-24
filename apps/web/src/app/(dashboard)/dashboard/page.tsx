@@ -30,12 +30,14 @@ export default async function DashboardPage() {
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  // Fetch data in parallel for performance
+  // Fetch all dashboard data in a single parallel batch
   const [
     { data: recentPurchases },
     { data: recentSubmissions },
     { count: purchaseCount },
     { count: submissionCount },
+    { data: allScored },
+    { data: streakSubmissions },
   ] = await Promise.all([
     supabase
       .from("purchases")
@@ -61,16 +63,20 @@ export default async function DashboardPage() {
       .from("submissions")
       .select("id", { count: "exact", head: true })
       .eq("user_id", user.id),
+    supabase
+      .from("submissions")
+      .select("score, max_score")
+      .eq("user_id", user.id)
+      .not("score", "is", null)
+      .not("max_score", "is", null),
+    supabase
+      .from("submissions")
+      .select("created_at")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false }),
   ]);
 
   // Calculate average score across all scored submissions
-  const { data: allScored } = await supabase
-    .from("submissions")
-    .select("score, max_score")
-    .eq("user_id", user.id)
-    .not("score", "is", null)
-    .not("max_score", "is", null);
-
   const scoredEntries = (allScored ?? []).filter(
     (s) => s.max_score != null && s.max_score > 0
   );
@@ -85,12 +91,6 @@ export default async function DashboardPage() {
       : null;
 
   // Calculate current study streak
-  const { data: streakSubmissions } = await supabase
-    .from("submissions")
-    .select("created_at")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false });
-
   const submissionDates = new Set(
     (streakSubmissions ?? []).map((s) =>
       new Date(s.created_at).toISOString().split("T")[0]
@@ -112,6 +112,7 @@ export default async function DashboardPage() {
 
   // Find "continue studying" — most recent purchase with fewer submissions
   // Identify purchased sets the user hasn't submitted answers for yet
+  // Note: this query depends on recentPurchases, so it runs after the parallel batch
   const purchasedSetIds = (recentPurchases ?? []).map(
     (p) => p.problem_set_id
   );

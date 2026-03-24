@@ -54,18 +54,19 @@ function Bubble({
   onClick,
   ariaLabel,
   choiceSetType,
+  tabIndex,
 }: {
   choice: string;
   isSelected: boolean;
   onClick: () => void;
   ariaLabel: string;
   choiceSetType: "alpha" | "numeric" | "katakana" | "mixed";
+  tabIndex: number;
 }) {
   const [animating, setAnimating] = useState(false);
   const prevSelected = useRef(isSelected);
 
   // Trigger fill animation when selection changes to this bubble.
-  // Use requestAnimationFrame to avoid synchronous setState in effect.
   useEffect(() => {
     if (isSelected && !prevSelected.current) {
       const rafId = requestAnimationFrame(() => {
@@ -87,17 +88,16 @@ function Bubble({
       aria-checked={isSelected}
       aria-label={ariaLabel}
       onClick={onClick}
+      tabIndex={tabIndex}
       className={cn(
         "relative flex items-center justify-center rounded-full border-2 transition-all select-none",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
         isSelected
           ? "border-primary bg-primary text-primary-foreground shadow-sm"
           : "border-border bg-card text-foreground hover:border-primary/40 hover:bg-muted/50",
-        // Choice set specific sizing — always meet minimum touch target
         choiceSetType === "numeric" || choiceSetType === "katakana"
           ? "h-11 w-11"
           : "h-11 min-w-11 px-3",
-        // Fill animation
         animating && "scale-110"
       )}
       style={{
@@ -106,7 +106,6 @@ function Bubble({
         transitionDuration: `${FILL_DURATION}ms`,
       }}
     >
-      {/* Inner fill ring for selected state */}
       {isSelected && (
         <span
           className={cn(
@@ -142,22 +141,56 @@ export function MarkSheetInput({
   const [selected, setSelected] = useState<string | null>(
     initialValue?.selected ?? null
   );
+  const bubblesRef = useRef<HTMLDivElement>(null);
 
   const handleSelect = useCallback(
     (choice: string) => {
-      // Toggle off if already selected
       const newValue = selected === choice ? null : choice;
       setSelected(newValue);
-      if (newValue) {
-        onChange({ type: "mark_sheet", selected: newValue });
-      }
+      onChange({ type: "mark_sheet", selected: newValue ?? "" });
     },
     [selected, onChange]
   );
 
   const handleClear = useCallback(() => {
     setSelected(null);
-  }, []);
+    onChange({ type: "mark_sheet", selected: "" });
+  }, [onChange]);
+
+  // Roving tabIndex: selected bubble gets tabIndex=0, others get -1
+  const focusableChoice = selected ?? choices[0] ?? null;
+
+  // Arrow key navigation for radiogroup (WAI-ARIA pattern)
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      const keys = ["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"];
+      if (!keys.includes(e.key)) return;
+
+      e.preventDefault();
+      const container = bubblesRef.current;
+      if (!container) return;
+
+      const buttons = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+      );
+      const currentIdx = buttons.findIndex(
+        (btn) => btn === document.activeElement
+      );
+      if (currentIdx === -1) return;
+
+      let nextIdx: number;
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+        nextIdx = (currentIdx + 1) % buttons.length;
+      } else {
+        nextIdx = (currentIdx - 1 + buttons.length) % buttons.length;
+      }
+
+      buttons[nextIdx].focus();
+      const targetChoice = choices[nextIdx];
+      if (targetChoice) handleSelect(targetChoice);
+    },
+    [choices, handleSelect]
+  );
 
   const choiceSetType = detectChoiceSetType(choices);
 
@@ -171,7 +204,6 @@ export function MarkSheetInput({
           )}
         </div>
 
-        {/* Clear selection button */}
         {selected && (
           <Button
             type="button"
@@ -186,8 +218,12 @@ export function MarkSheetInput({
         )}
       </div>
 
-      {/* Bubble grid mimicking real mark-sheet format */}
-      <div className="flex flex-wrap gap-2">
+      {/* Bubble grid with roving tabIndex and arrow key navigation */}
+      <div
+        className="flex flex-wrap gap-2"
+        ref={bubblesRef}
+        onKeyDown={handleKeyDown}
+      >
         {choices.map((choice) => (
           <Bubble
             key={choice}
@@ -196,6 +232,7 @@ export function MarkSheetInput({
             onClick={() => handleSelect(choice)}
             ariaLabel={`${questionNumber} ${choice}`}
             choiceSetType={choiceSetType}
+            tabIndex={choice === focusableChoice ? 0 : -1}
           />
         ))}
       </div>

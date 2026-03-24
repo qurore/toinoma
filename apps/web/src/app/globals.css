@@ -521,4 +521,10 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+
+  .animate-fade-up,
+  .animate-fade-in {
+    opacity: 1 !important;
+    animation: none !important;
+  }
 }

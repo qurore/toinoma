@@ -166,7 +166,8 @@ export async function TrendingSection() {
   const { data: recentPurchases } = await supabase
     .from("purchases")
     .select("problem_set_id")
-    .gte("created_at", thirtyDaysAgo.toISOString());
+    .gte("created_at", thirtyDaysAgo.toISOString())
+    .limit(100);
 
   let cards: ProblemSetCardData[] = [];
 
@@ -258,10 +259,11 @@ export async function NewArrivalsSection() {
 export async function TopRatedSection() {
   const supabase = await createClient();
 
-  // Get all reviews and aggregate
+  // Get reviews and aggregate (bounded to prevent unbounded data fetching)
   const { data: allReviews } = await supabase
     .from("reviews")
-    .select("problem_set_id, rating");
+    .select("problem_set_id, rating")
+    .limit(1000);
 
   let cards: ProblemSetCardData[] = [];
 

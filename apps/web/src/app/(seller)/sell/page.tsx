@@ -47,7 +47,7 @@ export default async function SellerDashboardPage() {
   const stripeComplete = !!sellerProfile?.stripe_account_id;
   const onboardingComplete = profileComplete && stripeComplete;
 
-  // Fetch problem sets
+  // Fetch problem sets first (other queries depend on the IDs)
   const { data: problemSets } = await supabase
     .from("problem_sets")
     .select("id, title, subject, difficulty, price, status, created_at")
@@ -66,89 +66,122 @@ export default async function SellerDashboardPage() {
   const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
   const sixtyDaysAgo = new Date(now.getTime() - 60 * 24 * 60 * 60 * 1000);
 
-  // Fetch current period purchases (last 30 days)
-  const { count: currentPurchaseCount } = await supabase
-    .from("purchases")
-    .select("id", { count: "exact", head: true })
-    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
-    .gte("created_at", thirtyDaysAgo.toISOString());
+  const pubIds = publishedIds.length > 0 ? publishedIds : ["__none__"];
+  const allSetIds = sets.length > 0 ? sets.map((s) => s.id) : ["__none__"];
 
-  // Fetch previous period purchases (30-60 days ago)
-  const { count: prevPurchaseCount } = await supabase
-    .from("purchases")
-    .select("id", { count: "exact", head: true })
-    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
-    .gte("created_at", sixtyDaysAgo.toISOString())
-    .lt("created_at", thirtyDaysAgo.toISOString());
-
-  // Fetch current period submissions (last 30 days)
-  const { count: currentSubmissionCount } = await supabase
-    .from("submissions")
-    .select("id", { count: "exact", head: true })
-    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
-    .gte("created_at", thirtyDaysAgo.toISOString());
-
-  // Fetch previous period submissions (30-60 days ago)
-  const { count: prevSubmissionCount } = await supabase
-    .from("submissions")
-    .select("id", { count: "exact", head: true })
-    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
-    .gte("created_at", sixtyDaysAgo.toISOString())
-    .lt("created_at", thirtyDaysAgo.toISOString());
-
-  // Fetch current period revenue (last 30 days)
-  const { data: currentRevenue } = await supabase
-    .from("purchases")
-    .select("amount_paid")
-    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
-    .gte("created_at", thirtyDaysAgo.toISOString());
-
-  const currentRevenueTotal = (currentRevenue ?? []).reduce(
-    (sum, p) => sum + p.amount_paid,
-    0
-  );
-
-  // Fetch previous period revenue (30-60 days ago)
-  const { data: prevRevenue } = await supabase
-    .from("purchases")
-    .select("amount_paid")
-    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
-    .gte("created_at", sixtyDaysAgo.toISOString())
-    .lt("created_at", thirtyDaysAgo.toISOString());
-
-  const prevRevenueTotal = (prevRevenue ?? []).reduce(
-    (sum, p) => sum + p.amount_paid,
-    0
-  );
-
-  // Fetch recent activity: last 10 across purchases, submissions, reviews
-  const allSetIds =
-    sets.length > 0 ? sets.map((s) => s.id) : ["__none__"];
-
+  // Fetch all dependent data in a single parallel batch
   const [
+    { count: currentPurchaseCount },
+    { count: prevPurchaseCount },
+    { count: currentSubmissionCount },
+    { count: prevSubmissionCount },
+    { data: currentRevenue },
+    { data: prevRevenue },
     { data: recentPurchases },
     { data: recentSubmissions },
     { data: recentReviews },
+    { data: allPurchasers },
+    { data: totalRevenueData },
+    { data: dailyPurchases },
+    { data: latestSubmissions },
   ] = await Promise.all([
+    // Current period purchases (last 30 days)
+    supabase
+      .from("purchases")
+      .select("id", { count: "exact", head: true })
+      .in("problem_set_id", pubIds)
+      .gte("created_at", thirtyDaysAgo.toISOString()),
+    // Previous period purchases (30-60 days ago)
+    supabase
+      .from("purchases")
+      .select("id", { count: "exact", head: true })
+      .in("problem_set_id", pubIds)
+      .gte("created_at", sixtyDaysAgo.toISOString())
+      .lt("created_at", thirtyDaysAgo.toISOString()),
+    // Current period submissions (last 30 days)
+    supabase
+      .from("submissions")
+      .select("id", { count: "exact", head: true })
+      .in("problem_set_id", pubIds)
+      .gte("created_at", thirtyDaysAgo.toISOString()),
+    // Previous period submissions (30-60 days ago)
+    supabase
+      .from("submissions")
+      .select("id", { count: "exact", head: true })
+      .in("problem_set_id", pubIds)
+      .gte("created_at", sixtyDaysAgo.toISOString())
+      .lt("created_at", thirtyDaysAgo.toISOString()),
+    // Current period revenue (last 30 days)
+    supabase
+      .from("purchases")
+      .select("amount_paid")
+      .in("problem_set_id", pubIds)
+      .gte("created_at", thirtyDaysAgo.toISOString()),
+    // Previous period revenue (30-60 days ago)
+    supabase
+      .from("purchases")
+      .select("amount_paid")
+      .in("problem_set_id", pubIds)
+      .gte("created_at", sixtyDaysAgo.toISOString())
+      .lt("created_at", thirtyDaysAgo.toISOString()),
+    // Recent activity: purchases
     supabase
       .from("purchases")
       .select("id, created_at, amount_paid, problem_set_id, problem_sets(title)")
       .in("problem_set_id", allSetIds)
       .order("created_at", { ascending: false })
       .limit(10),
+    // Recent activity: submissions
     supabase
       .from("submissions")
       .select("id, created_at, score, max_score, problem_set_id, problem_sets(title)")
       .in("problem_set_id", allSetIds)
       .order("created_at", { ascending: false })
       .limit(10),
+    // Recent activity: reviews
     supabase
       .from("reviews")
       .select("id, created_at, rating, body, problem_set_id, problem_sets(title)")
       .in("problem_set_id", allSetIds)
       .order("created_at", { ascending: false })
       .limit(10),
+    // Total unique students (purchasers)
+    supabase
+      .from("purchases")
+      .select("user_id")
+      .in("problem_set_id", pubIds),
+    // Total revenue across all time
+    supabase
+      .from("purchases")
+      .select("amount_paid")
+      .in("problem_set_id", pubIds),
+    // Daily purchase data for the chart
+    supabase
+      .from("purchases")
+      .select("amount_paid, created_at")
+      .in("problem_set_id", pubIds)
+      .gte("created_at", thirtyDaysAgo.toISOString())
+      .order("created_at", { ascending: true }),
+    // Latest 5 submissions for seller's problem sets
+    supabase
+      .from("submissions")
+      .select(
+        "id, created_at, score, max_score, problem_set_id, problem_sets(title), profiles(display_name)"
+      )
+      .in("problem_set_id", allSetIds)
+      .order("created_at", { ascending: false })
+      .limit(5),
   ]);
+
+  const currentRevenueTotal = (currentRevenue ?? []).reduce(
+    (sum, p) => sum + p.amount_paid,
+    0
+  );
+
+  const prevRevenueTotal = (prevRevenue ?? []).reduce(
+    (sum, p) => sum + p.amount_paid,
+    0
+  );
 
   // Merge and sort activity
   type ActivityItem = {
@@ -205,21 +238,9 @@ export default async function SellerDashboardPage() {
   );
   const recentActivity = activities.slice(0, 10);
 
-  // Fetch total unique students (purchasers)
-  const { data: allPurchasers } = await supabase
-    .from("purchases")
-    .select("user_id")
-    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"]);
-
   const uniqueStudents = new Set(
     (allPurchasers ?? []).map((p) => p.user_id)
   ).size;
-
-  // Fetch total revenue across all time
-  const { data: totalRevenueData } = await supabase
-    .from("purchases")
-    .select("amount_paid")
-    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"]);
 
   const totalRevenue = (totalRevenueData ?? []).reduce(
     (sum, p) => sum + p.amount_paid,
@@ -228,15 +249,6 @@ export default async function SellerDashboardPage() {
 
   // Aggregate last-30-day purchases by day for the revenue chart
   const revenueByDay: Record<string, number> = {};
-
-  // Fetch daily purchase data for the chart
-  const { data: dailyPurchases } = await supabase
-    .from("purchases")
-    .select("amount_paid, created_at")
-    .in("problem_set_id", publishedIds.length > 0 ? publishedIds : ["__none__"])
-    .gte("created_at", thirtyDaysAgo.toISOString())
-    .order("created_at", { ascending: true });
-
   for (const p of dailyPurchases ?? []) {
     const d = new Date(p.created_at);
     const key = `${d.getMonth() + 1}/${d.getDate()}`;
@@ -252,16 +264,6 @@ export default async function SellerDashboardPage() {
   }
 
   const chartMax = Math.max(...chartData.map((d) => d.revenue), 1);
-
-  // Fetch latest 5 submissions for seller's problem sets
-  const { data: latestSubmissions } = await supabase
-    .from("submissions")
-    .select(
-      "id, created_at, score, max_score, problem_set_id, problem_sets(title), profiles(display_name)"
-    )
-    .in("problem_set_id", allSetIds)
-    .order("created_at", { ascending: false })
-    .limit(5);
 
   return (
     <main className="container mx-auto px-4 py-8">
@@ -348,9 +350,7 @@ export default async function SellerDashboardPage() {
             </div>
             <Button asChild>
               <Link href="/sell/onboarding">
-                {!profileComplete
-                  ? "プロフィールを設定"
-                  : "支払い設定を完了"}
+                セットアップを続ける
               </Link>
             </Button>
           </div>

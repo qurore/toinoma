@@ -139,7 +139,7 @@ export function SidebarNav({
           </Badge>
           {subscriptionTier === "free" && (
             <Link
-              href="/settings"
+              href="/settings/subscription"
               className="flex items-center gap-1 text-[11px] font-medium text-primary transition-colors hover:text-primary/80"
             >
               <Sparkles className="h-3 w-3" />

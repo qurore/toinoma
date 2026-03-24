@@ -307,7 +307,11 @@ function AutoSaveIndicator({ lastSaved }: { lastSaved: number | null }) {
   });
 
   return (
-    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+    <div
+      className="flex items-center gap-1.5 text-xs text-muted-foreground"
+      aria-live="polite"
+      aria-atomic="true"
+    >
       <CheckCircle2 className="h-3 w-3 text-success" />
       <span>{timeStr} 自動保存済</span>
     </div>
@@ -717,7 +721,7 @@ export function SolveClient({
   >("idle");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showScrollNav, setShowScrollNav] = useState(false);
-  const [mobileTab, setMobileTab] = useState<string>("answers");
+  const [mobileTab, setMobileTab] = useState<string>(problemPdfUrl ? "problem" : "answers");
   const [dividerPosition, setDividerPosition] = useState(DEFAULT_DIVIDER_POSITION);
   const [initialized, setInitialized] = useState(false);
 
@@ -935,7 +939,7 @@ export function SolveClient({
 
   // Show grading status overlay
   if (gradingStatus !== "idle") {
-    return <GradingStatusIndicator status={gradingStatus} />;
+    return <GradingStatusIndicator status={gradingStatus} role="status" />;
   }
 
   if (result) {
@@ -1133,7 +1137,10 @@ export function SolveClient({
           解答を提出してAI採点
         </Button>
         <p className="mt-2 text-center text-xs text-muted-foreground">
-          Ctrl+Enter でも提出できます
+          {typeof navigator !== "undefined" && /Mac/i.test(navigator.platform)
+            ? "Cmd+Enter"
+            : "Ctrl+Enter"}{" "}
+          でも提出できます
         </p>
       </div>
 

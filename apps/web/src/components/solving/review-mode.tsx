@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -149,7 +149,7 @@ function EssayReview({
                 ratio >= 1
                   ? "border-success/20 bg-success/5"
                   : ratio > 0
-                    ? "border-amber-500/20 bg-amber-50"
+                    ? "border-amber-500/20 bg-amber-500/10"
                     : "border-destructive/20 bg-destructive/5";
               const iconColor =
                 ratio >= 1
@@ -393,18 +393,44 @@ export function ReviewMode({
 }: ReviewModeProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const current = questions[currentIndex];
-  if (!current) return null;
-
   const percentage = maxScore > 0 ? Math.round((totalScore / maxScore) * 100) : 0;
 
-  const goNext = () => {
+  const goNext = useCallback(() => {
     setCurrentIndex((prev) => Math.min(prev + 1, questions.length - 1));
-  };
+  }, [questions.length]);
 
-  const goPrev = () => {
+  const goPrev = useCallback(() => {
     setCurrentIndex((prev) => Math.max(prev - 1, 0));
-  };
+  }, []);
+
+  // Keyboard navigation: ArrowLeft/ArrowRight to navigate between questions
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Do not intercept when focus is inside an input, textarea, or contenteditable
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      if (e.key === "ArrowLeft") {
+        e.preventDefault();
+        goPrev();
+      } else if (e.key === "ArrowRight") {
+        e.preventDefault();
+        goNext();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [goNext, goPrev]);
+
+  const current = questions[currentIndex];
+  if (!current) return null;
 
   return (
     <div className="space-y-4">
@@ -602,6 +628,11 @@ export function ReviewMode({
           <ChevronLeft className="mr-1 h-4 w-4" />
           前の問題
         </Button>
+        <span className="hidden text-xs text-muted-foreground sm:inline-flex sm:items-center sm:gap-1.5">
+          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">←</kbd>
+          <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px]">→</kbd>
+          <span className="ml-0.5">で移動</span>
+        </span>
         <Button
           variant="outline"
           onClick={goNext}

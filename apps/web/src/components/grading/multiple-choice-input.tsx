@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RotateCcw, Check } from "lucide-react";
@@ -32,11 +32,13 @@ function OptionItem({
   isSelected,
   isMultiSelect,
   onClick,
+  tabIndex,
 }: {
   option: MultipleChoiceOption;
   isSelected: boolean;
   isMultiSelect: boolean;
   onClick: () => void;
+  tabIndex: number;
 }) {
   return (
     <button
@@ -45,6 +47,7 @@ function OptionItem({
       aria-checked={isSelected}
       aria-label={`${option.label}: ${option.value}`}
       onClick={onClick}
+      tabIndex={tabIndex}
       className={cn(
         "flex w-full items-center gap-3 rounded-lg border-2 px-4 py-3 text-left transition-all",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
@@ -131,11 +134,9 @@ export function MultipleChoiceInput({
           }
         }
 
-        // Emit change
+        // Always emit change including empty selection
         const selectedArray = Array.from(next);
-        if (selectedArray.length > 0) {
-          onChange({ type: "multiple_choice", selected: selectedArray });
-        }
+        onChange({ type: "multiple_choice", selected: selectedArray });
 
         return next;
       });
@@ -145,9 +146,55 @@ export function MultipleChoiceInput({
 
   const handleClear = useCallback(() => {
     setSelected(new Set());
-  }, []);
+    onChange({ type: "multiple_choice", selected: [] });
+  }, [onChange]);
 
   const selectedCount = selected.size;
+  const optionsContainerRef = useRef<HTMLDivElement>(null);
+
+  // Roving tabIndex: determine which option gets tabIndex={0}
+  const focusableLabel = (() => {
+    if (multiSelect) return null; // All checkboxes are independently focusable
+    // For radio: selected option gets focus, or first if none selected
+    const selectedLabels = Array.from(selected);
+    if (selectedLabels.length > 0) return selectedLabels[0];
+    return options[0]?.label ?? null;
+  })();
+
+  // Arrow key navigation for radiogroup (roving tabIndex pattern)
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (multiSelect) return; // Checkboxes use natural tab order
+
+      const keys = ["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft"];
+      if (!keys.includes(e.key)) return;
+
+      e.preventDefault();
+      const container = optionsContainerRef.current;
+      if (!container) return;
+
+      const buttons = Array.from(
+        container.querySelectorAll<HTMLButtonElement>('[role="radio"]')
+      );
+      const currentIdx = buttons.findIndex(
+        (btn) => btn === document.activeElement
+      );
+      if (currentIdx === -1) return;
+
+      let nextIdx: number;
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") {
+        nextIdx = (currentIdx + 1) % buttons.length;
+      } else {
+        nextIdx = (currentIdx - 1 + buttons.length) % buttons.length;
+      }
+
+      buttons[nextIdx].focus();
+      // Select the option on arrow key navigation (standard radiogroup behavior)
+      const optionLabel = options[nextIdx]?.label;
+      if (optionLabel) handleToggle(optionLabel);
+    },
+    [multiSelect, options, handleToggle]
+  );
 
   return (
     <div
@@ -181,7 +228,11 @@ export function MultipleChoiceInput({
       </div>
 
       {/* Options list */}
-      <div className="space-y-2">
+      <div
+        className="space-y-2"
+        ref={optionsContainerRef}
+        onKeyDown={handleKeyDown}
+      >
         {options.map((option) => (
           <OptionItem
             key={option.label}
@@ -189,6 +240,13 @@ export function MultipleChoiceInput({
             isSelected={selected.has(option.label)}
             isMultiSelect={multiSelect}
             onClick={() => handleToggle(option.label)}
+            tabIndex={
+              multiSelect
+                ? 0
+                : option.label === focusableLabel
+                  ? 0
+                  : -1
+            }
           />
         ))}
       </div>

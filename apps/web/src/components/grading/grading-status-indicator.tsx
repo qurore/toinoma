@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 
 interface GradingStatusIndicatorProps {
   status: "submitting" | "grading" | "complete" | "idle";
+  role?: React.AriaRole;
 }
 
 const STATUS_CONFIG = {
@@ -62,6 +63,7 @@ const GRADING_STEPS = [
 
 export function GradingStatusIndicator({
   status,
+  role,
 }: GradingStatusIndicatorProps) {
   const [dots, setDots] = useState("");
   const [activeStep, setActiveStep] = useState(0);
@@ -104,7 +106,7 @@ export function GradingStatusIndicator({
   const isAnimating = status === "submitting" || status === "grading";
 
   return (
-    <div className="flex min-h-[400px] items-center justify-center py-16">
+    <div className="flex min-h-[400px] items-center justify-center py-16" role={role} aria-live={role === "status" ? "polite" : undefined}>
       <div
         className={cn(
           "mx-auto w-full max-w-sm rounded-2xl border p-8 text-center shadow-lg transition-all duration-500",

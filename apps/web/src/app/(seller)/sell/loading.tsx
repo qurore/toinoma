@@ -10,8 +10,8 @@ export default function SellerLoading() {
       </div>
 
       {/* Stats row skeleton */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }, (_, i) => (
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {Array.from({ length: 5 }, (_, i) => (
           <div
             key={i}
             className="rounded-lg border border-border bg-card p-6"

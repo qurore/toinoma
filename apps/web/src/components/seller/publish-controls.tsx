@@ -7,6 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Loader2,
   Globe,
   EyeOff,
@@ -44,6 +54,7 @@ export function PublishControls({
   const [attested, setAttested] = useState(false);
   const [checks, setChecks] = useState<ValidationCheck[]>([]);
   const [isValidating, setIsValidating] = useState(true);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const runValidation = useCallback(async () => {
     setIsValidating(true);
@@ -181,9 +192,11 @@ export function PublishControls({
   };
 
   const handleDelete = async () => {
-    if (!confirm("この問題セットを削除しますか？この操作は取り消せません。")) {
-      return;
-    }
+    setShowDeleteConfirm(true);
+  };
+
+  const handleDeleteConfirmed = async () => {
+    setShowDeleteConfirm(false);
     setIsLoading(true);
     setError(null);
     const result = await deleteProblemSet(problemSetId);
@@ -334,6 +347,23 @@ export function PublishControls({
           )}
         </div>
       </CardContent>
+
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>問題セットを削除しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              この操作は元に戻せません。購入済みのユーザーはアクセスできなくなります。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirmed}>
+              削除する
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Card>
   );
 }

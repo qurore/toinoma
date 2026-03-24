@@ -64,20 +64,8 @@ function LatexPreview({ text }: { text: string }) {
       if (cancelled || !containerRef.current) return;
 
       try {
-        // Replace inline math delimiters \( ... \) and $ ... $ with rendered LaTeX
-        const processed = text.replace(
-          /\$([^$]+)\$|\\\(([^)]+)\\\)/g,
-          (_, g1, g2) => {
-            const expr = g1 ?? g2;
-            return katex.default.renderToString(expr, {
-              throwOnError: false,
-              displayMode: false,
-            });
-          }
-        );
-
-        // Replace display math $$ ... $$ and \[ ... \]
-        const withDisplay = processed.replace(
+        // Process display math FIRST ($$ ... $$ and \[ ... \]) before inline
+        const withDisplay = text.replace(
           /\$\$([^$]+)\$\$|\\\[([^\]]+)\\\]/g,
           (_, g1, g2) => {
             const expr = g1 ?? g2;
@@ -88,7 +76,19 @@ function LatexPreview({ text }: { text: string }) {
           }
         );
 
-        containerRef.current.innerHTML = withDisplay;
+        // Then replace inline math delimiters \( ... \) and $ ... $
+        const processed = withDisplay.replace(
+          /\$([^$]+)\$|\\\(([^)]+)\\\)/g,
+          (_, g1, g2) => {
+            const expr = g1 ?? g2;
+            return katex.default.renderToString(expr, {
+              throwOnError: false,
+              displayMode: false,
+            });
+          }
+        );
+
+        containerRef.current.innerHTML = processed;
         setError(null);
       } catch {
         setError("LaTeX のレンダリングに失敗しました");
@@ -136,6 +136,7 @@ export function EssayAnswerInput({
   const [genkoYoshi, setGenkoYoshi] = useState(false);
   const [verticalMode, setVerticalMode] = useState(false);
   const [showLatexPreview, setShowLatexPreview] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
@@ -179,10 +180,18 @@ export function EssayAnswerInput({
       if (!file) return;
 
       // Validate file type
-      if (!file.type.startsWith("image/")) return;
+      if (!file.type.startsWith("image/")) {
+        setUploadError("画像ファイル（JPEG, PNG, WebP）のみアップロードできます。");
+        return;
+      }
 
       // Validate file size (10MB max)
-      if (file.size > 10 * 1024 * 1024) return;
+      if (file.size > 10 * 1024 * 1024) {
+        setUploadError("ファイルサイズは10MB以下にしてください。");
+        return;
+      }
+
+      setUploadError(null);
 
       const reader = new FileReader();
       reader.onload = (ev) => {
@@ -225,6 +234,8 @@ export function EssayAnswerInput({
               size="sm"
               onClick={() => setGenkoYoshi(!genkoYoshi)}
               title="原稿用紙モード"
+              aria-label="原稿用紙モード"
+              aria-pressed={genkoYoshi}
               className="h-7 px-2"
             >
               <Grid3X3 className="h-3.5 w-3.5" />
@@ -239,6 +250,8 @@ export function EssayAnswerInput({
               size="sm"
               onClick={() => setVerticalMode(!verticalMode)}
               title="縦書きモード"
+              aria-label="縦書きモード"
+              aria-pressed={verticalMode}
               className="h-7 px-2"
             >
               <AlignVerticalSpaceAround className="h-3.5 w-3.5" />
@@ -253,6 +266,8 @@ export function EssayAnswerInput({
               size="sm"
               onClick={() => setShowLatexPreview(!showLatexPreview)}
               title="LaTeX プレビュー"
+              aria-label="LaTeX プレビュー"
+              aria-pressed={showLatexPreview}
               className="h-7 px-2"
             >
               {showLatexPreview ? (
@@ -416,6 +431,12 @@ export function EssayAnswerInput({
             </div>
           ) : (
             <div className="space-y-2">
+              {/* Upload error message */}
+              {uploadError && (
+                <p role="alert" className="text-sm text-destructive">
+                  {uploadError}
+                </p>
+              )}
               {/* File upload area */}
               <button
                 type="button"

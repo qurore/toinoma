@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SettingsSidebar } from "@/components/settings/settings-sidebar";
-import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
+
 
 const TIER_LABELS: Record<string, string> = {
   free: "フリー",
@@ -22,7 +22,7 @@ export default async function SettingsLayout({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <div className="pt-14">
+      <div className="pt-16">
         {/* Mobile top nav — horizontal tab bar, visible only on small screens */}
         <div className="border-b border-border md:hidden">
           <div className="mx-auto max-w-5xl px-4 py-2">
@@ -31,7 +31,7 @@ export default async function SettingsLayout({
         </div>
 
         {/* Desktop layout — sidebar + content */}
-        <div className="mx-auto flex min-h-[calc(100vh-3.5rem)] max-w-5xl px-4 sm:px-6">
+        <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-5xl px-4 sm:px-6">
           {/* Desktop sidebar — hidden on mobile */}
           <aside className="hidden w-56 shrink-0 border-r border-border py-8 pr-4 md:block">
             {/* User identity header */}
@@ -57,11 +57,9 @@ export default async function SettingsLayout({
           </aside>
 
           {/* Content */}
-          <main className="flex-1 py-8 pb-20 md:pb-8 md:pl-8">{children}</main>
+          <main className="flex-1 py-8 md:pl-8">{children}</main>
         </div>
       </div>
-      {/* Mobile app-level bottom tab bar */}
-      <MobileAppTabBar />
     </>
   );
 }

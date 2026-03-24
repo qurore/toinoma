@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { DashboardSidebar } from "@/components/dashboard/sidebar";
 import { MobileDashboardNav } from "@/components/dashboard/mobile-nav";
-import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
+
 import { createClient } from "@/lib/supabase/server";
 
 export default async function DashboardLayout({
@@ -62,15 +62,12 @@ export default async function DashboardLayout({
       <MobileDashboardNav />
       {/*
         Content offset:
-        - Mobile: pt-24 = navbar (h-14=56px) + mobile tab bar (h-10=40px) = 96px
-        - Desktop: pt-14 = navbar (h-14=56px) only, pl-60 = sidebar (w-60=240px)
-        - pb-16 on mobile accounts for the fixed bottom tab bar (h-14=56px + safe area)
+        - Mobile: pt-28 = navbar (h-16=64px) + mobile dashboard nav (h-10=40px) + gap = 112px
+        - Desktop: pt-16 = navbar (h-16=64px) only, pl-60 = sidebar (w-60=240px)
       */}
-      <div id="main-content" className="pb-16 pt-24 md:pb-0 md:pl-60 md:pt-14">
+      <main id="main-content" className="pt-28 md:pl-60 md:pt-16">
         {children}
-      </div>
-      {/* Mobile app-level bottom tab bar */}
-      <MobileAppTabBar />
+      </main>
     </>
   );
 }
