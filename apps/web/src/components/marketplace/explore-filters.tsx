@@ -356,9 +356,16 @@ function FilterContent({
               type="number"
               min="0"
               step="1"
+              inputMode="numeric"
               placeholder="¥ 下限"
               value={state.priceMin}
-              onChange={(e) => onChange({ priceMin: e.target.value })}
+              onChange={(e) => {
+                const v = e.target.value;
+                const n = parseInt(v, 10);
+                if (v === "" || (Number.isInteger(n) && n >= 0)) {
+                  onChange({ priceMin: v === "" ? "" : String(n) });
+                }
+              }}
               className="h-9 text-sm"
               aria-label="最低価格"
             />
@@ -369,9 +376,16 @@ function FilterContent({
               type="number"
               min="0"
               step="1"
+              inputMode="numeric"
               placeholder="¥ 上限"
               value={state.priceMax}
-              onChange={(e) => onChange({ priceMax: e.target.value })}
+              onChange={(e) => {
+                const v = e.target.value;
+                const n = parseInt(v, 10);
+                if (v === "" || (Number.isInteger(n) && n >= 0)) {
+                  onChange({ priceMax: v === "" ? "" : String(n) });
+                }
+              }}
               className="h-9 text-sm"
               aria-label="最高価格"
             />
