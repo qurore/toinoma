@@ -46,16 +46,33 @@ vi.mock("@/lib/subscription", () => ({
   }),
 }));
 
-vi.mock("@/lib/supabase/admin", () => ({
-  createAdminClient: vi.fn().mockReturnValue({
-    from: vi.fn().mockReturnValue({
-      insert: vi.fn().mockResolvedValue({ data: null, error: null }),
-    }),
+vi.mock("@/lib/ai/usage-manager", () => ({
+  canAffordAiCall: vi.fn().mockResolvedValue({
+    allowed: true,
+    budget: {
+      tier: "basic",
+      interval: "monthly",
+      monthlyBudgetJpy: 300,
+      costSpentJpy: 10,
+      budgetRemainingJpy: 290,
+      withinBudget: true,
+      usagePercent: 3.3,
+      totalTokens: 50000,
+    },
   }),
+  recordTokenUsage: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/lib/rate-limit", () => ({
-  rateLimitByUser: vi.fn().mockReturnValue({ allowed: true, remaining: 4 }),
+  rateLimitByUser: vi.fn().mockResolvedValue({ allowed: true, remaining: 4 }),
+}));
+
+vi.mock("@/lib/notifications", () => ({
+  notifyGrading: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/lib/usage-warnings", () => ({
+  checkAndNotifyUsage: vi.fn().mockResolvedValue(undefined),
 }));
 
 // Import the mocked modules so we can configure them per test

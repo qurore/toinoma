@@ -9,6 +9,9 @@ import {
   RotateCcw,
   FolderPlus,
   AlertTriangle,
+  Target,
+  Lightbulb,
+  TrendingUp,
 } from "lucide-react";
 import { gradingResultSchema } from "@toinoma/shared/schemas";
 import { GradingResultDisplay } from "@/components/grading/grading-result";
@@ -230,21 +233,109 @@ export default async function GradingResultPage({
           </div>
         )}
 
+        {/* Improvement advice section (score-based) */}
+        <div className="mt-6 rounded-lg border border-border bg-card">
+          <div className="border-b border-border px-5 py-4">
+            <h2 className="flex items-center gap-2 text-base font-semibold">
+              <Lightbulb className="h-4 w-4 text-primary" aria-hidden="true" />
+              学習アドバイス
+            </h2>
+          </div>
+          <div className="space-y-4 p-5">
+            {scorePercent >= 80 ? (
+              <>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success/10">
+                    <Target className="h-3.5 w-3.5 text-success" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-success">素晴らしい成績です</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      高得点を維持しています。間違えた問題を復習して、満点を目指しましょう。
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">次のステップ</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      より難易度の高い問題に挑戦して、さらに実力を伸ばしましょう。
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : scorePercent >= 50 ? (
+              <>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500/10">
+                    <Target className="h-3.5 w-3.5 text-amber-600" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">よく頑張りました</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      各大問のフィードバックを確認し、部分点を落としている箇所を重点的に復習しましょう。
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">得点アップのコツ</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      ルーブリック評価で減点されている要素を確認し、解答に含めるべきポイントを意識しましょう。
+                    </p>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
+                    <Target className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">伸びしろがあります</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      まずは各設問の総合フィードバックを読み、解答の方向性を確認しましょう。
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                    <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">基礎を固めよう</p>
+                    <p className="mt-0.5 text-sm text-muted-foreground">
+                      得点率の低い大問から優先的に復習し、繰り返し解くことで着実にスコアが上がります。
+                    </p>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+
         {/* Action buttons */}
-        <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-          <Button className="flex-1" asChild>
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <Button className="w-full" asChild>
             <Link href={`/problem/${id}/solve`}>
               <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
               もう一度解く
             </Link>
           </Button>
-          <Button variant="outline" className="flex-1" asChild>
+          <Button variant="outline" className="w-full" asChild>
             <Link href={`/problem/${id}/history`}>
               <History className="mr-1.5 h-4 w-4" aria-hidden="true" />
               履歴を見る
             </Link>
           </Button>
-          <Button variant="outline" className="flex-1" asChild>
+          <Button variant="outline" className="w-full" asChild>
             <Link href={`/dashboard/collections`}>
               <FolderPlus className="mr-1.5 h-4 w-4" aria-hidden="true" />
               コレクションに追加
@@ -254,17 +345,22 @@ export default async function GradingResultPage({
 
         {/* Review prompt (after 3+ submissions) */}
         {showReviewPrompt && (
-          <div className="mt-6 rounded-lg border border-border bg-muted/30 p-4">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-sm font-medium">
-                  この問題セットを評価しませんか？
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  レビューは他の学生の参考になります
-                </p>
+          <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
+                  <Star className="h-4 w-4 text-primary" aria-hidden="true" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium">
+                    この問題セットを評価しませんか？
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    レビューは他の学生の参考になります
+                  </p>
+                </div>
               </div>
-              <Button variant="outline" size="sm" asChild>
+              <Button size="sm" asChild>
                 <Link href={`/problem/${id}#reviews`}>
                   <Star className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                   レビューを書く
@@ -274,25 +370,8 @@ export default async function GradingResultPage({
           </div>
         )}
 
-        {/* Score-based encouragement message */}
-        <div className="mt-8 rounded-lg border border-border bg-muted/30 p-4 text-center">
-          {scorePercent >= 80 ? (
-            <p className="text-sm font-medium text-success">
-              素晴らしい結果です！この調子で頑張りましょう。
-            </p>
-          ) : scorePercent >= 50 ? (
-            <p className="text-sm font-medium text-foreground">
-              よく頑張りました。弱点を確認して、もう一度挑戦してみましょう。
-            </p>
-          ) : (
-            <p className="text-sm font-medium text-foreground">
-              まだ伸びしろがあります。解説を確認して、基礎を固めましょう。
-            </p>
-          )}
-        </div>
-
         {/* Grading disclaimer */}
-        <p role="note" className="mt-4 text-center text-xs text-muted-foreground">
+        <p role="note" className="mt-6 text-center text-xs text-muted-foreground">
           ※ AI採点は参考スコアです。最終的な判断はご自身でお願いいたします。
         </p>
 

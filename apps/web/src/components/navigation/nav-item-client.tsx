@@ -2,26 +2,19 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Grid2x2, House, LayoutDashboard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const iconMap = {
-  House,
-  Grid2x2,
-  LayoutDashboard,
-} as const;
-
-type IconName = keyof typeof iconMap;
-
-interface NavItemClientProps {
+interface NavLinkClientProps {
   href: string;
-  icon: IconName;
   label: string;
   exact?: boolean;
 }
 
-export function NavItemClient({ href, icon, label, exact }: NavItemClientProps) {
-  const Icon = iconMap[icon];
+/**
+ * Clean, text-only navigation link with active underline indicator.
+ * No icons — matches Udemy/Notion minimal nav style.
+ */
+export function NavLinkClient({ href, label, exact }: NavLinkClientProps) {
   const pathname = usePathname();
   const isActive = exact ? pathname === href : pathname.startsWith(href);
 
@@ -29,16 +22,18 @@ export function NavItemClient({ href, icon, label, exact }: NavItemClientProps) 
     <Link
       href={href}
       className={cn(
-        "relative flex flex-col items-center gap-0.5 rounded-md px-3 py-1.5 text-xs font-medium transition-colors",
+        "relative rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
         isActive
-          ? "text-primary"
-          : "text-foreground/60 hover:text-foreground"
+          ? "text-foreground"
+          : "text-muted-foreground hover:text-foreground"
       )}
     >
-      <Icon className="h-5 w-5" />
-      <span>{label}</span>
+      {label}
       {isActive && (
-        <span className="absolute -bottom-1.5 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-primary" aria-hidden="true" />
+        <span
+          className="absolute inset-x-3 -bottom-[19px] h-0.5 rounded-full bg-primary"
+          aria-hidden="true"
+        />
       )}
     </Link>
   );

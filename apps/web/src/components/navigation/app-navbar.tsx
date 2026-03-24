@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { BookOpen, Plus, Store } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { UserDropdown } from "./user-dropdown";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { SearchAutocomplete } from "@/components/marketplace/search-autocomplete";
 import { MobileNavMenu } from "./mobile-nav-menu";
+import { NavLinkClient } from "./nav-item-client";
 import type { SubscriptionTier } from "@/types/database";
 
 interface NotificationData {
@@ -92,21 +93,18 @@ export async function getNavbarData(): Promise<NavbarData> {
   };
 }
 
-import { NavItemClient } from "./nav-item-client";
-
 /**
  * AppNavbar — Server Component.
+ * Clean, Udemy-style navigation: logo | search | text links | actions.
  * Receives auth/profile data from the calling layout via getNavbarData().
  */
 export function AppNavbar({
   user, isSeller, displayName, avatarUrl, subscriptionTier,
   notificationCount, notifications,
 }: NavbarData) {
-  const createHref = isSeller ? "/seller/new" : "/seller/onboarding";
-
   return (
     <header className="fixed top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur-sm">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
         {/* Logo */}
         <Link href="/" className="flex shrink-0 items-center gap-2">
           <BookOpen className="h-5 w-5 text-primary" />
@@ -118,45 +116,20 @@ export function AppNavbar({
           </div>
         </Link>
 
-        {/* Search — client component with autocomplete */}
-        <SearchAutocomplete className="flex-1 max-w-sm" />
-
-        {/* Nav items — hidden on mobile, with active state */}
-        <nav className="hidden items-center md:flex" aria-label="メインナビゲーション">
-          <NavItemClient href="/" icon="House" label="ホーム" exact />
-          <NavItemClient href="/explore" icon="Grid2x2" label="問題を探す" />
-          <NavItemClient href="/dashboard" icon="LayoutDashboard" label="マイページ" />
+        {/* Desktop text links — clean, no icons */}
+        <nav className="hidden items-center gap-1 md:flex" aria-label="メインナビゲーション">
+          <NavLinkClient href="/explore" label="問題を探す" />
+          <NavLinkClient href="/rankings" label="ランキング" />
+          {user && <NavLinkClient href="/dashboard" label="マイページ" />}
         </nav>
 
+        {/* Search — client component with autocomplete */}
+        <SearchAutocomplete className="ml-auto hidden max-w-xs flex-1 sm:flex" />
+
         {/* Right-side actions */}
-        <div className="ml-auto flex shrink-0 items-center gap-2">
+        <div className="ml-auto flex shrink-0 items-center gap-2 sm:ml-0">
           {user ? (
             <>
-              {/* Seller mode toggle — hidden on small mobile */}
-              <Button
-                variant="outline"
-                size="sm"
-                className="hidden items-center gap-1.5 border-primary/20 text-primary hover:bg-primary/5 hover:text-primary sm:flex"
-                asChild
-              >
-                <Link href="/seller" aria-label="出品者モード">
-                  <Store className="h-4 w-4" />
-                  <span className="hidden lg:inline">出品者モード</span>
-                </Link>
-              </Button>
-              {isSeller && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="hidden items-center gap-1.5 lg:flex"
-                  asChild
-                >
-                  <Link href={createHref}>
-                    <Plus className="h-3.5 w-3.5" />
-                    出題する
-                  </Link>
-                </Button>
-              )}
               <NotificationBell
                 initialCount={notificationCount}
                 initialNotifications={notifications}

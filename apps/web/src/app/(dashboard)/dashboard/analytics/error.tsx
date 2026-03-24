@@ -19,7 +19,9 @@ export default function DashboardAnalyticsError({
   return (
     <div className="flex min-h-[50vh] items-center justify-center px-4">
       <div className="mx-auto max-w-md text-center">
-        <AlertCircle className="mx-auto h-12 w-12 text-destructive/60" />
+        <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-xl bg-destructive/10">
+          <AlertCircle className="h-7 w-7 text-destructive" />
+        </div>
         <h2 className="mt-4 text-lg font-semibold">エラーが発生しました</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           学習分析の読み込み中にエラーが発生しました。しばらく経ってから再度お試しください。

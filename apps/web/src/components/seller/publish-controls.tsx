@@ -55,6 +55,7 @@ export function PublishControls({
   const [checks, setChecks] = useState<ValidationCheck[]>([]);
   const [isValidating, setIsValidating] = useState(true);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
 
   const runValidation = useCallback(async () => {
     setIsValidating(true);
@@ -121,6 +122,11 @@ export function PublishControls({
           required: true,
         },
         {
+          label: "問題PDFがアップロードされている",
+          passed: !!ps?.problem_pdf_url,
+          required: true,
+        },
+        {
           label: "問題が1つ以上追加されている",
           passed: questionCount > 0,
           required: true,
@@ -166,8 +172,13 @@ export function PublishControls({
 
   const canPublish = allRequiredPassed && attested && !isValidating;
 
-  const handlePublish = async () => {
+  const handlePublishClick = () => {
     if (!canPublish) return;
+    setShowPublishConfirm(true);
+  };
+
+  const handlePublishConfirmed = async () => {
+    setShowPublishConfirm(false);
     setIsLoading(true);
     setError(null);
     const result = await publishProblemSet(problemSetId, true);
@@ -320,7 +331,7 @@ export function PublishControls({
           ) : (
             <>
               <Button
-                onClick={handlePublish}
+                onClick={handlePublishClick}
                 disabled={isLoading || !canPublish}
                 className="flex-1"
               >
@@ -348,6 +359,26 @@ export function PublishControls({
         </div>
       </CardContent>
 
+      {/* Publish confirmation dialog */}
+      <AlertDialog open={showPublishConfirm} onOpenChange={setShowPublishConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>問題セットを公開しますか？</AlertDialogTitle>
+            <AlertDialogDescription>
+              公開すると、すべてのユーザーがこの問題セットを閲覧・購入できるようになります。
+              公開後も非公開に戻すことができます。
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>キャンセル</AlertDialogCancel>
+            <AlertDialogAction onClick={handlePublishConfirmed}>
+              公開する
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete confirmation dialog */}
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>

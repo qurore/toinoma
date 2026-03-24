@@ -93,6 +93,23 @@ export function NotificationBell({
     };
   }, []);
 
+  // Polling fallback: fetch unread count every 30 seconds
+  useEffect(() => {
+    const intervalId = setInterval(async () => {
+      const supabase = createClient();
+      const { count } = await supabase
+        .from("notifications" as never)
+        .select("id", { count: "exact", head: true } as never)
+        .is("read_at" as never, null as never);
+
+      if (typeof count === "number") {
+        setUnreadCount(count);
+      }
+    }, 30_000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>

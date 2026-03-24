@@ -55,7 +55,7 @@ export default async function CouponsPage() {
     .eq("seller_id", user.id)
     .order("created_at", { ascending: false });
 
-  const allCoupons = (coupons ?? []) as Array<
+  const allCoupons = (coupons ?? []) as unknown as Array<
     CouponRow & { problem_sets: { title: string } | null }
   >;
 

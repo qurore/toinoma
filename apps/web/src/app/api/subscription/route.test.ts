@@ -49,7 +49,7 @@ vi.mock("@/lib/stripe", () => ({
 
 // Mock rate limiter to always allow requests in tests
 vi.mock("@/lib/rate-limit", () => ({
-  rateLimitByUser: vi.fn().mockReturnValue({ allowed: true, remaining: 99, resetAt: 0 }),
+  rateLimitByUser: vi.fn().mockResolvedValue({ allowed: true, remaining: 99, resetAt: 0 }),
 }));
 
 // Import the mocked modules so we can configure them per test
@@ -174,7 +174,7 @@ describe("POST /api/subscription", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toContain("Invalid interval");
+    expect(json.error).toContain("interval");
   });
 
   // -------------------------------------------------------------------------
@@ -215,7 +215,7 @@ describe("POST /api/subscription", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toContain("Invalid tier");
+    expect(json.error).toContain("tier");
   });
 
   it("should upsert stripe customer ID into user_subscriptions", async () => {
@@ -314,7 +314,7 @@ describe("PATCH /api/subscription", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Invalid action");
+    expect(json.error).toContain("action");
   });
 
   it("should return 400 when action is missing", async () => {
@@ -324,7 +324,7 @@ describe("PATCH /api/subscription", () => {
     const json = await res.json();
 
     expect(res.status).toBe(400);
-    expect(json.error).toBe("Invalid action");
+    expect(json.error).toContain("action");
   });
 
   // -------------------------------------------------------------------------

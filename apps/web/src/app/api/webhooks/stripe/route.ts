@@ -31,31 +31,29 @@ function mapPriceIdToTier(
   return mapping[priceId] ?? "free";
 }
 
-// ── Idempotency guard (in-memory) ───────────────────────────────────
-// Prevents duplicate processing of the same webhook event.
-// For production scale, replace with Redis or DB-backed deduplication.
+// ── DB-backed idempotency guard ─────────────────────────────────────
+// Uses the webhook_events table to prevent duplicate processing.
+// INSERT with ON CONFLICT is atomic — safe under concurrent delivery.
 
-const processedEvents = new Map<string, number>();
-const MAX_CACHE_SIZE = 10_000;
-const EVENT_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+async function tryClaimEvent(
+  supabase: ReturnType<typeof createAdminClient>,
+  eventId: string,
+  eventType: string
+): Promise<boolean> {
+  const { error } = await supabase.from("webhook_events").insert({
+    event_id: eventId,
+    event_type: eventType,
+  });
 
-function isEventProcessed(eventId: string): boolean {
-  const timestamp = processedEvents.get(eventId);
-  if (timestamp && Date.now() - timestamp < EVENT_TTL_MS) {
-    return true;
-  }
-  return false;
-}
-
-function markEventProcessed(eventId: string): void {
-  // Evict old entries if cache is too large
-  if (processedEvents.size >= MAX_CACHE_SIZE) {
-    const cutoff = Date.now() - EVENT_TTL_MS;
-    for (const [key, ts] of processedEvents) {
-      if (ts < cutoff) processedEvents.delete(key);
+  if (error) {
+    // Unique constraint violation means the event was already processed
+    if (error.code === "23505") {
+      return false;
     }
+    // Unexpected DB error — log but allow processing to avoid dropping events
+    console.error("[webhook] Failed to record event for idempotency:", error);
   }
-  processedEvents.set(eventId, Date.now());
+  return true;
 }
 
 // ── Webhook Handler ──────────────────────────────────────────────────
@@ -96,13 +94,13 @@ export async function POST(request: Request) {
     );
   }
 
-  // ── Idempotency check ─────────────────────────────────────────
-  if (isEventProcessed(event.id)) {
+  const supabase = createAdminClient();
+
+  // ── Idempotency check (DB-backed) ──────────────────────────────
+  const claimed = await tryClaimEvent(supabase, event.id, event.type);
+  if (!claimed) {
     return NextResponse.json({ received: true, deduplicated: true });
   }
-  markEventProcessed(event.id);
-
-  const supabase = createAdminClient();
 
   try {
     switch (event.type) {
@@ -211,15 +209,21 @@ async function handleCheckoutCompleted(
     return;
   }
 
-  // Resolve user: prefer metadata user_id, fall back to email lookup
+  // Resolve user: prefer metadata user_id, fall back to targeted email lookup.
+  // IMPORTANT: Never use listUsers() — it loads ALL users into memory (O(n), data leak risk).
+  // Instead, query auth.users directly via the admin client's RPC or SQL.
   let buyerId = userId;
 
   if (!buyerId && session.customer_email) {
-    const { data: userData } = await supabase.auth.admin.listUsers();
-    const buyer = userData?.users.find(
-      (u) => u.email === session.customer_email
-    );
-    buyerId = buyer?.id;
+    // Use service-role query against auth.users to find user by email.
+    // This is a targeted single-row lookup, not a full table scan.
+    const { data: matchedUsers } = await supabase.rpc("get_user_id_by_email", {
+      lookup_email: session.customer_email,
+    });
+
+    if (matchedUsers && matchedUsers.length > 0) {
+      buyerId = matchedUsers[0].id;
+    }
   }
 
   if (!buyerId) {

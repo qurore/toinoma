@@ -5,11 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
-  Store,
-  BookOpen,
-  BarChart3,
-  Sparkles,
-  CheckCircle2,
+  Check,
   ArrowLeft,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -26,17 +22,14 @@ import { acceptSellerTos } from "@/app/(seller)/seller/actions";
 
 const VALUE_PROPS = [
   {
-    icon: BookOpen,
     title: "問題セットを作成・販売",
     description: "オリジナルの大学受験問題を出品して収益を得られます",
   },
   {
-    icon: Sparkles,
     title: "AI採点で差別化",
     description: "記述式の部分点採点で購入者に付加価値を提供",
   },
   {
-    icon: BarChart3,
     title: "販売分析で改善",
     description: "売上推移や正答率データで問題の質を向上",
   },
@@ -71,18 +64,18 @@ export function SellerTosGate() {
     }, 1200);
   }
 
-  // Success state — shown briefly after acceptance
+  // Success state -- shown briefly after acceptance
   if (accepted) {
     return (
       <>
         <div className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" />
         <main className="fixed inset-0 z-50 flex items-center justify-center px-4 py-12">
           <div className="flex flex-col items-center gap-4 text-center">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-success/10 shadow-[0_0_0_8px_hsl(142_71%_45%/0.06)]">
-              <CheckCircle2 className="h-10 w-10 text-success" />
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-foreground">
+              <Check className="h-6 w-6 text-background" />
             </div>
-            <h2 className="text-xl font-bold tracking-tight">
-              ようこそ、出品者モードへ！
+            <h2 className="text-lg font-semibold tracking-tight">
+              ようこそ、出品者モードへ
             </h2>
             <p className="text-sm text-muted-foreground">
               ダッシュボードを準備しています...
@@ -102,10 +95,7 @@ export function SellerTosGate() {
         <div className="w-full max-w-lg">
           <Card className="shadow-lg">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 shadow-[0_0_0_6px_hsl(142_71%_38%/0.06)]">
-                <Store className="h-7 w-7 text-primary" />
-              </div>
-              <CardTitle className="text-xl">
+              <CardTitle className="text-lg">
                 出品者として始めましょう
               </CardTitle>
               <CardDescription>
@@ -115,33 +105,28 @@ export function SellerTosGate() {
 
             <CardContent className="space-y-6">
               {/* Value propositions */}
-              <div className="grid gap-3">
+              <div className="grid gap-2.5">
                 {VALUE_PROPS.map((prop) => (
                   <div
                     key={prop.title}
-                    className="flex items-start gap-3 rounded-lg border border-border/50 bg-muted/30 p-3"
+                    className="rounded-lg border border-border/60 px-4 py-3"
                   >
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                      <prop.icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium">{prop.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {prop.description}
-                      </p>
-                    </div>
+                    <p className="text-sm font-medium">{prop.title}</p>
+                    <p className="mt-0.5 text-xs text-muted-foreground">
+                      {prop.description}
+                    </p>
                   </div>
                 ))}
               </div>
 
-            {/* ToS content — scrollable with gradient fade */}
+            {/* ToS content -- scrollable with gradient fade */}
             <div>
               <p className="mb-2 text-xs font-medium text-muted-foreground">
                 出品者利用規約
               </p>
               <div className="relative">
                 <div
-                  className="max-h-[200px] overflow-y-auto rounded-md border border-border bg-muted/30 p-4 text-xs leading-relaxed text-foreground/80"
+                  className="max-h-[200px] overflow-y-auto rounded-md border border-border bg-muted/20 p-4 text-xs leading-relaxed text-foreground/80"
                   tabIndex={0}
                   role="document"
                   aria-label="出品者利用規約の内容"
@@ -196,7 +181,7 @@ export function SellerTosGate() {
                   </p>
                 </div>
                 {/* Bottom gradient fade indicating more content */}
-                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 rounded-b-md bg-gradient-to-t from-muted/30 to-transparent" />
+                <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-6 rounded-b-md bg-gradient-to-t from-muted/20 to-transparent" />
               </div>
             </div>
 

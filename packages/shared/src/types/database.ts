@@ -994,9 +994,149 @@ export interface Database {
           },
         ];
       };
+      recently_viewed: {
+        Row: {
+          id: string;
+          user_id: string;
+          problem_set_id: string;
+          viewed_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          problem_set_id: string;
+          viewed_at?: string;
+        };
+        Update: {
+          viewed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "recently_viewed_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recently_viewed_problem_set_id_fkey";
+            columns: ["problem_set_id"];
+            isOneToOne: false;
+            referencedRelation: "problem_sets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      user_notes: {
+        Row: {
+          id: string;
+          user_id: string;
+          problem_set_id: string;
+          question_id: string | null;
+          content: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          problem_set_id: string;
+          question_id?: string | null;
+          content: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          content?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "user_notes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bookmarks: {
+        Row: {
+          id: string;
+          user_id: string;
+          problem_set_id: string;
+          question_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          problem_set_id: string;
+          question_id?: string | null;
+          created_at?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [
+          {
+            foreignKeyName: "bookmarks_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      webhook_events: {
+        Row: {
+          id: string;
+          event_id: string;
+          event_type: string;
+          processed_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          event_type: string;
+          processed_at?: string;
+        };
+        Update: Record<string, never>;
+        Relationships: [];
+      };
+      rate_limits: {
+        Row: {
+          id: string;
+          key: string;
+          count: number;
+          window_start: string;
+          window_ms: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          key: string;
+          count?: number;
+          window_start?: string;
+          window_ms: number;
+          created_at?: string;
+        };
+        Update: {
+          count?: number;
+          window_start?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      get_user_id_by_email: {
+        Args: { lookup_email: string };
+        Returns: { id: string }[];
+      };
+      cleanup_expired_rate_limits: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+    };
     Enums: {
       subject: Subject;
       difficulty: Difficulty;

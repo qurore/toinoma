@@ -109,7 +109,7 @@ export function PurchaseSection({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           problemSetId,
-          ...(appliedCoupon ? { couponId: appliedCoupon.couponId } : {}),
+          ...(appliedCoupon ? { couponCode: appliedCoupon.code } : {}),
         }),
       });
 
@@ -190,6 +190,22 @@ export function PurchaseSection({
           )}
           この問題を入手する
         </Button>
+
+        {/* What you get list */}
+        <ul className="space-y-2 border-t border-border pt-3 text-xs text-muted-foreground">
+          <li className="flex items-center gap-2">
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden="true" />
+            AI採点による即時フィードバック
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden="true" />
+            何度でも繰り返し解答可能
+          </li>
+          <li className="flex items-center gap-2">
+            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden="true" />
+            得点推移の確認・比較機能
+          </li>
+        </ul>
 
         {/* Trust signals */}
         {!isFree && (

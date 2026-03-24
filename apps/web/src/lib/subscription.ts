@@ -1,6 +1,7 @@
 // Subscription status helpers (FR-030)
 import { createClient } from "@/lib/supabase/server";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
+import { canAffordAiCall, type UsageBudget } from "@/lib/ai/usage-manager";
 import type { SubscriptionTier } from "@/types/database";
 
 // ── Tier Feature Matrix ──────────────────────────────────────────────
@@ -93,19 +94,34 @@ export async function getSubscriptionState(
     .eq("user_id", userId)
     .single();
 
+  const now = new Date();
   const tier: SubscriptionTier = sub?.tier ?? "free";
   const status = sub?.status ?? "active";
 
-  // Active means: no subscription record (free), active, trialing, or within grace period
+  // Grace period: user retains paid-tier access during a 3-day window after payment failure.
+  // If the grace period has expired but the webhook hasn't fired yet to cancel the subscription,
+  // we treat the user as inactive to prevent unauthorized access during the race window.
+  const gracePeriodEnd = sub?.grace_period_end ?? null;
+  const isInGracePeriod =
+    status === "past_due" &&
+    gracePeriodEnd != null &&
+    new Date(gracePeriodEnd) > now;
+  const isGracePeriodExpired =
+    status === "past_due" &&
+    gracePeriodEnd != null &&
+    new Date(gracePeriodEnd) <= now;
+
+  // Active means: no subscription record (free), active, trialing, or within grace period.
+  // Expired grace period = NOT active, even if webhook hasn't fired yet.
   const isActive =
     !sub ||
     status === "active" ||
     status === "trialing" ||
-    (status === "past_due" &&
-      sub.grace_period_end != null &&
-      new Date(sub.grace_period_end) > new Date());
+    isInGracePeriod;
 
-  const features = TIER_FEATURE_MATRIX[tier];
+  // If grace period expired, treat as free tier for feature access
+  const effectiveTier: SubscriptionTier = isGracePeriodExpired ? "free" : tier;
+  const features = TIER_FEATURE_MATRIX[effectiveTier];
   const gradingLimit = features.gradingLimit;
 
   // Determine the billing period boundaries for usage counting.
@@ -131,10 +147,12 @@ export async function getSubscriptionState(
     gradingLimit === -1
       ? Infinity
       : Math.max(0, gradingLimit - gradingsUsed);
-  const canGrade = gradingLimit === -1 || gradingsRemaining > 0;
+
+  // canGrade requires both: within count limit AND subscription is active
+  const canGrade = isActive && (gradingLimit === -1 || gradingsRemaining > 0);
 
   return {
-    tier,
+    tier: effectiveTier,
     isActive,
     gradingLimit,
     gradingsUsedThisMonth: gradingsUsed,
@@ -147,7 +165,7 @@ export async function getSubscriptionState(
     status,
     interval: (sub?.interval as "monthly" | "annual" | null) ?? null,
     features,
-    gracePeriodEnd: sub?.grace_period_end ?? null,
+    gracePeriodEnd,
   };
 }
 
@@ -170,5 +188,67 @@ export async function checkGradingAllowance(
     used: state.gradingsUsedThisPeriod,
     tier: state.tier,
     upgradeRequired: !state.canGrade && state.tier !== "pro",
+  };
+}
+
+// ── Combined Enforcement ────────────────────────────────────────────
+
+export interface GradingWithBudgetResult {
+  allowed: boolean;
+  /** The reason grading was denied, if applicable */
+  denialReason:
+    | "count_limit_reached"
+    | "subscription_inactive"
+    | "free_tier_no_ai_budget"
+    | "cost_budget_exceeded"
+    | null;
+  countAllowance: GradingAllowance;
+  budget: UsageBudget;
+}
+
+/**
+ * Combined gate that checks BOTH grading count limit AND AI cost budget.
+ * A user must pass both checks to be allowed to grade.
+ * This is the single source of truth for "can this user submit for grading?"
+ */
+export async function canGradeWithBudget(
+  userId: string
+): Promise<GradingWithBudgetResult> {
+  // Run both checks in parallel for performance
+  const [countAllowance, budgetResult] = await Promise.all([
+    checkGradingAllowance(userId),
+    canAffordAiCall(userId),
+  ]);
+
+  // Check count limit first (more actionable for the user)
+  if (!countAllowance.allowed) {
+    return {
+      allowed: false,
+      denialReason: countAllowance.upgradeRequired
+        ? "count_limit_reached"
+        : "subscription_inactive",
+      countAllowance,
+      budget: budgetResult.budget,
+    };
+  }
+
+  // Check cost budget
+  if (!budgetResult.allowed) {
+    return {
+      allowed: false,
+      denialReason:
+        budgetResult.reason === "free_tier_no_ai_budget"
+          ? "free_tier_no_ai_budget"
+          : "cost_budget_exceeded",
+      countAllowance,
+      budget: budgetResult.budget,
+    };
+  }
+
+  return {
+    allowed: true,
+    denialReason: null,
+    countAllowance,
+    budget: budgetResult.budget,
   };
 }

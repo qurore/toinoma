@@ -2,13 +2,53 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { problemSetRubricSchema } from "@toinoma/shared/schemas";
+import { SUBJECTS, DIFFICULTIES } from "@toinoma/shared/constants";
 import type { Database } from "@/types/database";
 
 type ProblemSetInsert = Database["public"]["Tables"]["problem_sets"]["Insert"];
-type Subject = Database["public"]["Enums"]["subject"];
-type Difficulty = Database["public"]["Enums"]["difficulty"];
+
+// Zod schemas for server action input validation
+const problemSetBaseSchema = z.object({
+  title: z
+    .string()
+    .min(1, "タイトルは必須です")
+    .max(200, "タイトルは200文字以内で入力してください"),
+  description: z.string().max(2000).optional().default(""),
+  subject: z.enum(SUBJECTS as unknown as [string, ...string[]], {
+    error: "有効な教科を選択してください",
+  }),
+  university: z.string().max(200).optional().default(""),
+  difficulty: z.enum(DIFFICULTIES as unknown as [string, ...string[]], {
+    error: "有効な難易度を選択してください",
+  }),
+  price: z
+    .number()
+    .int()
+    .min(0, "価格は0円以上で設定してください")
+    .max(100_000, "価格は100,000円以下で設定してください"),
+});
+
+/**
+ * Parse FormData through the Zod schema for createProblemSet / updateProblemSet.
+ */
+function parseFormData(formData: FormData) {
+  const raw = {
+    title: (formData.get("title") as string) ?? "",
+    description: (formData.get("description") as string) ?? "",
+    subject: (formData.get("subject") as string) ?? "",
+    university: (formData.get("university") as string) ?? "",
+    difficulty: (formData.get("difficulty") as string) ?? "",
+    price: parseInt((formData.get("price") as string) ?? "0", 10),
+  };
+
+  // Coerce NaN to 0 before schema validation
+  if (isNaN(raw.price)) raw.price = 0;
+
+  return problemSetBaseSchema.safeParse(raw);
+}
 
 /**
  * Accept seller Terms of Service.
@@ -49,25 +89,21 @@ export async function createProblemSet(formData: FormData) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "認証が必要です" };
 
-  const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
-  const subject = formData.get("subject") as Subject;
-  const university = formData.get("university") as string;
-  const difficulty = formData.get("difficulty") as Difficulty;
-  const price = parseInt(formData.get("price") as string, 10);
-
-  if (!title || !subject || !difficulty) {
-    return { error: "必須項目を入力してください" };
+  const parsed = parseFormData(formData);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
   }
+  const { title, description, subject, university, difficulty, price } =
+    parsed.data;
 
   const insert: ProblemSetInsert = {
     seller_id: user.id,
     title,
     description: description || null,
-    subject,
+    subject: subject as ProblemSetInsert["subject"],
     university: university || null,
-    difficulty,
-    price: isNaN(price) ? 0 : price,
+    difficulty: difficulty as ProblemSetInsert["difficulty"],
+    price,
     status: "draft",
   };
 
@@ -94,26 +130,27 @@ export async function updateProblemSet(
   } = await supabase.auth.getUser();
   if (!user) return { error: "認証が必要です" };
 
-  const title = formData.get("title") as string;
-  const description = formData.get("description") as string;
-  const subject = formData.get("subject") as Subject;
-  const university = formData.get("university") as string;
-  const difficulty = formData.get("difficulty") as Difficulty;
-  const price = parseInt(formData.get("price") as string, 10);
-
-  if (!title || !subject || !difficulty) {
-    return { error: "必須項目を入力してください" };
+  // Validate problemSetId format (UUID)
+  if (!z.string().uuid().safeParse(problemSetId).success) {
+    return { error: "無効な問題セットIDです" };
   }
+
+  const parsed = parseFormData(formData);
+  if (!parsed.success) {
+    return { error: parsed.error.issues[0].message };
+  }
+  const { title, description, subject, university, difficulty, price } =
+    parsed.data;
 
   const { error } = await supabase
     .from("problem_sets")
     .update({
       title,
       description: description || null,
-      subject,
+      subject: subject as ProblemSetInsert["subject"],
       university: university || null,
-      difficulty,
-      price: isNaN(price) ? 0 : price,
+      difficulty: difficulty as ProblemSetInsert["difficulty"],
+      price,
     })
     .eq("id", problemSetId)
     .eq("seller_id", user.id);
@@ -132,6 +169,10 @@ export async function saveRubric(problemSetId: string, rubricJson: string) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "認証が必要です" };
+
+  if (!z.string().uuid().safeParse(problemSetId).success) {
+    return { error: "無効な問題セットIDです" };
+  }
 
   let rubric: unknown;
   try {
@@ -169,6 +210,10 @@ export async function publishProblemSet(
   } = await supabase.auth.getUser();
   if (!user) return { error: "認証が必要です" };
 
+  if (!z.string().uuid().safeParse(problemSetId).success) {
+    return { error: "無効な問題セットIDです" };
+  }
+
   // FR-017: Originality attestation is required
   if (!attestation) {
     return { error: "オリジナリティの確認が必要です" };
@@ -187,22 +232,39 @@ export async function publishProblemSet(
     return { error: "24時間以内に公開できる問題セットは5件までです。時間をおいて再度お試しください。" };
   }
 
-  // Verify the problem set has a rubric
+  // Verify the problem set has required data for publishing
   const { data: ps } = await supabase
     .from("problem_sets")
-    .select("rubric, problem_pdf_url")
+    .select("rubric, problem_pdf_url, total_points")
     .eq("id", problemSetId)
     .eq("seller_id", user.id)
     .single();
 
   if (!ps) return { error: "問題セットが見つかりません" };
-  if (!ps.rubric) return { error: "ルーブリックを設定してください" };
   if (!ps.problem_pdf_url)
     return { error: "問題PDFをアップロードしてください" };
 
-  const rubricResult = problemSetRubricSchema.safeParse(ps.rubric);
-  if (!rubricResult.success) {
-    return { error: "ルーブリックが有効な形式ではありません" };
+  // Check linked questions
+  const { count: questionCount } = await supabase
+    .from("problem_set_questions")
+    .select("id", { count: "exact", head: true })
+    .eq("problem_set_id", problemSetId);
+
+  if ((questionCount ?? 0) === 0) {
+    return { error: "少なくとも1つの問題を追加してください" };
+  }
+
+  // Validate rubric if present (legacy format)
+  if (ps.rubric) {
+    const rubricResult = problemSetRubricSchema.safeParse(ps.rubric);
+    if (!rubricResult.success) {
+      return { error: "ルーブリックが有効な形式ではありません" };
+    }
+  }
+
+  // Verify total points are set
+  if ((ps.total_points ?? 0) <= 0) {
+    return { error: "合計配点が0点より大きい必要があります" };
   }
 
   const { error } = await supabase
@@ -225,6 +287,10 @@ export async function unpublishProblemSet(problemSetId: string) {
   } = await supabase.auth.getUser();
   if (!user) return { error: "認証が必要です" };
 
+  if (!z.string().uuid().safeParse(problemSetId).success) {
+    return { error: "無効な問題セットIDです" };
+  }
+
   const { error } = await supabase
     .from("problem_sets")
     .update({ status: "draft" })
@@ -243,6 +309,10 @@ export async function deleteProblemSet(problemSetId: string) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "認証が必要です" };
+
+  if (!z.string().uuid().safeParse(problemSetId).success) {
+    return { error: "無効な問題セットIDです" };
+  }
 
   // Only allow deleting drafts
   const { data: ps } = await supabase
@@ -280,6 +350,16 @@ export async function updateProblemPdfUrl(
   } = await supabase.auth.getUser();
   if (!user) return { error: "認証が必要です" };
 
+  if (!z.string().uuid().safeParse(problemSetId).success) {
+    return { error: "無効な問題セットIDです" };
+  }
+  if (!z.string().url().safeParse(url).success) {
+    return { error: "無効なURLです" };
+  }
+  if (!z.enum(["problem", "solution"]).safeParse(type).success) {
+    return { error: "無効なタイプです" };
+  }
+
   const field =
     type === "problem" ? "problem_pdf_url" : "solution_pdf_url";
 
@@ -305,6 +385,13 @@ export async function updateCoverImageUrl(
   } = await supabase.auth.getUser();
   if (!user) return { error: "認証が必要です" };
 
+  if (!z.string().uuid().safeParse(problemSetId).success) {
+    return { error: "無効な問題セットIDです" };
+  }
+  if (url !== null && !z.string().url().safeParse(url).success) {
+    return { error: "無効なURLです" };
+  }
+
   const { error } = await supabase
     .from("problem_sets")
     .update({ cover_image_url: url })
@@ -323,6 +410,10 @@ export async function duplicateProblemSet(problemSetId: string) {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) return { error: "認証が必要です" };
+
+  if (!z.string().uuid().safeParse(problemSetId).success) {
+    return { error: "無効な問題セットIDです" };
+  }
 
   // Fetch the original problem set
   const { data: original } = await supabase

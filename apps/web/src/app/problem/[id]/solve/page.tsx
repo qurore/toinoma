@@ -208,10 +208,20 @@ export default async function ProblemSolvePage({
       </header>
 
       <main id="main-content" className="mx-auto max-w-7xl px-4 pb-8 pt-24 sm:px-6 md:pt-20">
-        <div className="mb-6 rounded-lg border border-border bg-muted/30 px-4 py-3">
-          <p className="text-sm text-muted-foreground">
-            各問題に解答を入力し、「採点する」ボタンを押してAI採点を受けましょう。途中保存されるので安心して取り組めます。
-          </p>
+        {/* Instruction banner with keyboard shortcut hints */}
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
+          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+            <span className="text-xs font-semibold" aria-hidden="true">i</span>
+          </div>
+          <div className="text-sm text-muted-foreground">
+            <p>各問題に解答を入力し、画面下部の「解答を提出してAI採点」ボタンで提出してください。</p>
+            <p className="mt-1 text-xs">
+              <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">Ctrl+S</kbd>{" "}
+              下書き保存 ・{" "}
+              <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">Ctrl+Enter</kbd>{" "}
+              提出 ・ 30秒ごとに自動保存
+            </p>
+          </div>
         </div>
 
         <SolveClient

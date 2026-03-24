@@ -2,8 +2,8 @@ import { NextResponse } from "next/server";
 import { streamText, type UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getSubscriptionState } from "@/lib/subscription";
+import { canAffordAiCall, recordTokenUsage } from "@/lib/ai/usage-manager";
 import { rateLimitByUser } from "@/lib/rate-limit";
 
 const DAILY_MESSAGE_LIMIT = 50;
@@ -35,6 +35,7 @@ Reference this problem context when helping the student.`;
 }
 
 async function getDailyMessageCount(userId: string): Promise<number> {
+  const { createAdminClient } = await import("@/lib/supabase/admin");
   const adminSupabase = createAdminClient();
 
   const startOfDay = new Date();
@@ -62,7 +63,7 @@ export async function POST(request: Request) {
   }
 
   // Rate limit: 10 messages per minute per user (burst protection)
-  const rateLimitResult = rateLimitByUser(user.id, 10, 60_000);
+  const rateLimitResult = await rateLimitByUser(user.id, 10, 60_000);
   if (!rateLimitResult.allowed) {
     return NextResponse.json(
       { error: "リクエストが多すぎます。しばらくお待ちください。" },
@@ -97,7 +98,32 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = await request.json();
+  // Check AI cost budget before executing
+  const budgetCheck = await canAffordAiCall(user.id);
+  if (!budgetCheck.allowed) {
+    return NextResponse.json(
+      {
+        error:
+          "今月のAIコスト上限に達しました。来月の更新までお待ちいただくか、プランをアップグレードしてください。",
+        code: "COST_BUDGET_EXCEEDED",
+        budgetUsedJpy: Math.round(budgetCheck.budget.costSpentJpy),
+        budgetLimitJpy: budgetCheck.budget.monthlyBudgetJpy,
+      },
+      { status: 429 }
+    );
+  }
+
+  // Parse request body with try/catch for malformed JSON
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid JSON body" },
+      { status: 400 }
+    );
+  }
+
   const { messages, problemSetId } = body as {
     messages: UIMessage[];
     problemSetId?: string;
@@ -144,13 +170,13 @@ export async function POST(request: Request) {
     maxOutputTokens: 2048,
     temperature: 0.7,
     onFinish: async ({ usage }) => {
-      // Track token usage with admin client to bypass RLS
-      const adminSupabase = createAdminClient();
-      await adminSupabase.from("token_usage").insert({
-        user_id: user.id,
-        tokens_used:
-          (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0),
-        cost_usd: 0,
+      // Track token usage with actual cost calculation (fixes cost_usd: 0 bug)
+      const totalTokens =
+        (usage.inputTokens ?? 0) + (usage.outputTokens ?? 0);
+
+      await recordTokenUsage({
+        userId: user.id,
+        tokensUsed: totalTokens,
         model: "gemini-2.0-flash-assistant",
       });
     },

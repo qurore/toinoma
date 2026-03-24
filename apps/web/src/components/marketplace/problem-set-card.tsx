@@ -5,7 +5,6 @@ import Image from "next/image";
 import { Heart, Star, Users } from "lucide-react";
 import { useState, useCallback, useOptimistic } from "react";
 import { toast } from "sonner";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
@@ -13,15 +12,9 @@ import type { Subject, Difficulty } from "@/types/database";
 import { createClient } from "@/lib/supabase/client";
 
 // ──────────────────────────────────────────────
-// Visual design — restrained monochromatic palette
-// Subject differentiation via labels, not colors
+// Visual design — monochromatic, Udemy-style clean
+// No colorful badges — subtle, professional look
 // ──────────────────────────────────────────────
-
-const DIFFICULTY_COLORS: Record<Difficulty, string> = {
-  easy: "bg-primary-50 text-primary-700 border-primary-200",
-  medium: "bg-amber-50 text-amber-700 border-amber-200",
-  hard: "bg-red-50 text-red-700 border-red-200",
-};
 
 // ──────────────────────────────────────────────
 // Types
@@ -209,8 +202,8 @@ function PriceTag({
   return (
     <span
       className={cn(
-        "shrink-0 text-sm font-bold",
-        price === 0 ? "text-primary" : "text-foreground"
+        "shrink-0 font-bold",
+        price === 0 ? "text-sm text-primary" : "text-base text-foreground"
       )}
     >
       {label}
@@ -283,10 +276,10 @@ function CardCover({
 }
 
 // ──────────────────────────────────────────────
-// Badges row
+// Subject / difficulty meta line (text-only, no badges)
 // ──────────────────────────────────────────────
 
-function BadgesRow({
+function MetaLine({
   subject,
   difficulty,
   size = "default",
@@ -295,28 +288,14 @@ function BadgesRow({
   difficulty: Difficulty;
   size?: "default" | "sm";
 }) {
-  const textSize = size === "sm" ? "text-[10px]" : "text-[11px]";
+  const textSize = size === "sm" ? "text-[10px]" : "text-xs";
 
   return (
-    <div className="flex items-center gap-1.5">
-      <Badge
-        className={cn(
-          "border border-border bg-secondary font-medium text-secondary-foreground",
-          textSize
-        )}
-      >
-        {SUBJECT_LABELS[subject]}
-      </Badge>
-      <Badge
-        className={cn(
-          "border font-medium",
-          textSize,
-          DIFFICULTY_COLORS[difficulty]
-        )}
-      >
-        {DIFFICULTY_LABELS[difficulty]}
-      </Badge>
-    </div>
+    <span className={cn("text-muted-foreground", textSize)}>
+      {SUBJECT_LABELS[subject]}
+      <span className="mx-1" aria-hidden="true">·</span>
+      {DIFFICULTY_LABELS[difficulty]}
+    </span>
   );
 }
 
@@ -384,12 +363,12 @@ export function ProblemSetCard({
           {/* Content */}
           <div className="flex min-w-0 flex-1 flex-col justify-between p-4">
             <div>
-              <div className="mb-1.5">
-                <BadgesRow subject={data.subject} difficulty={data.difficulty} size="sm" />
-              </div>
               <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
                 {data.title}
               </h3>
+              <div className="mt-1">
+                <MetaLine subject={data.subject} difficulty={data.difficulty} size="sm" />
+              </div>
             </div>
 
             <div className="mt-2 flex items-end justify-between gap-2">
@@ -432,13 +411,13 @@ export function ProblemSetCard({
       className="group block"
       aria-label={`${data.title} - ${SUBJECT_LABELS[data.subject]} ${DIFFICULTY_LABELS[data.difficulty]}`}
     >
-      <article className="relative h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/20 hover:shadow-lg">
+      <article className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-shadow duration-200 hover:shadow-md">
         {/* Cover image / gradient placeholder */}
         <div className="relative">
           <CardCover
             subject={data.subject}
             coverImageUrl={data.cover_image_url}
-            className="h-40 sm:h-44"
+            className="h-36 sm:h-40"
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           />
 
@@ -452,34 +431,37 @@ export function ProblemSetCard({
               />
             </div>
           )}
-
-          {/* Price badge overlay */}
-          <div className="absolute bottom-2.5 right-2.5">
-            <PriceTag price={data.price} variant="overlay" />
-          </div>
         </div>
 
         {/* Card body */}
-        <div className="p-4">
-          {/* Badges row */}
-          <div className="mb-2">
-            <BadgesRow subject={data.subject} difficulty={data.difficulty} />
-          </div>
-
+        <div className="flex flex-1 flex-col p-3.5">
           {/* Title */}
-          <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
+          <h3 className="line-clamp-2 text-sm font-bold leading-snug transition-colors group-hover:text-primary">
             {data.title}
           </h3>
 
-          {/* University tag */}
-          {data.university && (
-            <p className="mt-1 truncate text-xs text-muted-foreground">
-              {data.university}
+          {/* Subject / difficulty / university as a single text line */}
+          <p className="mt-1 truncate text-xs text-muted-foreground">
+            {SUBJECT_LABELS[data.subject]}
+            <span className="mx-1" aria-hidden="true">·</span>
+            {DIFFICULTY_LABELS[data.difficulty]}
+            {data.university && (
+              <>
+                <span className="mx-1" aria-hidden="true">·</span>
+                {data.university}
+              </>
+            )}
+          </p>
+
+          {/* Seller name */}
+          {data.seller_display_name && (
+            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+              {data.seller_display_name}
             </p>
           )}
 
           {/* Rating + purchase count */}
-          <div className="mt-2">
+          <div className="mt-auto pt-2">
             <RatingMeta
               avgRating={data.avg_rating}
               reviewCount={data.review_count}
@@ -487,12 +469,10 @@ export function ProblemSetCard({
             />
           </div>
 
-          {/* Seller name */}
-          {data.seller_display_name && (
-            <p className="mt-1.5 truncate text-xs text-muted-foreground">
-              {data.seller_display_name}
-            </p>
-          )}
+          {/* Price — bold at the bottom like Udemy */}
+          <div className="mt-1.5">
+            <PriceTag price={data.price} variant="inline" />
+          </div>
         </div>
       </article>
     </Link>
@@ -510,23 +490,20 @@ export function ProblemSetCardSkeleton({
 }) {
   if (layout === "horizontal") {
     return (
-      <div className="flex overflow-hidden rounded-xl border border-border" role="presentation">
+      <div className="flex overflow-hidden rounded-lg border border-border" role="presentation">
         <Skeleton className="h-28 w-28 shrink-0 rounded-none sm:w-36" />
         <div className="flex flex-1 flex-col justify-between p-4">
           <div>
-            <div className="mb-1.5 flex gap-1.5">
-              <Skeleton className="h-4 w-12 rounded-full" />
-              <Skeleton className="h-4 w-10 rounded-full" />
-            </div>
             <Skeleton className="h-4 w-full" />
             <Skeleton className="mt-1 h-4 w-2/3" />
+            <Skeleton className="mt-1.5 h-3 w-24" />
           </div>
           <div className="mt-2 flex items-end justify-between">
             <div>
               <Skeleton className="h-3 w-20" />
               <Skeleton className="mt-1 h-3 w-16" />
             </div>
-            <Skeleton className="h-5 w-12" />
+            <Skeleton className="h-5 w-14" />
           </div>
         </div>
       </div>
@@ -534,17 +511,15 @@ export function ProblemSetCardSkeleton({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-border" role="presentation">
-      <Skeleton className="h-40 w-full rounded-none sm:h-44" />
-      <div className="p-4">
-        <div className="mb-2 flex gap-1.5">
-          <Skeleton className="h-5 w-12 rounded-full" />
-          <Skeleton className="h-5 w-10 rounded-full" />
-        </div>
+    <div className="overflow-hidden rounded-lg border border-border" role="presentation">
+      <Skeleton className="h-36 w-full rounded-none sm:h-40" />
+      <div className="p-3.5">
         <Skeleton className="h-4 w-full" />
         <Skeleton className="mt-1 h-4 w-3/4" />
-        <Skeleton className="mt-2 h-3 w-28" />
-        <Skeleton className="mt-1.5 h-3 w-20" />
+        <Skeleton className="mt-1.5 h-3 w-32" />
+        <Skeleton className="mt-1 h-3 w-20" />
+        <Skeleton className="mt-3 h-3 w-24" />
+        <Skeleton className="mt-1.5 h-4 w-14" />
       </div>
     </div>
   );

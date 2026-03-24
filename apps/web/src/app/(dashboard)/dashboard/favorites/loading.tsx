@@ -2,10 +2,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function FavoritesLoading() {
   return (
-    <div className="p-4 md:p-6">
+    <div className="container mx-auto px-4 py-8">
       {/* Breadcrumbs */}
       <Skeleton className="mb-4 h-4 w-48" />
-      <Skeleton className="mb-6 h-8 w-36" />
+      {/* Heading + description */}
+      <div className="mb-6">
+        <Skeleton className="h-8 w-36" />
+        <Skeleton className="mt-2 h-4 w-32" />
+      </div>
+
+      {/* Filter bar */}
+      <div className="mb-4 flex items-center gap-3">
+        <Skeleton className="h-8 w-[140px] rounded-md" />
+        <Skeleton className="h-8 w-[140px] rounded-md" />
+      </div>
 
       {/* Favorites grid */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

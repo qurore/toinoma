@@ -400,31 +400,57 @@ function FilterContent({
         <h3 className="mb-2.5 text-sm font-semibold" id="filter-rating-label">
           最低評価
         </h3>
-        <div className="flex items-center gap-1" role="radiogroup" aria-labelledby="filter-rating-label">
-          {[1, 2, 3, 4, 5].map((star) => (
-            <button
-              key={star}
-              type="button"
-              role="radio"
-              aria-checked={state.minRating === star}
-              onClick={() =>
-                onChange({
-                  minRating: state.minRating === star ? 0 : star,
-                })
-              }
-              className="rounded p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label={`${star}星以上`}
-            >
-              <Star
-                className={cn(
-                  "h-5 w-5 transition-colors",
-                  star <= state.minRating
-                    ? "fill-amber-400 text-amber-400"
-                    : "text-muted-foreground/30"
-                )}
-              />
-            </button>
-          ))}
+        <div
+          className="flex items-center gap-1"
+          role="radiogroup"
+          aria-labelledby="filter-rating-label"
+          onKeyDown={(e) => {
+            const stars = [1, 2, 3, 4, 5];
+            const currentIdx = stars.indexOf(state.minRating);
+            let nextIdx = -1;
+            if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+              e.preventDefault();
+              nextIdx = currentIdx < 4 ? currentIdx + 1 : 0;
+            } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+              e.preventDefault();
+              nextIdx = currentIdx > 0 ? currentIdx - 1 : 4;
+            }
+            if (nextIdx >= 0) {
+              onChange({ minRating: stars[nextIdx] });
+              const target = e.currentTarget.querySelectorAll<HTMLElement>("[role=radio]")[nextIdx];
+              target?.focus();
+            }
+          }}
+        >
+          {[1, 2, 3, 4, 5].map((star) => {
+            const isSelected = state.minRating === star;
+            const isFirst = star === 1;
+            return (
+              <button
+                key={star}
+                type="button"
+                role="radio"
+                aria-checked={isSelected}
+                tabIndex={isSelected || (state.minRating === 0 && isFirst) ? 0 : -1}
+                onClick={() =>
+                  onChange({
+                    minRating: state.minRating === star ? 0 : star,
+                  })
+                }
+                className="rounded p-0.5 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                aria-label={`${star}星以上`}
+              >
+                <Star
+                  className={cn(
+                    "h-5 w-5 transition-colors",
+                    star <= state.minRating
+                      ? "fill-amber-400 text-amber-400"
+                      : "text-muted-foreground/30"
+                  )}
+                />
+              </button>
+            );
+          })}
           {state.minRating > 0 && (
             <span className="ml-2 text-xs text-muted-foreground">
               {state.minRating}以上
@@ -533,9 +559,8 @@ export function ExploreFiltersSidebar() {
         isPending && "pointer-events-none opacity-50"
       )}
     >
-      <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-xl border border-border bg-card p-5 scrollbar-thin">
-        <h2 className="mb-4 flex items-center gap-2 text-sm font-bold">
-          <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+      <div className="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-lg border border-border bg-card p-4 scrollbar-thin">
+        <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">
           フィルター
         </h2>
         <FilterContent

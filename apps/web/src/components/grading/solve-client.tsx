@@ -1138,8 +1138,39 @@ export function SolveClient({
         />
       )}
 
-      {/* Submit button */}
-      <div className="mt-6">
+      {/* Submit section — prominent with progress summary */}
+      <div className="mt-8 rounded-lg border border-border bg-card p-5">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <span className="text-sm font-medium text-foreground">
+              解答状況
+            </span>
+            <span
+              className={cn(
+                "rounded-full px-2.5 py-0.5 text-xs font-semibold tabular-nums",
+                progress.totalAnswered === progress.totalQuestions
+                  ? "bg-success/10 text-success"
+                  : "bg-muted text-muted-foreground"
+              )}
+            >
+              {progress.totalAnswered} / {progress.totalQuestions}問 回答済み
+            </span>
+          </div>
+          <AutoSaveIndicator lastSaved={lastSavedAt} />
+        </div>
+        <Progress
+          value={
+            progress.totalQuestions > 0
+              ? (progress.totalAnswered / progress.totalQuestions) * 100
+              : 0
+          }
+          className="mb-4 h-2"
+          indicatorClassName={
+            progress.totalAnswered === progress.totalQuestions
+              ? "bg-success"
+              : "bg-primary"
+          }
+        />
         <Button
           className="w-full"
           size="lg"
@@ -1154,10 +1185,7 @@ export function SolveClient({
           解答を提出してAI採点
         </Button>
         <p className="mt-2 text-center text-xs text-muted-foreground">
-          {typeof navigator !== "undefined" && /Mac/i.test(navigator.platform)
-            ? "Cmd+Enter"
-            : "Ctrl+Enter"}{" "}
-          でも提出できます
+          ※ AI採点は参考スコアです。最終判断はご自身で行ってください。
         </p>
       </div>
 

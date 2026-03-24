@@ -220,3 +220,127 @@ export async function notifyQaAnswer(
     `/problem/${problemSetId}/qa`
   );
 }
+
+// ── Admin action notification helpers ────────────────────────────────
+
+/**
+ * Notify a user that they received a warning from an admin.
+ */
+export async function notifyUserWarned(
+  userId: string,
+  reason: string
+): Promise<void> {
+  await createNotification(
+    userId,
+    "system",
+    "運営からの警告",
+    `利用規約に関する警告があります: ${reason}`,
+    "/settings"
+  );
+}
+
+/**
+ * Notify a user that their account has been suspended.
+ */
+export async function notifyUserSuspended(
+  userId: string,
+  reason: string,
+  suspendedUntil: string
+): Promise<void> {
+  const until = new Date(suspendedUntil).toLocaleDateString("ja-JP");
+  await createNotification(
+    userId,
+    "system",
+    "アカウントが一時停止されました",
+    `${until}まで一時停止されます。理由: ${reason}`,
+    "/settings"
+  );
+}
+
+/**
+ * Notify a user that their account has been banned.
+ */
+export async function notifyUserBanned(
+  userId: string,
+  reason: string
+): Promise<void> {
+  await createNotification(
+    userId,
+    "system",
+    "アカウントが停止されました",
+    `利用規約違反によりアカウントが停止されました。理由: ${reason}`,
+    "/settings"
+  );
+}
+
+/**
+ * Notify a user that their ban/suspension has been lifted.
+ */
+export async function notifyUserUnbanned(userId: string): Promise<void> {
+  await createNotification(
+    userId,
+    "system",
+    "アカウント制限が解除されました",
+    "アカウントの制限が解除されました。通常通りご利用いただけます。"
+  );
+}
+
+/**
+ * Notify a buyer that a refund has been processed.
+ */
+export async function notifyRefund(
+  buyerId: string,
+  problemSetTitle: string,
+  amountRefunded: number
+): Promise<void> {
+  await createNotification(
+    buyerId,
+    "purchase",
+    "返金が完了しました",
+    `「${problemSetTitle}」の購入代金 ¥${amountRefunded.toLocaleString()} が返金されました。`,
+    "/dashboard/history"
+  );
+}
+
+/**
+ * Notify a content owner that their content was removed due to a report.
+ */
+export async function notifyContentRemoved(
+  ownerId: string,
+  contentType: string,
+  contentTitle: string
+): Promise<void> {
+  const typeLabel =
+    contentType === "problem_set"
+      ? "問題セット"
+      : contentType === "review"
+        ? "レビュー"
+        : "コンテンツ";
+  await createNotification(
+    ownerId,
+    "system",
+    `${typeLabel}が非公開になりました`,
+    `「${contentTitle}」が運営のレビューにより非公開になりました。詳細はお問い合わせください。`
+  );
+}
+
+/**
+ * Notify the reporter that their report has been resolved.
+ */
+export async function notifyReportResolved(
+  reporterId: string,
+  status: string
+): Promise<void> {
+  const statusLabel =
+    status === "action_taken"
+      ? "対応が完了しました"
+      : status === "dismissed"
+        ? "確認の結果、問題なしと判断されました"
+        : "確認が完了しました";
+  await createNotification(
+    reporterId,
+    "system",
+    "報告が処理されました",
+    `あなたの報告について${statusLabel}。ご報告ありがとうございました。`
+  );
+}

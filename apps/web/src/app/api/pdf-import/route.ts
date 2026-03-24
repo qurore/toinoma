@@ -117,7 +117,7 @@ export async function POST(request: Request) {
   }
 
   // Rate limit: 3 PDF imports per minute per user
-  const rateLimitResult = rateLimitByUser(user.id, 3, 60_000);
+  const rateLimitResult = await rateLimitByUser(user.id, 3, 60_000);
   if (!rateLimitResult.allowed) {
     return NextResponse.json(
       { error: "リクエストが多すぎます。しばらくお待ちください。" },

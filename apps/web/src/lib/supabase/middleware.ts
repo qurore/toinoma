@@ -84,9 +84,14 @@ export async function updateSession(request: NextRequest) {
     if (isGuestOnly) {
       const url = request.nextUrl.clone();
       // Preserve the ?next= param if present, otherwise go to /dashboard
-      // Validate: must start with "/" and not contain "//" (open redirect prevention)
+      // Validate redirect target to prevent open redirect attacks
       const next = request.nextUrl.searchParams.get("next");
-      const isSafeNext = next && next.startsWith("/") && !next.startsWith("//");
+      const isSafeNext =
+        next &&
+        next.startsWith("/") &&
+        !next.startsWith("//") &&
+        !next.includes(":") &&
+        !next.includes("\\");
       url.pathname = isSafeNext ? next : "/dashboard";
       url.search = "";
       return NextResponse.redirect(url);
@@ -110,6 +115,32 @@ export async function updateSession(request: NextRequest) {
 
   // Forward the current URL so server components can read it via headers()
   supabaseResponse.headers.set("x-url", request.url);
+
+  // Security headers
+  supabaseResponse.headers.set("X-Content-Type-Options", "nosniff");
+  supabaseResponse.headers.set("X-Frame-Options", "DENY");
+  supabaseResponse.headers.set("Referrer-Policy", "strict-origin-when-cross-origin");
+  supabaseResponse.headers.set(
+    "Permissions-Policy",
+    "camera=(self), microphone=(), geolocation=()"
+  );
+  supabaseResponse.headers.set("X-XSS-Protection", "1; mode=block");
+  // CSP: allow self, inline styles (for Tailwind/Radix), and required external origins
+  supabaseResponse.headers.set(
+    "Content-Security-Policy",
+    [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+      "font-src 'self' https://fonts.gstatic.com",
+      "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com",
+      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://generativelanguage.googleapis.com",
+      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+    ].join("; ")
+  );
 
   return supabaseResponse;
 }

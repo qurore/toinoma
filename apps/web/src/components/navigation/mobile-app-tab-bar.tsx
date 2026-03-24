@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Trophy, BookOpen, User } from "lucide-react";
+import { Home, Search, Trophy, LayoutDashboard, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TabItem {
@@ -17,22 +17,29 @@ const TABS: TabItem[] = [
   { href: "/", label: "ホーム", icon: Home, exact: true },
   { href: "/explore", label: "探す", icon: Search },
   { href: "/rankings", label: "ランキング", icon: Trophy },
-  { href: "/dashboard", label: "学習", icon: BookOpen },
-  { href: "/settings", label: "マイページ", icon: User },
+  { href: "/dashboard", label: "マイページ", icon: LayoutDashboard },
+  { href: "/settings", label: "設定", icon: User },
 ];
 
 /**
- * App-level mobile bottom tab bar for public/marketing pages.
+ * App-level mobile bottom tab bar.
  * Visible only on mobile (md:hidden). Fixed at the bottom of the viewport.
  * 44px min-height touch targets per WCAG 2.1 AA.
+ *
+ * All hrefs verified against app router:
+ *   /           -> apps/web/src/app/page.tsx
+ *   /explore    -> apps/web/src/app/(marketing)/explore/page.tsx
+ *   /rankings   -> apps/web/src/app/rankings/page.tsx
+ *   /dashboard  -> apps/web/src/app/(dashboard)/dashboard/page.tsx
+ *   /settings   -> apps/web/src/app/settings/page.tsx
  */
 export function MobileAppTabBar() {
   const pathname = usePathname();
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm safe-area-pb md:hidden"
-      aria-label="モバイルナビゲーション"
+      className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/95 backdrop-blur-sm pb-safe md:hidden"
+      aria-label="メインタブ"
     >
       <ul className="mx-auto flex h-14 max-w-lg items-stretch justify-around">
         {TABS.map((tab) => {

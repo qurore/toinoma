@@ -385,7 +385,9 @@ export default async function DashboardPage() {
           <CardContent>
             {!recentPurchases?.length ? (
               <div className="flex flex-col items-center py-8 text-center">
-                <BookOpen className="mb-3 h-8 w-8 text-muted-foreground/40" />
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                  <BookOpen className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   まだ購入履歴がありません
                 </p>
@@ -439,7 +441,9 @@ export default async function DashboardPage() {
           <CardContent>
             {!recentSubmissions?.length ? (
               <div className="flex flex-col items-center py-8 text-center">
-                <History className="mb-3 h-8 w-8 text-muted-foreground/40" />
+                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                  <History className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   まだ解答履歴がありません
                 </p>

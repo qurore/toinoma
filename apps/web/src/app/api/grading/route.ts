@@ -1,9 +1,9 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeSubmission } from "@/lib/ai/grading-engine";
 import { getSubscriptionState } from "@/lib/subscription";
+import { canAffordAiCall, recordTokenUsage } from "@/lib/ai/usage-manager";
 import { notifyGrading } from "@/lib/notifications";
 import { checkAndNotifyUsage } from "@/lib/usage-warnings";
 import { rateLimitByUser } from "@/lib/rate-limit";
@@ -33,7 +33,7 @@ export async function POST(request: Request) {
   }
 
   // Rate limit: 5 grading requests per minute per user
-  const rateLimitResult = rateLimitByUser(user.id, 5, 60_000);
+  const rateLimitResult = await rateLimitByUser(user.id, 5, 60_000);
   if (!rateLimitResult.allowed) {
     return NextResponse.json(
       { error: "リクエストが多すぎます。しばらくお待ちください。" },
@@ -73,6 +73,24 @@ export async function POST(request: Request) {
         code: "GRADING_LIMIT_REACHED",
         gradingsUsed: subState.gradingsUsedThisMonth,
         gradingLimit: subState.gradingLimit,
+      },
+      { status: 429 }
+    );
+  }
+
+  // FR-031: Check AI cost budget before executing grading
+  const budgetCheck = await canAffordAiCall(user.id);
+  if (!budgetCheck.allowed) {
+    return NextResponse.json(
+      {
+        error:
+          budgetCheck.reason === "free_tier_no_ai_budget"
+            ? "無料プランではAI採点をご利用いただけません。プランをアップグレードしてください。"
+            : "今月のAIコスト上限に達しました。来月の更新までお待ちいただくか、プランをアップグレードしてください。",
+        code: "COST_BUDGET_EXCEEDED",
+        budgetUsedJpy: Math.round(budgetCheck.budget.costSpentJpy),
+        budgetLimitJpy: budgetCheck.budget.monthlyBudgetJpy,
+        usagePercent: Math.round(budgetCheck.budget.usagePercent),
       },
       { status: 429 }
     );
@@ -144,13 +162,11 @@ export async function POST(request: Request) {
     );
   }
 
-  // FR-031: Track token usage (using admin client to bypass RLS)
-  const adminSupabase = createAdminClient();
-  await adminSupabase.from("token_usage").insert({
-    user_id: user.id,
-    submission_id: submission.id,
-    tokens_used: result.tokensUsed ?? 0,
-    cost_usd: result.costUsd ?? 0,
+  // FR-031: Track token usage via centralized usage manager
+  await recordTokenUsage({
+    userId: user.id,
+    submissionId: submission.id,
+    tokensUsed: result.tokensUsed ?? 0,
     model: result.model ?? "gemini-2.0-flash",
   });
 

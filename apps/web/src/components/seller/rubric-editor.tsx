@@ -26,6 +26,7 @@ import {
   FileText,
   CheckSquare,
   Type,
+  ListChecks,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 // Constants imported for type labels in the type tab configuration
@@ -43,6 +44,7 @@ const TYPE_TABS: Array<{
   { value: "essay", label: "記述式", icon: FileText },
   { value: "mark_sheet", label: "マークシート", icon: CheckSquare },
   { value: "fill_in_blank", label: "穴埋め", icon: Type },
+  { value: "multiple_choice", label: "選択式", icon: ListChecks },
 ];
 
 interface EditableQuestion {
@@ -59,6 +61,10 @@ interface EditableQuestion {
   // Fill in blank fields
   acceptedAnswers: string[];
   caseSensitive: boolean;
+  // Multiple choice fields
+  multipleChoiceOptions: Array<{ label: string; value: string }>;
+  correctAnswers: string[];
+  multiSelect: boolean;
 }
 
 interface EditableSection {
@@ -79,6 +85,14 @@ function createEmptyQuestion(number: string): EditableQuestion {
     groupedScoring: true,
     acceptedAnswers: [""],
     caseSensitive: false,
+    multipleChoiceOptions: [
+      { label: "A", value: "a" },
+      { label: "B", value: "b" },
+      { label: "C", value: "c" },
+      { label: "D", value: "d" },
+    ],
+    correctAnswers: ["a"],
+    multiSelect: false,
   };
 }
 
@@ -110,6 +124,14 @@ function rubricToEditable(
         groupedScoring: true,
         acceptedAnswers: [""],
         caseSensitive: false,
+        multipleChoiceOptions: [
+          { label: "A", value: "a" },
+          { label: "B", value: "b" },
+          { label: "C", value: "c" },
+          { label: "D", value: "d" },
+        ],
+        correctAnswers: ["a"],
+        multiSelect: false,
       };
 
       if (q.type === "essay") {
@@ -124,6 +146,10 @@ function rubricToEditable(
       } else if (q.type === "fill_in_blank") {
         base.acceptedAnswers = q.acceptedAnswers;
         base.caseSensitive = q.caseSensitive ?? false;
+      } else if (q.type === "multiple_choice") {
+        base.multipleChoiceOptions = q.options;
+        base.correctAnswers = q.correctAnswers;
+        base.multiSelect = q.multiSelect;
       }
 
       return base;
@@ -154,6 +180,17 @@ function editableToRubric(sections: EditableSection[]): ProblemSetRubric {
             type: "mark_sheet" as const,
             choices: q.choices.filter((c) => c.trim()),
             correctAnswer: q.correctAnswer,
+          };
+        } else if (q.type === "multiple_choice") {
+          return {
+            number: q.number,
+            points: q.points,
+            type: "multiple_choice" as const,
+            options: q.multipleChoiceOptions.filter(
+              (o) => o.label.trim() && o.value.trim()
+            ),
+            correctAnswers: q.correctAnswers.filter((a) => a.trim()),
+            multiSelect: q.multiSelect,
           };
         } else {
           return {
@@ -508,6 +545,240 @@ function FillInBlankFields({
 }
 
 // ========================================================================
+// Multiple choice rubric fields with options and correct answers
+// ========================================================================
+function MultipleChoiceFields({
+  question,
+  onChange,
+}: {
+  question: EditableQuestion;
+  onChange: (q: EditableQuestion) => void;
+}) {
+  const hasEmptyOptions = question.multipleChoiceOptions.some(
+    (o) => !o.label.trim() || !o.value.trim()
+  );
+  const hasNoCorrect = question.correctAnswers.length === 0;
+
+  return (
+    <div className="space-y-3">
+      {/* Options configuration */}
+      <div>
+        <Label className="text-xs text-muted-foreground">選択肢</Label>
+        {hasEmptyOptions && (
+          <p className="mt-0.5 text-xs text-destructive">
+            すべての選択肢にラベルと値を入力してください
+          </p>
+        )}
+        <div className="mt-1 space-y-2">
+          {question.multipleChoiceOptions.map((option, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <span className="w-6 shrink-0 text-center text-xs font-medium text-muted-foreground">
+                {i + 1}
+              </span>
+              <Input
+                value={option.label}
+                onChange={(e) => {
+                  const updated = [...question.multipleChoiceOptions];
+                  updated[i] = { ...updated[i], label: e.target.value };
+                  onChange({ ...question, multipleChoiceOptions: updated });
+                }}
+                placeholder="ラベル"
+                className={cn(
+                  "w-28",
+                  !option.label.trim() && "border-destructive"
+                )}
+              />
+              <Input
+                value={option.value}
+                onChange={(e) => {
+                  const updated = [...question.multipleChoiceOptions];
+                  updated[i] = { ...updated[i], value: e.target.value };
+                  onChange({ ...question, multipleChoiceOptions: updated });
+                }}
+                placeholder="値"
+                className={cn(
+                  "flex-1",
+                  !option.value.trim() && "border-destructive"
+                )}
+              />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                aria-label="削除"
+                onClick={() => {
+                  const updated = question.multipleChoiceOptions.filter(
+                    (_, j) => j !== i
+                  );
+                  // Also remove from correctAnswers if the value was selected
+                  const removedValue = option.value;
+                  const updatedCorrect = question.correctAnswers.filter(
+                    (a) => a !== removedValue
+                  );
+                  onChange({
+                    ...question,
+                    multipleChoiceOptions: updated,
+                    correctAnswers: updatedCorrect,
+                  });
+                }}
+                disabled={question.multipleChoiceOptions.length <= 2}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              onChange({
+                ...question,
+                multipleChoiceOptions: [
+                  ...question.multipleChoiceOptions,
+                  { label: "", value: "" },
+                ],
+              });
+            }}
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            選択肢を追加
+          </Button>
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Correct answers selector */}
+      <div>
+        <div className="flex items-center justify-between">
+          <Label className="text-xs text-muted-foreground">正解</Label>
+          {hasNoCorrect && (
+            <span className="flex items-center gap-1 text-xs text-destructive">
+              <AlertCircle className="h-3 w-3" />
+              正解を選択してください
+            </span>
+          )}
+        </div>
+        <div className="mt-1.5 space-y-1">
+          {question.multipleChoiceOptions
+            .filter((o) => o.value.trim())
+            .map((o) => {
+              const isCorrect = question.correctAnswers.includes(o.value);
+              return (
+                <label
+                  key={o.value}
+                  className="flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted/50"
+                >
+                  <input
+                    type={question.multiSelect ? "checkbox" : "radio"}
+                    name={`correct-${question.number}`}
+                    checked={isCorrect}
+                    onChange={() => {
+                      if (question.multiSelect) {
+                        const updated = isCorrect
+                          ? question.correctAnswers.filter(
+                              (a) => a !== o.value
+                            )
+                          : [...question.correctAnswers, o.value];
+                        onChange({
+                          ...question,
+                          correctAnswers: updated,
+                        });
+                      } else {
+                        onChange({
+                          ...question,
+                          correctAnswers: [o.value],
+                        });
+                      }
+                    }}
+                    className="rounded border-border"
+                  />
+                  <span>
+                    {o.label}
+                    <span className="ml-1 text-muted-foreground">
+                      ({o.value})
+                    </span>
+                  </span>
+                </label>
+              );
+            })}
+        </div>
+      </div>
+
+      <Separator />
+
+      {/* Multi-select toggle */}
+      <div className="flex items-center gap-2">
+        <input
+          type="checkbox"
+          id={`multiSelect-${question.number}`}
+          checked={question.multiSelect}
+          onChange={(e) =>
+            onChange({ ...question, multiSelect: e.target.checked })
+          }
+          className="rounded border-border"
+        />
+        <Label
+          htmlFor={`multiSelect-${question.number}`}
+          className="text-xs text-muted-foreground"
+        >
+          複数選択を許可する
+        </Label>
+      </div>
+    </div>
+  );
+}
+
+// ========================================================================
+// Validation helper to check if a question has incomplete rubric data
+// ========================================================================
+function getQuestionValidationIssues(q: EditableQuestion): string[] {
+  const issues: string[] = [];
+
+  if (!q.number.trim()) {
+    issues.push("問番号が入力されていません");
+  }
+  if (q.points <= 0) {
+    issues.push("配点が0です");
+  }
+
+  if (q.type === "essay") {
+    const nonEmptyElements = q.rubricElements.filter(
+      (e) => e.element.trim()
+    );
+    if (nonEmptyElements.length === 0) {
+      issues.push("採点要素が入力されていません");
+    }
+  } else if (q.type === "mark_sheet") {
+    const nonEmptyChoices = q.choices.filter((c) => c.trim());
+    if (nonEmptyChoices.length < 2) {
+      issues.push("選択肢を2つ以上入力してください");
+    }
+    if (!q.correctAnswer.trim()) {
+      issues.push("正解が選択されていません");
+    }
+  } else if (q.type === "fill_in_blank") {
+    const nonEmpty = q.acceptedAnswers.filter((a) => a.trim());
+    if (nonEmpty.length === 0) {
+      issues.push("正解が入力されていません");
+    }
+  } else if (q.type === "multiple_choice") {
+    const validOptions = q.multipleChoiceOptions.filter(
+      (o) => o.label.trim() && o.value.trim()
+    );
+    if (validOptions.length < 2) {
+      issues.push("選択肢を2つ以上入力してください");
+    }
+    if (q.correctAnswers.filter((a) => a.trim()).length === 0) {
+      issues.push("正解が選択されていません");
+    }
+  }
+
+  return issues;
+}
+
+// ========================================================================
 // Main RubricEditor component
 // ========================================================================
 export function RubricEditor({
@@ -525,6 +796,19 @@ export function RubricEditor({
     type: "success" | "error";
     text: string;
   } | null>(null);
+
+  // Count total validation issues across all questions
+  const totalValidationIssues = useMemo(() => {
+    return sections.reduce(
+      (acc, section) =>
+        acc +
+        section.questions.reduce(
+          (qAcc, q) => qAcc + getQuestionValidationIssues(q).length,
+          0
+        ),
+      0
+    );
+  }, [sections]);
 
   // Calculate total points across all sections
   const totalPoints = useMemo(() => {
@@ -689,11 +973,33 @@ export function RubricEditor({
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {section.questions.map((question, questionIdx) => (
+            {section.questions.map((question, questionIdx) => {
+              const validationIssues =
+                getQuestionValidationIssues(question);
+              const hasIssues = validationIssues.length > 0;
+
+              return (
               <div
                 key={questionIdx}
-                className="space-y-3 rounded-lg border border-border p-4"
+                className={cn(
+                  "space-y-3 rounded-lg border p-4",
+                  hasIssues
+                    ? "border-amber-300 bg-amber-50/30 dark:border-amber-700 dark:bg-amber-950/10"
+                    : "border-border"
+                )}
               >
+                {/* Validation warnings */}
+                {hasIssues && (
+                  <div className="flex items-start gap-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                    <div className="space-y-0.5">
+                      {validationIssues.map((issue) => (
+                        <p key={issue}>{issue}</p>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Question header row */}
                 <div className="flex items-center gap-3">
                   <GripVertical className="h-4 w-4 text-muted-foreground" />
@@ -804,8 +1110,17 @@ export function RubricEditor({
                     }
                   />
                 )}
+                {question.type === "multiple_choice" && (
+                  <MultipleChoiceFields
+                    question={question}
+                    onChange={(q) =>
+                      updateQuestion(sectionIdx, questionIdx, q)
+                    }
+                  />
+                )}
               </div>
-            ))}
+              );
+            })}
 
             <Button
               type="button"
@@ -830,6 +1145,16 @@ export function RubricEditor({
           </CardContent>
         </Card>
       ))}
+
+      {/* Validation summary */}
+      {totalValidationIssues > 0 && (
+        <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50/50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950/20 dark:text-amber-200">
+          <AlertCircle className="h-4 w-4 shrink-0" />
+          <span>
+            {totalValidationIssues}件の入力不備があります。保存はできますが、公開前に修正してください。
+          </span>
+        </div>
+      )}
 
       {/* Bottom actions */}
       <div className="flex items-center gap-3">

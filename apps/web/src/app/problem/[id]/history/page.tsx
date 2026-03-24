@@ -7,7 +7,16 @@ import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RotateCcw, TrendingUp, Trophy, ChevronRight, BookOpen } from "lucide-react";
+import {
+  RotateCcw,
+  TrendingUp,
+  Trophy,
+  ChevronRight,
+  BookOpen,
+  ArrowUp,
+  ArrowDown,
+  Minus,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -92,6 +101,20 @@ export default async function ProblemHistoryPage({
         )
       : null;
 
+  // Calculate trend: compare latest vs previous score
+  const latestScore =
+    scored.length > 0
+      ? Math.round((scored[0].score! / scored[0].max_score!) * 100)
+      : null;
+  const previousScore =
+    scored.length > 1
+      ? Math.round((scored[1].score! / scored[1].max_score!) * 100)
+      : null;
+  const scoreDelta =
+    latestScore !== null && previousScore !== null
+      ? latestScore - previousScore
+      : null;
+
   return (
     <>
       <AppNavbar {...navbarData} />
@@ -120,7 +143,7 @@ export default async function ProblemHistoryPage({
 
         {/* Statistics cards */}
         {scored.length > 0 && (
-          <div className="mb-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
+          <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             {/* Best score */}
             <Card className="border-amber-500/20">
               <CardContent className="flex flex-col items-center py-4">
@@ -128,7 +151,7 @@ export default async function ProblemHistoryPage({
                 <span className="text-xs text-muted-foreground">最高スコア</span>
                 <span
                   className={cn(
-                    "text-2xl font-bold",
+                    "text-2xl font-bold tabular-nums",
                     bestScore != null && bestScore >= 80
                       ? "text-success"
                       : bestScore != null && bestScore >= 50
@@ -156,9 +179,44 @@ export default async function ProblemHistoryPage({
                 <BookOpen className="mb-1.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
                 <span className="text-xs text-muted-foreground">解答回数</span>
                 <span className="text-2xl font-bold tabular-nums">
-                  {allSubmissions.length}
+                  {allSubmissions.length}回
                 </span>
-                <span className="text-xs text-muted-foreground">回</span>
+              </CardContent>
+            </Card>
+
+            {/* Trend indicator */}
+            <Card>
+              <CardContent className="flex flex-col items-center py-4">
+                {scoreDelta !== null ? (
+                  <>
+                    {scoreDelta > 0 ? (
+                      <ArrowUp className="mb-1.5 h-5 w-5 text-success" aria-hidden="true" />
+                    ) : scoreDelta < 0 ? (
+                      <ArrowDown className="mb-1.5 h-5 w-5 text-destructive" aria-hidden="true" />
+                    ) : (
+                      <Minus className="mb-1.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                    )}
+                    <span className="text-xs text-muted-foreground">前回比</span>
+                    <span
+                      className={cn(
+                        "text-2xl font-bold tabular-nums",
+                        scoreDelta > 0
+                          ? "text-success"
+                          : scoreDelta < 0
+                            ? "text-destructive"
+                            : "text-muted-foreground"
+                      )}
+                    >
+                      {scoreDelta > 0 ? "+" : ""}{scoreDelta}%
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <Minus className="mb-1.5 h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                    <span className="text-xs text-muted-foreground">前回比</span>
+                    <span className="text-lg font-medium text-muted-foreground">---</span>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>

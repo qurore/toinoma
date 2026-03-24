@@ -87,12 +87,15 @@ export function ProblemDetailTabs({
       <TabsContent value="overview" className="mt-6 space-y-6">
         {description ? (
           <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
               問題セットについて
             </h3>
-            <p className="whitespace-pre-wrap leading-relaxed text-foreground">
-              {description}
-            </p>
+            <div className="rounded-lg border border-border bg-card p-5">
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground">
+                {description}
+              </p>
+            </div>
           </div>
         ) : (
           <div className="rounded-lg border border-dashed border-border py-12 text-center">

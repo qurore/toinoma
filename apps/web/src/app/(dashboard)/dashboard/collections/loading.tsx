@@ -2,27 +2,32 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CollectionsLoading() {
   return (
-    <div className="p-4 md:p-6">
+    <div className="container mx-auto px-4 py-8">
       {/* Breadcrumbs */}
       <Skeleton className="mb-4 h-4 w-48" />
+      {/* Heading + action button */}
       <div className="mb-6 flex items-center justify-between">
-        <Skeleton className="h-8 w-40" />
+        <div>
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="mt-2 h-4 w-56" />
+        </div>
         <Skeleton className="h-9 w-28 rounded-md" />
       </div>
 
-      {/* Collections list */}
-      <div className="space-y-3">
-        {Array.from({ length: 4 }, (_, i) => (
+      {/* Collections grid — matching the actual page grid layout */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }, (_, i) => (
           <div
             key={i}
-            className="flex items-center gap-4 rounded-lg border border-border bg-card p-4"
+            className="rounded-lg border border-border bg-card p-5"
           >
-            <Skeleton className="h-10 w-10 shrink-0 rounded-md" />
-            <div className="min-w-0 flex-1 space-y-1.5">
-              <Skeleton className="h-5 w-40" />
-              <Skeleton className="h-3 w-24" />
+            <Skeleton className="mb-3 h-10 w-10 rounded-lg" />
+            <Skeleton className="h-5 w-32" />
+            <Skeleton className="mt-2 h-3 w-full" />
+            <div className="mt-3 flex items-center gap-3">
+              <Skeleton className="h-5 w-12 rounded-full" />
+              <Skeleton className="h-3 w-16" />
             </div>
-            <Skeleton className="h-5 w-14 shrink-0 rounded-full" />
           </div>
         ))}
       </div>

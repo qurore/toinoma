@@ -25,7 +25,16 @@ describe("SidebarNav", () => {
     expect(sidebarNavSource).toContain('href: "/dashboard/history"');
     expect(sidebarNavSource).toContain('href: "/dashboard/favorites"');
     expect(sidebarNavSource).toContain('href: "/dashboard/collections"');
+    expect(sidebarNavSource).toContain('href: "/dashboard/recently-viewed"');
+    expect(sidebarNavSource).toContain('href: "/dashboard/analytics"');
     expect(sidebarNavSource).toContain('href: "/settings"');
+  });
+
+  it("separates settings into SECONDARY_NAV_ITEMS for visual grouping", () => {
+    expect(sidebarNavSource).toContain("SECONDARY_NAV_ITEMS");
+    // Settings is in secondary, not primary
+    const secondaryBlock = sidebarNavSource.split("SECONDARY_NAV_ITEMS")[1];
+    expect(secondaryBlock).toContain('href: "/settings"');
   });
 
   it("uses token-based active state classes (no hardcoded colors)", () => {
@@ -40,6 +49,8 @@ describe("SidebarNav", () => {
     expect(sidebarNavSource).toContain("解答履歴");
     expect(sidebarNavSource).toContain("お気に入り");
     expect(sidebarNavSource).toContain("コレクション");
+    expect(sidebarNavSource).toContain("最近の閲覧");
+    expect(sidebarNavSource).toContain("学習分析");
     expect(sidebarNavSource).toContain("設定");
   });
 });

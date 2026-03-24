@@ -96,6 +96,28 @@ export default async function PurchaseSuccessPage({
     }
   }
 
+  // ── Verify purchase exists in DB ──────────────────────────────
+  // Prevents users from accessing the success page without a real purchase.
+  // For paid purchases, the webhook may have a slight delay creating the
+  // record, so we allow the page to render but flag it as unverified.
+  let purchaseVerified = false;
+
+  if (problemSetId) {
+    const { data: purchase } = await supabase
+      .from("purchases")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("problem_set_id", problemSetId)
+      .single();
+
+    purchaseVerified = !!purchase;
+  }
+
+  // If no Stripe session and no purchase record, this is a bogus URL
+  if (!stripeVerified && !purchaseVerified && problemSetId) {
+    redirect(`/problem/${problemSetId}`);
+  }
+
   // ── Fetch problem set info ─────────────────────────────────────
   let problemSet: ProblemSetInfo | null = null;
 

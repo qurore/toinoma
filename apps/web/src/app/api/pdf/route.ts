@@ -1,8 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
-// PDF export types
 type ExportType = "problems" | "answers" | "combined";
+const VALID_EXPORT_TYPES = new Set<ExportType>(["problems", "answers", "combined"]);
+
+// Escape HTML special characters to prevent XSS
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+// Validate UUID format
+function isValidUuid(value: string): boolean {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value);
+}
 
 export async function GET(request: NextRequest) {
   const supabase = await createClient();
@@ -16,14 +31,23 @@ export async function GET(request: NextRequest) {
 
   const { searchParams } = new URL(request.url);
   const problemSetId = searchParams.get("problem_set_id");
-  const exportType = (searchParams.get("type") ?? "problems") as ExportType;
+  const rawExportType = searchParams.get("type") ?? "problems";
 
-  if (!problemSetId) {
+  if (!problemSetId || !isValidUuid(problemSetId)) {
     return NextResponse.json(
-      { error: "problem_set_id is required" },
+      { error: "Valid problem_set_id is required" },
       { status: 400 }
     );
   }
+
+  if (!VALID_EXPORT_TYPES.has(rawExportType as ExportType)) {
+    return NextResponse.json(
+      { error: "Valid export type is required (problems, answers, combined)" },
+      { status: 400 }
+    );
+  }
+
+  const exportType = rawExportType as ExportType;
 
   // Verify purchase
   const { data: purchase } = await supabase
@@ -54,8 +78,7 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // For now, redirect to the stored PDF if available
-  // Full HTML-to-PDF generation can be added later with puppeteer
+  // Redirect to stored PDF if available
   if (exportType === "problems" && ps.problem_pdf_url) {
     return NextResponse.redirect(ps.problem_pdf_url);
   }
@@ -64,14 +87,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(ps.solution_pdf_url);
   }
 
-  // Generate a simple HTML-based PDF as fallback
+  // Generate HTML-based PDF fallback with all content escaped
   const html = generatePdfHtml(ps, exportType);
 
-  // Return as HTML that can be printed via browser print dialog
   return new NextResponse(html, {
     headers: {
       "Content-Type": "text/html; charset=utf-8",
       "Content-Disposition": `inline; filename="${encodeURIComponent(ps.title)}.html"`,
+      "X-Content-Type-Options": "nosniff",
     },
   });
 }
@@ -99,16 +122,17 @@ function generatePdfHtml(
   };
 
   const sections = rubric?.sections ?? [];
+  const safeTitle = escapeHtml(ps.title);
 
   let content = "";
 
   if (exportType === "problems" || exportType === "combined") {
     content += `<h2>問題</h2>`;
     for (const section of sections) {
-      content += `<h3>大問${section.number}（${section.points}点）</h3>`;
+      content += `<h3>大問${escapeHtml(String(section.number))}（${escapeHtml(String(section.points))}点）</h3>`;
       for (const q of section.questions ?? []) {
         content += `<div class="question">
-          <p><strong>${q.number}</strong>（${q.points}点）</p>
+          <p><strong>${escapeHtml(q.number)}</strong>（${escapeHtml(String(q.points))}点）</p>
         </div>`;
       }
     }
@@ -117,15 +141,15 @@ function generatePdfHtml(
   if (exportType === "answers" || exportType === "combined") {
     content += `<h2 style="page-break-before: always;">解答用紙</h2>`;
     for (const section of sections) {
-      content += `<h3>大問${section.number}</h3>`;
+      content += `<h3>大問${escapeHtml(String(section.number))}</h3>`;
       for (const q of section.questions ?? []) {
         if (q.type === "essay") {
           content += `<div class="answer-box" style="min-height: 150px; border: 1px solid #ccc; margin: 10px 0; padding: 10px;">
-            <p class="label">${q.number}</p>
+            <p class="label">${escapeHtml(q.number)}</p>
           </div>`;
         } else {
           content += `<div class="answer-line" style="margin: 10px 0;">
-            <p>${q.number}: _______________</p>
+            <p>${escapeHtml(q.number)}: _______________</p>
           </div>`;
         }
       }
@@ -135,11 +159,11 @@ function generatePdfHtml(
   if (exportType === "combined") {
     content += `<h2 style="page-break-before: always;">模範解答</h2>`;
     for (const section of sections) {
-      content += `<h3>大問${section.number}</h3>`;
+      content += `<h3>大問${escapeHtml(String(section.number))}</h3>`;
       for (const q of section.questions ?? []) {
         if (q.modelAnswer) {
           content += `<div class="model-answer" style="margin: 10px 0;">
-            <p><strong>${q.number}:</strong> ${q.modelAnswer}</p>
+            <p><strong>${escapeHtml(q.number)}:</strong> ${escapeHtml(q.modelAnswer)}</p>
           </div>`;
         }
       }
@@ -150,7 +174,7 @@ function generatePdfHtml(
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>${ps.title}</title>
+  <title>${safeTitle}</title>
   <style>
     @page { size: A4; margin: 25mm; }
     body { font-family: 'Noto Serif JP', 'Hiragino Mincho ProN', serif; font-size: 11pt; line-height: 1.8; color: #333; }
@@ -166,7 +190,7 @@ function generatePdfHtml(
   <div class="no-print" style="background: #f0f0f0; padding: 10px; margin-bottom: 20px; text-align: center;">
     <button onclick="window.print()" style="padding: 8px 24px; font-size: 14px; cursor: pointer;">印刷 / PDFとして保存</button>
   </div>
-  <h1>${ps.title}</h1>
+  <h1>${safeTitle}</h1>
   ${content}
   <div class="footer">問の間 — toinoma.jp</div>
 </body>

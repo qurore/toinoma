@@ -5,7 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 
 export const metadata: Metadata = {
-  title: "法的情報 - 問の間",
+  title: "法的情報",
   description: "問の間の利用規約、プライバシーポリシー、特定商取引法に基づく表記をご確認ください。",
 };
 

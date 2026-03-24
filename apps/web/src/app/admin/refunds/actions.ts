@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import { notifyRefund } from "@/lib/notifications";
 import type { Database } from "@/types/database";
 
 type AdminActionType = Database["public"]["Enums"]["admin_action_type"];
@@ -161,20 +162,34 @@ export async function processRefund(
     };
   }
 
-  // Audit log
-  await admin.from("admin_audit_logs").insert({
-    admin_id: authResult.adminId,
-    action: "content_removed" as AdminActionType,
-    target_type: "purchase",
-    target_id: purchaseId,
-    details: {
-      action: "refund",
-      user_id: purchase.user_id,
-      problem_set_id: purchase.problem_set_id,
-      amount_refunded: purchase.amount_paid,
-      stripe_payment_intent_id: purchase.stripe_payment_intent_id,
-    } as unknown as Database["public"]["Tables"]["admin_audit_logs"]["Insert"]["details"],
-  });
+  // Fetch problem set title for the notification
+  const { data: problemSet } = await admin
+    .from("problem_sets")
+    .select("title")
+    .eq("id", purchase.problem_set_id)
+    .single();
+
+  // Audit log and notification in parallel
+  await Promise.all([
+    admin.from("admin_audit_logs").insert({
+      admin_id: authResult.adminId,
+      action: "content_removed" as AdminActionType,
+      target_type: "purchase",
+      target_id: purchaseId,
+      details: {
+        action: "refund",
+        user_id: purchase.user_id,
+        problem_set_id: purchase.problem_set_id,
+        amount_refunded: purchase.amount_paid,
+        stripe_payment_intent_id: purchase.stripe_payment_intent_id,
+      } as unknown as Database["public"]["Tables"]["admin_audit_logs"]["Insert"]["details"],
+    }),
+    notifyRefund(
+      purchase.user_id,
+      problemSet?.title ?? "問題セット",
+      purchase.amount_paid
+    ),
+  ]);
 
   revalidatePath("/admin/refunds");
   return { success: true };

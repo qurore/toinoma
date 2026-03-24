@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, User, Store, HelpCircle, BookOpen } from "lucide-react";
+import { LogOut, LayoutDashboard, Settings, Store } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -83,57 +83,50 @@ export function UserDropdown({
       </DropdownMenuTrigger>
 
       <DropdownMenuContent align="end" className="w-56">
-        {/* User identity header */}
+        {/* User identity header with subscription badge */}
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col gap-1.5">
             <p className="truncate text-sm font-semibold leading-none">
               {displayName ?? user.email}
             </p>
-            <Badge
-              variant={TIER_BADGE_VARIANTS[subscriptionTier]}
-              className="w-fit px-1.5 py-0 text-xs"
-            >
-              {TIER_LABELS[subscriptionTier]}
-            </Badge>
+            {subscriptionTier !== "free" && (
+              <Badge
+                variant={TIER_BADGE_VARIANTS[subscriptionTier]}
+                className="w-fit px-1.5 py-0 text-xs"
+              >
+                {TIER_LABELS[subscriptionTier]}
+              </Badge>
+            )}
           </div>
         </DropdownMenuLabel>
 
         <DropdownMenuSeparator />
 
-        {/* Account */}
+        {/* Primary navigation */}
         <DropdownMenuItem asChild>
-          <Link href="/settings/profile" className="flex cursor-pointer items-center gap-2">
-            <User className="h-4 w-4" />
-            プロフィール
+          <Link href="/dashboard" className="flex cursor-pointer items-center gap-2">
+            <LayoutDashboard className="h-4 w-4" />
+            マイページ
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/settings" className="flex cursor-pointer items-center gap-2">
+            <Settings className="h-4 w-4" />
+            設定
           </Link>
         </DropdownMenuItem>
 
-        {/* Seller dashboard link — visible to all authenticated users */}
         <DropdownMenuSeparator />
+
+        {/* Seller mode — link depends on seller status */}
         <DropdownMenuItem asChild>
           <Link
-            href="/seller"
+            href={isSeller ? "/seller" : "/seller/onboarding"}
             className="flex cursor-pointer items-center gap-2"
             data-testid="seller-link"
           >
             <Store className="h-4 w-4" />
-            {isSeller ? "出品管理" : "出品者モード"}
-          </Link>
-        </DropdownMenuItem>
-
-        <DropdownMenuSeparator />
-
-        {/* Help */}
-        <DropdownMenuItem asChild>
-          <Link href="/help/faq" className="flex cursor-pointer items-center gap-2">
-            <HelpCircle className="h-4 w-4" />
-            よくある質問
-          </Link>
-        </DropdownMenuItem>
-        <DropdownMenuItem asChild>
-          <Link href="/help" className="flex cursor-pointer items-center gap-2">
-            <BookOpen className="h-4 w-4" />
-            ご利用ガイド
+            {isSeller ? "出品者モード" : "出品者になる"}
           </Link>
         </DropdownMenuItem>
 

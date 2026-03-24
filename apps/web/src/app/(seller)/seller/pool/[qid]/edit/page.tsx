@@ -51,7 +51,7 @@ export default async function EditQuestionPage({
     notFound();
   }
 
-  const question = data as QuestionRow;
+  const question = data as unknown as QuestionRow;
 
   // Verify seller ownership
   if (question.seller_id !== user.id) {

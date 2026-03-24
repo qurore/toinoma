@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
@@ -8,10 +9,14 @@ import { notifyPurchase, notifySale } from "@/lib/notifications";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-interface PurchaseRequestBody {
-  problemSetId: string;
-  couponCode?: string;
-}
+// Zod schema for request body validation
+const purchaseRequestSchema = z.object({
+  problemSetId: z.string().uuid("Invalid problem set ID format"),
+  couponCode: z
+    .string()
+    .max(50, "Coupon code too long")
+    .optional(),
+});
 
 /**
  * POST /api/purchase
@@ -35,7 +40,7 @@ export async function POST(request: Request) {
   }
 
   // ── Rate limiting ──────────────────────────────────────────────
-  const rl = rateLimitByUser(user.id, 10, 60_000);
+  const rl = await rateLimitByUser(user.id, 10, 60_000);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -44,9 +49,9 @@ export async function POST(request: Request) {
   }
 
   // ── Parse and validate body ────────────────────────────────────
-  let body: PurchaseRequestBody;
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json(
       { error: "Invalid request body" },
@@ -54,14 +59,13 @@ export async function POST(request: Request) {
     );
   }
 
-  const { problemSetId, couponCode } = body;
-
-  if (!problemSetId || typeof problemSetId !== "string") {
-    return NextResponse.json(
-      { error: "Missing or invalid problemSetId" },
-      { status: 400 }
-    );
+  const parsed = purchaseRequestSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Validation failed";
+    return NextResponse.json({ error: firstError }, { status: 400 });
   }
+
+  const { problemSetId, couponCode } = parsed.data;
 
   // ── Fetch problem set ──────────────────────────────────────────
   const { data: ps } = await supabase

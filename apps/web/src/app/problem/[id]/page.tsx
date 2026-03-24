@@ -11,16 +11,17 @@ import {
   GraduationCap,
   Flag,
   Star,
-  Users,
   Clock,
   BookOpen,
   ChevronRight,
   History,
-  Send,
   TrendingUp,
+  Award,
+  BarChart3,
 } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { PurchaseSection } from "@/components/marketplace/purchase-section";
+import { MobilePurchaseBar } from "@/components/marketplace/mobile-purchase-bar";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
@@ -129,22 +130,30 @@ export default async function ProblemDetailPage({
       ? reviews!.reduce((sum, r) => sum + r.rating, 0) / totalReviewCount
       : null;
 
-  // Fetch purchase count and submission count in parallel
-  const [{ count: purchaseCount }, { count: submissionCount }, { count: questionCount }] =
-    await Promise.all([
-      supabase
-        .from("purchases")
-        .select("id", { count: "exact", head: true })
-        .eq("problem_set_id", id),
-      supabase
-        .from("submissions")
-        .select("id", { count: "exact", head: true })
-        .eq("problem_set_id", id),
-      supabase
-        .from("problem_set_questions")
-        .select("id", { count: "exact", head: true })
-        .eq("problem_set_id", id),
-    ]);
+  // Fetch purchase count, submission count, question count, Q&A count in parallel
+  const [
+    { count: purchaseCount },
+    { count: submissionCount },
+    { count: questionCount },
+    { count: qaCount },
+  ] = await Promise.all([
+    supabase
+      .from("purchases")
+      .select("id", { count: "exact", head: true })
+      .eq("problem_set_id", id),
+    supabase
+      .from("submissions")
+      .select("id", { count: "exact", head: true })
+      .eq("problem_set_id", id),
+    supabase
+      .from("problem_set_questions")
+      .select("id", { count: "exact", head: true })
+      .eq("problem_set_id", id),
+    supabase
+      .from("qa_questions")
+      .select("id", { count: "exact", head: true })
+      .eq("problem_set_id", id),
+  ]);
 
   // Count other problem sets by this seller (for seller card)
   const { count: sellerProblemCount } = await supabase
@@ -265,327 +274,393 @@ export default async function ProblemDetailPage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main id="main-content" className="container mx-auto max-w-7xl px-4 pb-12 pt-16">
-        {/* Breadcrumb navigation */}
-        <Breadcrumbs
-          items={[
-            { label: "ホーム", href: "/" },
-            { label: "問題を探す", href: "/explore" },
-            { label: SUBJECT_LABELS[ps.subject as Subject], href: `/explore?subject=${ps.subject}` },
-            { label: ps.title },
-          ]}
-          className="mb-6"
-        />
+      <main id="main-content" className="pb-12 pt-16">
+        {/* ── Hero banner section (Udemy-style header with background) ── */}
+        <div className="border-b border-border bg-muted/40">
+          <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+            {/* Breadcrumb navigation */}
+            <Breadcrumbs
+              items={[
+                { label: "ホーム", href: "/" },
+                { label: "問題を探す", href: "/explore" },
+                { label: SUBJECT_LABELS[ps.subject as Subject], href: `/explore?subject=${ps.subject}` },
+                { label: ps.title },
+              ]}
+              className="mb-4"
+            />
 
-        {/* 2-column layout: main content + sidebar */}
-        <div className="grid gap-8 lg:grid-cols-[1fr_340px]">
-          {/* ── Main content column ─────────────────────────── */}
-          <div className="min-w-0 space-y-6">
-            {/* Hero header */}
-            <div>
-              <div className="flex items-start justify-between gap-4">
-                <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-2xl font-bold leading-tight tracking-tight sm:text-3xl">
                   {ps.title}
                 </h1>
-                <ShareButton title={ps.title} className="shrink-0" />
-              </div>
 
-              {/* Badge row: subject + difficulty + university */}
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <Badge className="border border-border bg-secondary text-secondary-foreground">
-                  {SUBJECT_LABELS[ps.subject as Subject]}
-                </Badge>
-                <Badge
-                  className={cn(
-                    "border font-medium",
-                    ps.difficulty === "easy"
-                      ? "border-primary-200 bg-primary-50 text-primary-700"
-                      : ps.difficulty === "medium"
-                        ? "border-amber-200 bg-amber-50 text-amber-700"
-                        : "border-red-200 bg-red-50 text-red-700"
-                  )}
-                >
-                  {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-                </Badge>
-                {ps.university && (
-                  <Badge variant="secondary">{ps.university}</Badge>
-                )}
-              </div>
-
-              {/* Social proof strip — always visible before scroll */}
-              <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 rounded-lg border border-border bg-muted/30 px-4 py-3">
-                {/* Rating */}
-                {avgRating != null && totalReviewCount > 0 ? (
-                  <div className="flex items-center gap-1.5">
-                    <div className="flex items-center gap-0.5" aria-hidden="true">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <Star
-                          key={i}
-                          className={cn(
-                            "h-4 w-4",
-                            i <= Math.round(avgRating)
-                              ? "fill-amber-400 text-amber-400"
-                              : "fill-muted text-muted"
-                          )}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-semibold">
-                      {avgRating.toFixed(1)}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      ({totalReviewCount}件)
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <Star className="h-4 w-4" aria-hidden="true" />
-                    <span>レビューなし</span>
-                  </div>
-                )}
-
-                <Separator orientation="vertical" className="hidden h-5 sm:block" />
-
-                {/* Purchase count */}
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Users className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  <span className="font-semibold">{purchaseCount ?? 0}</span>
-                  <span className="text-muted-foreground">人が購入</span>
-                </div>
-
-                <Separator orientation="vertical" className="hidden h-5 sm:block" />
-
-                {/* Submission count */}
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Send className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  <span className="font-semibold">{submissionCount ?? 0}</span>
-                  <span className="text-muted-foreground">回解答</span>
-                </div>
-              </div>
-
-              {/* Quick stats strip */}
-              <div className="mt-3 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                {(questionCount ?? 0) > 0 && (
-                  <span className="flex items-center gap-1">
-                    <FileText className="h-3.5 w-3.5" aria-hidden="true" />
-                    全{questionCount}問
-                  </span>
-                )}
-                {ps.total_points > 0 && (
-                  <span className="flex items-center gap-1">
-                    <BookOpen className="h-3.5 w-3.5" aria-hidden="true" />
-                    {ps.total_points}点満点
-                  </span>
-                )}
-                {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
-                  <span className="flex items-center gap-1">
-                    <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                    {ps.time_limit_minutes}分
-                  </span>
-                )}
-                <span className="text-xs">
-                  {createdDate}公開
-                </span>
-              </div>
-            </div>
-
-            {/* User progress card (for purchased users with submissions) */}
-            {hasPurchased && userAttemptCount > 0 && (
-              <Card className="border-primary/20 bg-primary/5">
-                <CardContent className="flex items-center justify-between p-4">
-                  <div className="flex items-center gap-4">
-                    {userBestScore !== null && (
-                      <div className="text-center">
-                        <span
-                          className={cn(
-                            "text-2xl font-bold",
-                            userBestScore >= 80
-                              ? "text-success"
-                              : userBestScore >= 50
-                                ? "text-amber-600"
-                                : "text-destructive"
-                          )}
-                        >
-                          {userBestScore}%
-                        </span>
-                        <p className="text-xs text-muted-foreground">最高スコア</p>
-                      </div>
-                    )}
-                    <div>
-                      <p className="text-sm font-medium">
-                        {userAttemptCount}回解答済み
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        あなたの学習状況
-                      </p>
-                    </div>
-                  </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/problem/${id}/history`}>
-                      <History className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                      履歴を見る
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Tabbed content area */}
-            <ProblemDetailTabs
-              description={ps.description}
-              previewQuestions={previewQuestions}
-              problemPdfUrl={ps.problem_pdf_url}
-              hasPurchased={hasPurchased}
-              problemSetId={id}
-              sellerId={ps.seller_id}
-              userId={user?.id ?? null}
-              reviewsSection={
-                <ReviewsSection
-                  problemSetId={id}
-                  userId={user?.id ?? null}
-                />
-              }
-              qaSection={
-                <QaSection
-                  problemSetId={id}
-                  sellerId={ps.seller_id}
-                  userId={user?.id ?? null}
-                />
-              }
-            />
-          </div>
-
-          {/* ── Sidebar column ──────────────────────────────── */}
-          <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-            {/* Purchase / Solve section (primary CTA) */}
-            <PurchaseSection
-              problemSetId={id}
-              price={ps.price}
-              hasPurchased={hasPurchased}
-              isLoggedIn={!!user}
-              sellerId={ps.seller_id}
-            />
-
-            {/* Collection + PDF actions for purchased users */}
-            {hasPurchased && user && (
-              <div className="flex items-center gap-2">
-                <PdfDownloadButton problemSetId={id} />
-                <AddToCollectionDialog problemSetId={id} />
-              </div>
-            )}
-
-            {/* Seller info card */}
-            {seller && (
-              <Card className="overflow-hidden">
-                <div className="bg-gradient-to-br from-primary/5 via-transparent to-primary/3 px-5 pb-4 pt-5">
-                  <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
-                    出題者
+                {/* Subtitle: short description excerpt */}
+                {ps.description && (
+                  <p className="mt-2 line-clamp-2 max-w-2xl text-sm leading-relaxed text-muted-foreground sm:text-base">
+                    {ps.description}
                   </p>
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
+                )}
+
+                {/* Badge row: subject + difficulty + university */}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                  <Badge className="border border-border bg-secondary text-secondary-foreground">
+                    {SUBJECT_LABELS[ps.subject as Subject]}
+                  </Badge>
+                  <Badge
+                    className={cn(
+                      "border font-medium",
+                      ps.difficulty === "easy"
+                        ? "border-primary-200 bg-primary-50 text-primary-700"
+                        : ps.difficulty === "medium"
+                          ? "border-amber-200 bg-amber-50 text-amber-700"
+                          : "border-red-200 bg-red-50 text-red-700"
+                    )}
+                  >
+                    {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
+                  </Badge>
+                  {ps.university && (
+                    <Badge variant="secondary">{ps.university}</Badge>
+                  )}
+                </div>
+
+                {/* Social proof inline strip */}
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                  {/* Rating */}
+                  {avgRating != null && totalReviewCount > 0 ? (
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-sm font-bold text-amber-600">
+                        {avgRating.toFixed(1)}
+                      </span>
+                      <div className="flex items-center gap-0.5" aria-hidden="true">
+                        {[1, 2, 3, 4, 5].map((i) => (
+                          <Star
+                            key={i}
+                            className={cn(
+                              "h-3.5 w-3.5",
+                              i <= Math.round(avgRating)
+                                ? "fill-amber-400 text-amber-400"
+                                : "fill-muted text-muted"
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm text-muted-foreground">
+                        ({totalReviewCount}件)
+                      </span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground">
+                      レビューなし
+                    </span>
+                  )}
+                  <span className="text-sm text-muted-foreground">
+                    {purchaseCount ?? 0}人が購入
+                  </span>
+                  <span className="text-sm text-muted-foreground">
+                    {createdDate}公開
+                  </span>
+                </div>
+
+                {/* Seller byline */}
+                {seller && (
+                  <div className="mt-3 flex items-center gap-2">
+                    <Avatar className="h-7 w-7 border border-border">
                       {sellerProfile?.avatar_url && (
                         <AvatarImage
                           src={sellerProfile.avatar_url}
                           alt={seller.seller_display_name ?? ""}
                         />
                       )}
-                      <AvatarFallback className="bg-muted">
-                        <GraduationCap className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                      <AvatarFallback className="bg-muted text-xs">
+                        <GraduationCap className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                       </AvatarFallback>
                     </Avatar>
-                    <div className="min-w-0">
+                    <span className="text-sm text-muted-foreground">
+                      作成者:{" "}
                       <Link
                         href={`/seller/${ps.seller_id}`}
-                        className="font-semibold text-foreground hover:text-primary hover:underline"
+                        className="font-medium text-foreground underline-offset-2 hover:underline"
                       >
                         {seller.seller_display_name}
                       </Link>
-                      {(seller.university || seller.circle_name) && (
-                        <p className="truncate text-xs text-muted-foreground">
-                          {[seller.university, seller.circle_name]
-                            .filter(Boolean)
-                            .join(" / ")}
-                        </p>
-                      )}
+                    </span>
+                  </div>
+                )}
+              </div>
+              <ShareButton title={ps.title} className="hidden shrink-0 sm:flex" />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Main content area ── */}
+        <div className="mx-auto max-w-7xl px-4 pt-6 sm:px-6">
+          <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
+            {/* ── Main content column ── */}
+            <div className="min-w-0 space-y-6">
+              {/* Quick stats bar */}
+              <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card px-5 py-4">
+                {(questionCount ?? 0) > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                      <FileText className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold tabular-nums">{questionCount}問</p>
+                      <p className="text-[11px] text-muted-foreground">問題数</p>
                     </div>
                   </div>
-                </div>
-                <CardContent className="px-5 pb-5 pt-0">
-                  {seller.seller_description && (
-                    <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-                      {seller.seller_description}
-                    </p>
-                  )}
-                  <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-                    {(sellerProblemCount ?? 0) > 0 && (
-                      <span className="flex items-center gap-1">
-                        <FileText className="h-3 w-3" aria-hidden="true" />
-                        {sellerProblemCount}セット公開中
-                      </span>
-                    )}
+                )}
+                {ps.total_points > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                      <Award className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold tabular-nums">{ps.total_points}点</p>
+                      <p className="text-[11px] text-muted-foreground">満点</p>
+                    </div>
                   </div>
-                  <Separator className="my-3" />
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="w-full"
-                    asChild
-                  >
-                    <Link href={`/seller/${ps.seller_id}`}>
-                      <GraduationCap className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-                      プロフィールを見る
-                    </Link>
-                  </Button>
-                </CardContent>
-              </Card>
-            )}
+                )}
+                {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                      <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold tabular-nums">{ps.time_limit_minutes}分</p>
+                      <p className="text-[11px] text-muted-foreground">制限時間</p>
+                    </div>
+                  </div>
+                )}
+                {(submissionCount ?? 0) > 0 && (
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
+                      <BarChart3 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold tabular-nums">{submissionCount}回</p>
+                      <p className="text-[11px] text-muted-foreground">解答数</p>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            {/* Report content */}
-            <div className="flex justify-center">
-              <ReportDialog
-                targetType="problem_set"
-                targetId={id}
-                trigger={
-                  <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-                    <Flag className="mr-1 h-3 w-3" aria-hidden="true" />
-                    この問題セットを報告
-                  </Button>
+              {/* User progress card (for purchased users with submissions) */}
+              {hasPurchased && userAttemptCount > 0 && (
+                <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
+                  <CardContent className="flex items-center justify-between gap-4 p-4">
+                    <div className="flex items-center gap-4">
+                      {userBestScore !== null && (
+                        <div
+                          className={cn(
+                            "flex h-14 w-14 shrink-0 items-center justify-center rounded-full border-2",
+                            userBestScore >= 80
+                              ? "border-success"
+                              : userBestScore >= 50
+                                ? "border-amber-500"
+                                : "border-destructive"
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              "text-lg font-bold",
+                              userBestScore >= 80
+                                ? "text-success"
+                                : userBestScore >= 50
+                                  ? "text-amber-600"
+                                  : "text-destructive"
+                            )}
+                          >
+                            {userBestScore}%
+                          </span>
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sm font-semibold">あなたの学習進捗</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {userAttemptCount}回解答済み
+                          {userBestScore !== null && ` ・ 最高 ${userBestScore}%`}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link href={`/problem/${id}/history`}>
+                          <History className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                          履歴
+                        </Link>
+                      </Button>
+                      <Button size="sm" asChild>
+                        <Link href={`/problem/${id}/solve`}>
+                          <BookOpen className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                          解く
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Tabbed content area */}
+              <ProblemDetailTabs
+                description={ps.description}
+                previewQuestions={previewQuestions}
+                problemPdfUrl={ps.problem_pdf_url}
+                hasPurchased={hasPurchased}
+                problemSetId={id}
+                sellerId={ps.seller_id}
+                userId={user?.id ?? null}
+                reviewCount={totalReviewCount}
+                qaCount={qaCount ?? 0}
+                reviewsSection={
+                  <ReviewsSection
+                    problemSetId={id}
+                    userId={user?.id ?? null}
+                  />
+                }
+                qaSection={
+                  <QaSection
+                    problemSetId={id}
+                    sellerId={ps.seller_id}
+                    userId={user?.id ?? null}
+                  />
                 }
               />
             </div>
-          </aside>
-        </div>
 
-        {/* MKT-013: Related problem sets (full-width section) */}
-        {relatedWithSellers.length > 0 && (
-          <section className="mt-12" aria-labelledby="related-heading">
-            <Separator className="mb-8" />
-            <div className="mb-6 flex items-center justify-between">
-              <h2
-                id="related-heading"
-                className="flex items-center gap-2 text-lg font-semibold"
-              >
-                <TrendingUp className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-                関連する問題セット
-              </h2>
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={`/explore?subject=${ps.subject}`}>
-                  もっと見る
-                  <ChevronRight className="ml-1 h-3.5 w-3.5" aria-hidden="true" />
-                </Link>
-              </Button>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {relatedWithSellers.map((related) => (
-                <ProblemSetCard
-                  key={related.id}
-                  data={related}
-                  userId={user?.id ?? null}
+            {/* ── Sidebar column (desktop only — mobile uses sticky bar) ── */}
+            <aside className="hidden space-y-4 lg:block lg:sticky lg:top-20 lg:self-start">
+              {/* Purchase / Solve section (primary CTA) */}
+              <PurchaseSection
+                problemSetId={id}
+                price={ps.price}
+                hasPurchased={hasPurchased}
+                isLoggedIn={!!user}
+                sellerId={ps.seller_id}
+              />
+
+              {/* Collection + PDF actions for purchased users */}
+              {hasPurchased && user && (
+                <div className="flex items-center gap-2">
+                  <PdfDownloadButton problemSetId={id} />
+                  <AddToCollectionDialog problemSetId={id} />
+                </div>
+              )}
+
+              {/* Seller info card */}
+              {seller && (
+                <Card className="overflow-hidden">
+                  <div className="px-5 pb-4 pt-5">
+                    <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                      出題者
+                    </p>
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-11 w-11 border-2 border-background shadow-sm">
+                        {sellerProfile?.avatar_url && (
+                          <AvatarImage
+                            src={sellerProfile.avatar_url}
+                            alt={seller.seller_display_name ?? ""}
+                          />
+                        )}
+                        <AvatarFallback className="bg-muted">
+                          <GraduationCap className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="min-w-0">
+                        <Link
+                          href={`/seller/${ps.seller_id}`}
+                          className="font-semibold text-foreground hover:text-primary hover:underline"
+                        >
+                          {seller.seller_display_name}
+                        </Link>
+                        {(seller.university || seller.circle_name) && (
+                          <p className="truncate text-xs text-muted-foreground">
+                            {[seller.university, seller.circle_name]
+                              .filter(Boolean)
+                              .join(" / ")}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <CardContent className="px-5 pb-5 pt-0">
+                    {seller.seller_description && (
+                      <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+                        {seller.seller_description}
+                      </p>
+                    )}
+                    <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                      {(sellerProblemCount ?? 0) > 0 && (
+                        <span className="flex items-center gap-1">
+                          <FileText className="h-3 w-3" aria-hidden="true" />
+                          {sellerProblemCount}セット公開中
+                        </span>
+                      )}
+                    </div>
+                    <Separator className="my-3" />
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="w-full"
+                      asChild
+                    >
+                      <Link href={`/seller/${ps.seller_id}`}>
+                        <GraduationCap className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                        プロフィールを見る
+                      </Link>
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Report content */}
+              <div className="flex justify-center">
+                <ReportDialog
+                  targetType="problem_set"
+                  targetId={id}
+                  trigger={
+                    <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
+                      <Flag className="mr-1 h-3 w-3" aria-hidden="true" />
+                      この問題セットを報告
+                    </Button>
+                  }
                 />
-              ))}
-            </div>
-          </section>
-        )}
+              </div>
+            </aside>
+          </div>
+
+          {/* MKT-013: Related problem sets (full-width section) */}
+          {relatedWithSellers.length > 0 && (
+            <section className="mt-12" aria-labelledby="related-heading">
+              <Separator className="mb-8" />
+              <div className="mb-6 flex items-center justify-between">
+                <h2
+                  id="related-heading"
+                  className="flex items-center gap-2 text-lg font-semibold"
+                >
+                  <TrendingUp className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                  関連する問題セット
+                </h2>
+                <Button variant="ghost" size="sm" asChild>
+                  <Link href={`/explore?subject=${ps.subject}`}>
+                    もっと見る
+                    <ChevronRight className="ml-1 h-3.5 w-3.5" aria-hidden="true" />
+                  </Link>
+                </Button>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {relatedWithSellers.map((related) => (
+                  <ProblemSetCard
+                    key={related.id}
+                    data={related}
+                    userId={user?.id ?? null}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+        </div>
 
         {/* JSON-LD structured data */}
         <script
@@ -605,6 +680,15 @@ export default async function ProblemDetailPage({
           }}
         />
       </main>
+
+      {/* Mobile sticky purchase bar (visible only on mobile, sidebar hidden on mobile) */}
+      <MobilePurchaseBar
+        problemSetId={id}
+        price={ps.price}
+        hasPurchased={hasPurchased}
+        isLoggedIn={!!user}
+      />
+
       <SiteFooter />
       <MobileAppTabBar />
     </>

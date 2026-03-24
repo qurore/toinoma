@@ -1,4 +1,4 @@
-import { generateObject } from "ai";
+import { generateObject, type GenerateObjectResult } from "ai";
 import { google } from "@ai-sdk/google";
 import {
   gradingResultSchema,
@@ -7,6 +7,78 @@ import {
   type QuestionRubric,
   type QuestionAnswer,
 } from "@toinoma/shared/schemas";
+
+// AI API call configuration
+const AI_TIMEOUT_MS = 30_000;
+const MAX_RETRIES = 3;
+const BASE_RETRY_DELAY_MS = 1_000;
+
+// Errors that are safe to retry (transient failures)
+function isRetryableError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase();
+    return (
+      message.includes("timeout") ||
+      message.includes("rate limit") ||
+      message.includes("429") ||
+      message.includes("503") ||
+      message.includes("500") ||
+      message.includes("overloaded") ||
+      message.includes("econnreset") ||
+      message.includes("econnrefused") ||
+      message.includes("network")
+    );
+  }
+  return false;
+}
+
+/**
+ * Execute an AI API call with exponential backoff retry and timeout.
+ * Retries up to MAX_RETRIES times on transient failures.
+ * Each attempt is capped at AI_TIMEOUT_MS.
+ */
+async function withRetryAndTimeout<T>(
+  fn: (signal: AbortSignal) => Promise<T>,
+  label: string
+): Promise<T> {
+  let lastError: unknown;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    if (attempt > 0) {
+      // Exponential backoff: 1s, 2s, 4s (with jitter)
+      const delay = BASE_RETRY_DELAY_MS * Math.pow(2, attempt - 1);
+      const jitter = Math.random() * delay * 0.2;
+      await new Promise((resolve) => setTimeout(resolve, delay + jitter));
+    }
+
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+
+    try {
+      const result = await fn(controller.signal);
+      clearTimeout(timeoutId);
+      return result;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      lastError = error;
+
+      // Abort errors from timeout should be retried
+      if (controller.signal.aborted) {
+        if (attempt < MAX_RETRIES) continue;
+        throw new Error(
+          `AI grading timed out after ${MAX_RETRIES + 1} attempts (${label})`
+        );
+      }
+
+      // Only retry on transient errors
+      if (!isRetryableError(error) || attempt >= MAX_RETRIES) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError;
+}
 
 // Deterministic grading for mark-sheet questions (FR-005)
 function gradeMarkSheet(
@@ -184,29 +256,28 @@ Rules:
 Rubric:
 ${JSON.stringify(aiRubric, null, 2)}`;
 
-  let object: GradingResult;
-  let tokensUsed: number;
+  let response: GenerateObjectResult<GradingResult>;
 
   if (containsImages) {
     // SLV-021: Use multimodal prompt with image content for handwritten answers
     const promptParts = buildMultimodalPromptParts(sections);
 
-    const response = await generateObject({
-      model: google("gemini-2.0-flash"),
-      schema: gradingResultSchema,
-      system: systemPrompt,
-      messages: [
-        {
-          role: "user",
-          content: promptParts,
-        },
-      ],
-    });
-
-    object = response.object;
-    tokensUsed =
-      (response.usage?.inputTokens ?? 0) +
-      (response.usage?.outputTokens ?? 0);
+    response = await withRetryAndTimeout(
+      (signal) =>
+        generateObject({
+          model: google("gemini-2.0-flash"),
+          schema: gradingResultSchema,
+          system: systemPrompt,
+          messages: [
+            {
+              role: "user",
+              content: promptParts,
+            },
+          ],
+          abortSignal: signal,
+        }),
+      "essay-grading-multimodal"
+    );
   } else {
     // Text-only answers — use simple prompt
     const answers: Record<string, string> = {};
@@ -217,20 +288,24 @@ ${JSON.stringify(aiRubric, null, 2)}`;
       }
     }
 
-    const response = await generateObject({
-      model: google("gemini-2.0-flash"),
-      schema: gradingResultSchema,
-      system: systemPrompt,
-      prompt: `Student answers:\n${JSON.stringify(answers, null, 2)}`,
-    });
-
-    object = response.object;
-    tokensUsed =
-      (response.usage?.inputTokens ?? 0) +
-      (response.usage?.outputTokens ?? 0);
+    response = await withRetryAndTimeout(
+      (signal) =>
+        generateObject({
+          model: google("gemini-2.0-flash"),
+          schema: gradingResultSchema,
+          system: systemPrompt,
+          prompt: `Student answers:\n${JSON.stringify(answers, null, 2)}`,
+          abortSignal: signal,
+        }),
+      "essay-grading-text"
+    );
   }
 
-  return { result: object, tokensUsed };
+  const tokensUsed =
+    (response.usage?.inputTokens ?? 0) +
+    (response.usage?.outputTokens ?? 0);
+
+  return { result: response.object, tokensUsed };
 }
 
 // Deterministic grading for multiple-choice questions (SLV-014)

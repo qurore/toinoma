@@ -1,7 +1,7 @@
-import Link from "next/link";
 import { requireAdmin } from "@/lib/auth/require-seller";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { AdminMobileSidebar } from "@/components/admin/admin-mobile-sidebar";
+import { AdminDesktopNav } from "@/components/admin/admin-desktop-nav";
 import {
   LayoutDashboard,
   Users,
@@ -38,24 +38,7 @@ export default async function AdminLayout({
       <div className="pt-16 lg:grid lg:grid-cols-[220px_1fr]">
         {/* Desktop sidebar */}
         <aside className="hidden border-r border-border lg:block">
-          <nav className="sticky top-16 px-3 py-4">
-            <h2 className="mb-3 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              管理者メニュー
-            </h2>
-            <ul className="space-y-0.5">
-              {ADMIN_NAV.map((item) => (
-                <li key={item.href}>
-                  <Link
-                    href={item.href}
-                    className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  >
-                    <item.icon className="h-4 w-4 shrink-0" />
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </nav>
+          <AdminDesktopNav navItems={[...ADMIN_NAV]} />
         </aside>
 
         {/* Mobile sidebar (Sheet-based) */}

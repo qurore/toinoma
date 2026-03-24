@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import {
@@ -13,7 +14,21 @@ import { rateLimitByUser } from "@/lib/rate-limit";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-type SubscriptionAction = "create" | "change" | "cancel" | "reactivate";
+// Zod schemas for request body validation
+const subscriptionPostSchema = z.object({
+  action: z
+    .enum(["create", "change", "cancel", "reactivate"])
+    .optional()
+    .default("create"),
+  tier: z.enum(["basic", "pro"]).optional(),
+  interval: z.enum(["monthly", "annual"]).optional(),
+});
+
+const subscriptionPatchSchema = z.object({
+  action: z.enum(["cancel", "resume"]),
+});
+
+type SubscriptionAction = z.infer<typeof subscriptionPostSchema>["action"];
 type SubscriptionTier = "basic" | "pro";
 type SubscriptionInterval = "monthly" | "annual";
 
@@ -38,7 +53,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const rl = rateLimitByUser(user.id, 10, 60_000);
+  const rl = await rateLimitByUser(user.id, 10, 60_000);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -46,9 +61,9 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: SubscriptionRequestBody;
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json(
       { error: "Invalid request body" },
@@ -56,7 +71,18 @@ export async function POST(request: Request) {
     );
   }
 
-  // Infer action: if no explicit action but tier+interval present, treat as "create"
+  const parsed = subscriptionPostSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0];
+    return NextResponse.json(
+      {
+        error: `Validation error: ${firstError?.path.join(".")} — ${firstError?.message}`,
+      },
+      { status: 400 }
+    );
+  }
+
+  const body: SubscriptionRequestBody = parsed.data;
   const action: SubscriptionAction = body.action ?? "create";
 
   switch (action) {
@@ -89,7 +115,7 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const rl = rateLimitByUser(user.id, 10, 60_000);
+  const rl = await rateLimitByUser(user.id, 10, 60_000);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -97,9 +123,9 @@ export async function PATCH(request: Request) {
     );
   }
 
-  let body: { action: string };
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json(
       { error: "Invalid request body" },
@@ -107,14 +133,18 @@ export async function PATCH(request: Request) {
     );
   }
 
-  const { action } = body;
-
-  if (!action || !["cancel", "resume"].includes(action)) {
+  const parsed = subscriptionPatchSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0];
     return NextResponse.json(
-      { error: "Invalid action" },
+      {
+        error: `Validation error: ${firstError?.path.join(".")} — ${firstError?.message}`,
+      },
       { status: 400 }
     );
   }
+
+  const { action } = parsed.data;
 
   if (action === "cancel") {
     return handleCancel(user, supabase);

@@ -25,16 +25,28 @@ export const multipleChoiceAnswerSchema = z.object({
   selected: z.array(z.string()).min(1),
 });
 
+// Essay variant for the discriminated union — includes the same refinement
+// as essayAnswerSchema to ensure either text or imageUrl is provided.
+const essayAnswerVariant = z.object({
+  type: z.literal("essay"),
+  text: z.string().optional(),
+  imageUrl: z.string().url().optional(),
+});
+
 export const questionAnswerSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("essay"),
-    text: z.string().optional(),
-    imageUrl: z.string().url().optional(),
-  }),
+  essayAnswerVariant,
   markSheetAnswerSchema,
   fillInBlankAnswerSchema,
   multipleChoiceAnswerSchema,
-]);
+]).superRefine((data, ctx) => {
+  if (data.type === "essay" && data.text === undefined && data.imageUrl === undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "Either text or imageUrl must be provided",
+      path: ["text"],
+    });
+  }
+});
 
 export type EssayAnswer = z.infer<typeof essayAnswerSchema>;
 export type MarkSheetAnswer = z.infer<typeof markSheetAnswerSchema>;

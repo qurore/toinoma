@@ -1,17 +1,17 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Brain, CheckCircle2 } from "lucide-react";
+import { Send, Brain, CheckCircle2, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// ──────────────────────────────────────────────
-// Grading status indicator
-// ──────────────────────────────────────────────
-// Shows animated transitions between grading states:
+// Grading status indicator with animated transitions:
 //   "submitting" → "grading" → "complete"
+// The "complete" state shows a score count-up animation when score is provided.
 
 interface GradingStatusIndicatorProps {
   status: "submitting" | "grading" | "complete" | "idle";
+  /** Final score to display in the complete state (0-100 percent) */
+  scorePercent?: number;
   role?: React.AriaRole;
 }
 
@@ -50,10 +50,6 @@ const STATUS_CONFIG = {
   },
 } as const;
 
-// ──────────────────────────────────────────────
-// Grading step indicators
-// ──────────────────────────────────────────────
-
 const GRADING_STEPS = [
   "解答を受信しています",
   "ルーブリックを照合しています",
@@ -61,13 +57,40 @@ const GRADING_STEPS = [
   "スコアを算出しています",
 ];
 
+function useCountUp(target: number, duration: number, enabled: boolean): number {
+  const [value, setValue] = useState(0);
+
+  useEffect(() => {
+    if (!enabled || target <= 0) {
+      // Reset handled by re-mount or key change, not setState in effect
+      return;
+    }
+    const start = performance.now();
+    let rafId: number;
+    let cancelled = false;
+    const step = (now: number) => {
+      if (cancelled) return;
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setValue(Math.round(target * eased));
+      if (progress < 1) rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+    return () => { cancelled = true; cancelAnimationFrame(rafId); };
+  }, [target, duration, enabled]);
+  return value;
+}
+
 export function GradingStatusIndicator({
   status,
+  scorePercent,
   role,
 }: GradingStatusIndicatorProps) {
   const [dots, setDots] = useState("");
   const [activeStep, setActiveStep] = useState(0);
   const dotsRef = useRef("");
+  const displayScore = useCountUp(scorePercent ?? 0, 1200, status === "complete");
 
   // Animated dots for grading state
   useEffect(() => {
@@ -104,6 +127,7 @@ export function GradingStatusIndicator({
   const config = STATUS_CONFIG[status];
   const Icon = config.icon;
   const isAnimating = status === "submitting" || status === "grading";
+  const showScore = status === "complete" && scorePercent != null;
 
   return (
     <div className="flex min-h-[400px] items-center justify-center py-16" role={role} aria-live={role === "status" ? "polite" : undefined}>
@@ -165,7 +189,16 @@ export function GradingStatusIndicator({
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="3"
-                className="text-success"
+                className="text-success/20"
+              />
+              <circle
+                cx="40"
+                cy="40"
+                r="36"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="3"
+                className="text-success transition-all duration-1000"
                 strokeDasharray="226"
                 strokeDashoffset="0"
                 strokeLinecap="round"
@@ -177,11 +210,22 @@ export function GradingStatusIndicator({
           <Icon
             className={cn(
               "relative z-10 h-8 w-8 transition-all duration-500",
-              config.color
+              config.color,
+              status === "complete" && "animate-[scale-in_0.3s_ease-out]"
             )}
             aria-hidden="true"
           />
         </div>
+
+        {/* Score count-up display */}
+        {showScore && (
+          <div className="mb-2 animate-[fade-up_0.5s_ease-out]">
+            <p className="font-display text-5xl font-bold tabular-nums text-foreground">
+              {displayScore}
+              <span className="text-2xl text-muted-foreground">%</span>
+            </p>
+          </div>
+        )}
 
         {/* Status label */}
         <p
@@ -195,6 +239,22 @@ export function GradingStatusIndicator({
             <span className="inline-block w-6 text-left">{dots}</span>
           )}
         </p>
+
+        {/* Encouragement message based on score tier */}
+        {showScore && (
+          <p className="mt-1 text-sm font-medium text-muted-foreground animate-[fade-in_0.8s_ease-out_0.5s_both]">
+            {scorePercent >= 80 ? (
+              <span className="flex items-center justify-center gap-1 text-success">
+                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+                素晴らしい成績です！
+              </span>
+            ) : scorePercent >= 50 ? (
+              "いい調子です！復習で更に伸ばしましょう"
+            ) : (
+              "まだ伸びしろがあります。結果を確認しましょう"
+            )}
+          </p>
+        )}
 
         {/* Description / rotating step text */}
         <p className="mt-2 h-5 text-sm text-muted-foreground transition-all">

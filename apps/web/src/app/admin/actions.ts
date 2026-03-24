@@ -4,6 +4,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import type { Database } from "@/types/database";
+import {
+  notifyUserWarned,
+  notifyUserSuspended,
+  notifyUserBanned,
+  notifyUserUnbanned,
+  notifyContentRemoved,
+  notifyReportResolved,
+} from "@/lib/notifications";
 
 type AdminActionType = Database["public"]["Enums"]["admin_action_type"];
 type ReportStatus = Database["public"]["Enums"]["report_status"];
@@ -73,13 +81,16 @@ export async function banUser(
 
   if (error) return { error: "ユーザーのBANに失敗しました" };
 
-  await createAuditLog({
-    adminId: authResult.adminId,
-    action: "user_banned",
-    targetType: "user",
-    targetId: targetUserId,
-    details: { reason },
-  });
+  await Promise.all([
+    createAuditLog({
+      adminId: authResult.adminId,
+      action: "user_banned",
+      targetType: "user",
+      targetId: targetUserId,
+      details: { reason },
+    }),
+    notifyUserBanned(targetUserId, reason),
+  ]);
 
   revalidatePath("/admin/users");
   return { success: true };
@@ -116,13 +127,16 @@ export async function suspendUser(
 
   if (error) return { error: "ユーザーの一時停止に失敗しました" };
 
-  await createAuditLog({
-    adminId: authResult.adminId,
-    action: "user_suspended",
-    targetType: "user",
-    targetId: targetUserId,
-    details: { reason, duration_days: durationDays, suspended_until: suspendedUntil },
-  });
+  await Promise.all([
+    createAuditLog({
+      adminId: authResult.adminId,
+      action: "user_suspended",
+      targetType: "user",
+      targetId: targetUserId,
+      details: { reason, duration_days: durationDays, suspended_until: suspendedUntil },
+    }),
+    notifyUserSuspended(targetUserId, reason, suspendedUntil),
+  ]);
 
   revalidatePath("/admin/users");
   return { success: true };
@@ -138,13 +152,16 @@ export async function warnUser(
   const authResult = await requireAdmin();
   if ("error" in authResult) return { error: authResult.error };
 
-  await createAuditLog({
-    adminId: authResult.adminId,
-    action: "user_warned",
-    targetType: "user",
-    targetId: targetUserId,
-    details: { reason },
-  });
+  await Promise.all([
+    createAuditLog({
+      adminId: authResult.adminId,
+      action: "user_warned",
+      targetType: "user",
+      targetId: targetUserId,
+      details: { reason },
+    }),
+    notifyUserWarned(targetUserId, reason),
+  ]);
 
   revalidatePath("/admin/users");
   return { success: true };
@@ -171,13 +188,16 @@ export async function unbanUser(
 
   if (error) return { error: "ユーザーの解除に失敗しました" };
 
-  await createAuditLog({
-    adminId: authResult.adminId,
-    action: "user_warned", // reuse closest action type
-    targetType: "user",
-    targetId: targetUserId,
-    details: { action: "unbanned" },
-  });
+  await Promise.all([
+    createAuditLog({
+      adminId: authResult.adminId,
+      action: "user_warned", // reuse closest action type
+      targetType: "user",
+      targetId: targetUserId,
+      details: { action: "unbanned" },
+    }),
+    notifyUserUnbanned(targetUserId),
+  ]);
 
   revalidatePath("/admin/users");
   return { success: true };
@@ -197,6 +217,14 @@ export async function updateReportStatus(
   if ("error" in authResult) return { error: authResult.error };
 
   const admin = createAdminClient();
+
+  // Fetch the report to get reporter_id for notification
+  const { data: report } = await admin
+    .from("reports")
+    .select("reporter_id")
+    .eq("id", reportId)
+    .single();
+
   const { error } = await admin
     .from("reports")
     .update({
@@ -211,13 +239,19 @@ export async function updateReportStatus(
   const action: AdminActionType =
     status === "dismissed" ? "report_dismissed" : "report_reviewed";
 
-  await createAuditLog({
-    adminId: authResult.adminId,
-    action,
-    targetType: "report",
-    targetId: reportId,
-    details: { status, notes: notes ?? null },
-  });
+  await Promise.all([
+    createAuditLog({
+      adminId: authResult.adminId,
+      action,
+      targetType: "report",
+      targetId: reportId,
+      details: { status, notes: notes ?? null },
+    }),
+    // Notify the reporter that their report has been resolved
+    report?.reporter_id
+      ? notifyReportResolved(report.reporter_id, status)
+      : Promise.resolve(),
+  ]);
 
   revalidatePath("/admin/reports");
   return { success: true };
@@ -244,43 +278,88 @@ export async function takeReportAction(
 
   if (!report) return { error: "報告が見つかりません" };
 
-  // Remove the reported content
+  // Remove the reported content and notify the content owner
   if (report.problem_set_id) {
+    // Fetch the problem set to identify the owner and title
+    const { data: problemSet } = await admin
+      .from("problem_sets")
+      .select("seller_id, title")
+      .eq("id", report.problem_set_id)
+      .single();
+
     await admin
       .from("problem_sets")
       .update({ status: "draft" as Database["public"]["Enums"]["problem_set_status"] })
       .eq("id", report.problem_set_id);
 
-    await createAuditLog({
-      adminId: authResult.adminId,
-      action: "content_removed",
-      targetType: "problem_set",
-      targetId: report.problem_set_id,
-      details: { report_id: reportId, notes },
-    });
+    await Promise.all([
+      createAuditLog({
+        adminId: authResult.adminId,
+        action: "content_removed",
+        targetType: "problem_set",
+        targetId: report.problem_set_id,
+        details: { report_id: reportId, notes },
+      }),
+      // Notify the content owner
+      problemSet?.seller_id
+        ? notifyContentRemoved(
+            problemSet.seller_id,
+            "problem_set",
+            problemSet.title ?? "---"
+          )
+        : Promise.resolve(),
+    ]);
   } else if (report.review_id) {
+    // Fetch the review to identify the owner
+    const { data: review } = await admin
+      .from("reviews")
+      .select("user_id")
+      .eq("id", report.review_id)
+      .single();
+
     await admin.from("reviews").delete().eq("id", report.review_id);
 
-    await createAuditLog({
-      adminId: authResult.adminId,
-      action: "content_removed",
-      targetType: "review",
-      targetId: report.review_id,
-      details: { report_id: reportId, notes },
-    });
+    await Promise.all([
+      createAuditLog({
+        adminId: authResult.adminId,
+        action: "content_removed",
+        targetType: "review",
+        targetId: report.review_id,
+        details: { report_id: reportId, notes },
+      }),
+      review?.user_id
+        ? notifyContentRemoved(review.user_id, "review", "レビュー")
+        : Promise.resolve(),
+    ]);
   } else if (report.qa_question_id) {
+    // Fetch the question to identify the owner
+    const { data: question } = await admin
+      .from("qa_questions")
+      .select("user_id, title")
+      .eq("id", report.qa_question_id)
+      .single();
+
     await admin.from("qa_questions").delete().eq("id", report.qa_question_id);
 
-    await createAuditLog({
-      adminId: authResult.adminId,
-      action: "content_removed",
-      targetType: "qa_question",
-      targetId: report.qa_question_id,
-      details: { report_id: reportId, notes },
-    });
+    await Promise.all([
+      createAuditLog({
+        adminId: authResult.adminId,
+        action: "content_removed",
+        targetType: "qa_question",
+        targetId: report.qa_question_id,
+        details: { report_id: reportId, notes },
+      }),
+      question?.user_id
+        ? notifyContentRemoved(
+            question.user_id,
+            "qa_question",
+            question.title ?? "質問"
+          )
+        : Promise.resolve(),
+    ]);
   }
 
-  // Update report status
+  // Update report status and notify reporter
   await admin
     .from("reports")
     .update({
@@ -289,6 +368,11 @@ export async function takeReportAction(
       reviewed_at: new Date().toISOString(),
     })
     .eq("id", reportId);
+
+  // Notify the reporter that action has been taken
+  if (report.reporter_id) {
+    await notifyReportResolved(report.reporter_id, "action_taken");
+  }
 
   revalidatePath("/admin/reports");
   return { success: true };

@@ -2,24 +2,14 @@
 
 import { createClient } from "@/lib/supabase/server";
 
-// ──────────────────────────────────────────────
-// NOTE: The recently_viewed, user_notes, and bookmarks tables are defined
-// in migration 20260323400000 but not yet in the generated Supabase types.
-// We use typed wrappers with explicit casts until types are regenerated.
-// ──────────────────────────────────────────────
-
-// ──────────────────────────────────────────────
 // Track a problem set view — upserts into recently_viewed
-// ──────────────────────────────────────────────
-
 export async function trackView(
   userId: string,
   problemSetId: string
 ): Promise<void> {
   const supabase = await createClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
+  await supabase
     .from("recently_viewed")
     .upsert(
       {
@@ -30,10 +20,6 @@ export async function trackView(
       { onConflict: "user_id,problem_set_id" }
     );
 }
-
-// ──────────────────────────────────────────────
-// Fetch recently viewed problem sets with details
-// ──────────────────────────────────────────────
 
 export interface RecentlyViewedItem {
   id: string;
@@ -54,8 +40,7 @@ export interface RecentlyViewedItem {
 export async function clearRecentlyViewed(userId: string): Promise<void> {
   const supabase = await createClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
+  await supabase
     .from("recently_viewed")
     .delete()
     .eq("user_id", userId);
@@ -67,8 +52,7 @@ export async function getRecentlyViewed(
 ): Promise<RecentlyViewedItem[]> {
   const supabase = await createClient();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (supabase as any)
+  const { data } = await supabase
     .from("recently_viewed")
     .select(
       "id, problem_set_id, viewed_at, problem_sets(id, title, subject, difficulty, price, cover_image_url, university)"

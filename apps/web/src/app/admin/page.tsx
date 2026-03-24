@@ -205,6 +205,7 @@ export default async function AdminDashboardPage() {
     recentReportsResult,
     monthPurchasesResult,
     submissionsCountResult,
+    pendingReportsResult,
   ] = await Promise.all([
     supabase.from("profiles").select("id", { count: "exact", head: true }),
     supabase
@@ -244,6 +245,11 @@ export default async function AdminDashboardPage() {
     supabase
       .from("submissions")
       .select("id", { count: "exact", head: true }),
+    // Pending reports count
+    supabase
+      .from("reports")
+      .select("id", { count: "exact", head: true })
+      .eq("status", "pending"),
   ]);
 
   interface ReportRow {
@@ -280,6 +286,9 @@ export default async function AdminDashboardPage() {
 
   // Total submissions
   const totalSubmissions = submissionsCountResult.count ?? 0;
+
+  // Pending reports
+  const pendingReports = pendingReportsResult.count ?? 0;
 
   // Active users (unique submitters in last 7 days)
   const activeUserIds = new Set(
@@ -328,7 +337,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Primary summary stats */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           title="総ユーザー数"
           value={totalUsers.toLocaleString()}
@@ -358,6 +367,12 @@ export default async function AdminDashboardPage() {
           value={paidSubs.toLocaleString()}
           icon={CreditCard}
           subtitle="ベーシック + プロ"
+        />
+        <StatCard
+          title="未対応の報告"
+          value={pendingReports.toLocaleString()}
+          icon={Flag}
+          subtitle="対応待ちの報告数"
         />
       </div>
 

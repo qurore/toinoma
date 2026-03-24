@@ -2,16 +2,22 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ShoppingCart, X, Trash2, ExternalLink } from "lucide-react";
+import { ShoppingCart, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import { createClient } from "@/lib/supabase/client";
+import { formatPrice } from "@toinoma/shared/utils";
 
-// ──────────────────────────────────────────────
 // MKT-016: Shopping cart (wishlist-to-cart flow)
-// ──────────────────────────────────────────────
 // Uses the existing favorites table as a cart source.
 // Each item links directly to its purchase page.
 
@@ -26,7 +32,6 @@ interface CartItem {
 
 interface CartDrawerProps {
   userId: string;
-  /** Initial count from server (for badge rendering before hydration) */
   initialCount?: number;
 }
 
@@ -36,7 +41,6 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
   const [loading, setLoading] = useState(false);
   const [count, setCount] = useState(initialCount);
 
-  // Fetch favorites (cart items) when drawer opens
   const fetchItems = useCallback(async () => {
     if (!userId) return;
 
@@ -81,7 +85,6 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
   }, [isOpen, fetchItems]);
 
   const removeItem = async (favoriteId: string) => {
-    // Optimistic remove
     setItems((prev) => prev.filter((item) => item.id !== favoriteId));
     setCount((prev) => Math.max(0, prev - 1));
 
@@ -89,7 +92,6 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
       const supabase = createClient();
       await supabase.from("favorites").delete().eq("id", favoriteId);
     } catch {
-      // Re-fetch to restore consistent state
       fetchItems();
     }
   };
@@ -97,68 +99,41 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
   const total = items.reduce((sum, item) => sum + item.price, 0);
 
   return (
-    <>
-      {/* Cart icon button with badge */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="relative"
-        onClick={() => setIsOpen(true)}
-        aria-label="カートを開く"
-      >
-        <ShoppingCart className="h-5 w-5" />
-        {count > 0 && (
-          <Badge
-            variant="destructive"
-            className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center px-1 text-[10px]"
-          >
-            {count > 99 ? "99+" : count}
-          </Badge>
-        )}
-      </Button>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
+      <SheetTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="relative"
+          aria-label="お気に入りを開く"
+        >
+          <ShoppingCart className="h-5 w-5" />
+          {count > 0 && (
+            <Badge
+              variant="destructive"
+              className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center px-1 text-[10px]"
+            >
+              {count > 99 ? "99+" : count}
+            </Badge>
+          )}
+        </Button>
+      </SheetTrigger>
 
-      {/* Overlay */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-50 bg-black/50 transition-opacity"
-          onClick={() => setIsOpen(false)}
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Drawer */}
-      <div
-        className={cn(
-          "fixed right-0 top-0 z-50 flex h-full w-full max-w-sm flex-col border-l border-border bg-background shadow-xl transition-transform duration-300 ease-in-out",
-          isOpen ? "translate-x-0" : "translate-x-full"
-        )}
-        role="dialog"
-        aria-modal="true"
-        aria-label="お気に入り / カート"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-border px-4 py-3">
-          <div className="flex items-center gap-2">
-            <ShoppingCart className="h-4 w-4" />
-            <h2 className="text-sm font-semibold">
-              お気に入り
-            </h2>
+      <SheetContent side="right" className="flex w-full max-w-sm flex-col p-0">
+        <SheetHeader className="border-b border-border px-4 py-3">
+          <SheetTitle className="flex items-center gap-2 text-sm font-semibold">
+            <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+            お気に入り
             {items.length > 0 && (
               <Badge variant="secondary" className="text-xs">
                 {items.length}件
               </Badge>
             )}
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsOpen(false)}
-            aria-label="閉じる"
-            className="h-8 w-8"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+          </SheetTitle>
+          <SheetDescription className="sr-only">
+            お気に入りに追加した問題セットの一覧です
+          </SheetDescription>
+        </SheetHeader>
 
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
@@ -173,7 +148,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
                 お気に入りがまだありません
               </p>
               <p className="mt-1 text-xs text-muted-foreground/60">
-                問題セットをお気に入りに追加すると、ここに表示されます
+                気になる問題セットを見つけたら、ハートボタンで追加しましょう
               </p>
               <Button
                 variant="outline"
@@ -213,7 +188,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
                       size="icon"
                       className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
                       onClick={() => removeItem(item.id)}
-                      aria-label="お気に入りから削除"
+                      aria-label={`${item.title}をお気に入りから削除`}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -221,9 +196,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
 
                   <div className="mt-2 flex items-center justify-between">
                     <span className="text-sm font-semibold">
-                      {item.price === 0
-                        ? "無料"
-                        : `¥${item.price.toLocaleString()}`}
+                      {formatPrice(item.price)}
                     </span>
                     <Button
                       size="sm"
@@ -235,7 +208,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
                         href={`/problem/${item.problem_set_id}`}
                         onClick={() => setIsOpen(false)}
                       >
-                        <ExternalLink className="h-3 w-3" />
+                        <ExternalLink className="h-3 w-3" aria-hidden="true" />
                         {item.price === 0 ? "取得する" : "購入する"}
                       </Link>
                     </Button>
@@ -246,7 +219,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
           )}
         </div>
 
-        {/* Footer — total & summary */}
+        {/* Footer */}
         {items.length > 0 && (
           <div className="border-t border-border px-4 py-3">
             <Separator className="mb-3" />
@@ -255,7 +228,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
                 合計 ({items.length}件)
               </span>
               <span className="text-base font-bold">
-                ¥{total.toLocaleString()}
+                {formatPrice(total)}
               </span>
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground/60">
@@ -263,7 +236,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
             </p>
           </div>
         )}
-      </div>
-    </>
+      </SheetContent>
+    </Sheet>
   );
 }

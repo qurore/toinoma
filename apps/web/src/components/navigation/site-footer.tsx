@@ -15,8 +15,8 @@ const footerLinks = {
     title: "出品者向け",
     links: [
       { label: "出品者ガイド", href: "/help/seller-guide" },
-      { label: "出品者モード", href: "/seller" },
-      { label: "収益ダッシュボード", href: "/seller/analytics" },
+      { label: "出品者になる", href: "/seller/onboarding" },
+      { label: "出品者ダッシュボード", href: "/seller" },
     ],
   },
   legal: {
@@ -25,6 +25,7 @@ const footerLinks = {
       { label: "利用規約", href: "/legal/terms" },
       { label: "プライバシーポリシー", href: "/legal/privacy" },
       { label: "特定商取引法に基づく表記", href: "/legal/tokushoho" },
+      { label: "出品者利用規約", href: "/legal/seller-tos" },
       { label: "コンテンツポリシー", href: "/legal/content-policy" },
       { label: "返金ポリシー", href: "/legal/refund" },
     ],

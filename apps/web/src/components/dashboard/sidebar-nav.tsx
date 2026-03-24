@@ -16,6 +16,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { SubscriptionTier } from "@/types/database";
 
+// Primary dashboard nav items — all under /dashboard
 export const NAV_ITEMS = [
   {
     href: "/dashboard",
@@ -53,6 +54,10 @@ export const NAV_ITEMS = [
     icon: BarChart3,
     exact: false,
   },
+] as const;
+
+// Secondary items displayed in a separate section at the bottom of the nav
+export const SECONDARY_NAV_ITEMS = [
   {
     href: "/settings",
     label: "設定",
@@ -103,8 +108,8 @@ export function SidebarNav({
 
   return (
     <div className="flex flex-1 flex-col">
-      {/* Navigation links */}
-      <nav className="flex-1 overflow-y-auto px-3 py-4">
+      {/* Primary navigation links */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4" aria-label="ダッシュボード">
         <ul className="space-y-0.5">
           {NAV_ITEMS.map((item) => {
             const isActive = item.exact
@@ -135,6 +140,37 @@ export function SidebarNav({
             );
           })}
         </ul>
+
+        {/* Secondary navigation — separated visually */}
+        <div className="mt-3 border-t border-border pt-3">
+          <ul className="space-y-0.5">
+            {SECONDARY_NAV_ITEMS.map((item) => {
+              const isActive = item.exact
+                ? pathname === item.href
+                : pathname.startsWith(item.href);
+              const Icon = item.icon;
+
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    aria-current={isActive ? "page" : undefined}
+                    className={cn(
+                      "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                      "transition-colors duration-150",
+                      isActive
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    )}
+                  >
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {item.label}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </nav>
 
       {/* Subscription tier badge + usage meter */}

@@ -467,7 +467,7 @@ export default async function ExplorePage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-7xl px-4 pb-24 pt-20 sm:px-6 md:pb-12">
+      <main className="mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 md:pb-12">
         {/* Breadcrumb */}
         <Breadcrumbs
           items={[
@@ -477,11 +477,11 @@ export default async function ExplorePage({
         />
 
         {/* Page header */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
+        <div className="mb-5">
+          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
             {pageTitle}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             {pageSubtitle}
           </p>
         </div>
@@ -495,22 +495,22 @@ export default async function ExplorePage({
           {/* Main content */}
           <div className="min-w-0 flex-1">
             {/* Toolbar: mobile filter + sort + result count */}
-            <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="mb-4 flex items-center justify-between gap-3 border-b border-border pb-3">
               <div className="flex items-center gap-3">
                 <Suspense fallback={null}>
                   <ExploreFiltersMobile />
                 </Suspense>
                 <p className="text-sm text-muted-foreground" aria-live="polite">
-                  <span className="font-medium text-foreground">
+                  <span className="font-semibold text-foreground">
                     {total.toLocaleString()}
                   </span>
-                  件の問題セット
+                  <span className="ml-0.5">件の結果</span>
                 </p>
                 {hasFilters && (
                   <Button asChild variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs text-muted-foreground">
                     <Link href="/explore">
                       <X className="h-3 w-3" aria-hidden="true" />
-                      フィルターをクリア
+                      クリア
                     </Link>
                   </Button>
                 )}
@@ -525,7 +525,7 @@ export default async function ExplorePage({
               <EmptyState hasFilters={hasFilters} query={rawQ} />
             ) : (
               <>
-                <div className="grid gap-4 transition-opacity duration-200 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {filteredCards.map((ps) => (
                     <ProblemSetCard
                       key={ps.id}
@@ -537,7 +537,7 @@ export default async function ExplorePage({
                 </div>
 
                 {/* Pagination */}
-                <div className="mt-8">
+                <div className="mt-10">
                   <Pagination
                     currentPage={safePage}
                     totalPages={totalPages}

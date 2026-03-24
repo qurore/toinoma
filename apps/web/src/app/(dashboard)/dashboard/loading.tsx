@@ -3,8 +3,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 export default function DashboardLoading() {
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Page title skeleton */}
-      <Skeleton className="mb-6 h-9 w-48" />
+      {/* Breadcrumbs */}
+      <Skeleton className="mb-4 h-4 w-40" />
+      {/* Page title + description */}
+      <div className="mb-6">
+        <Skeleton className="h-9 w-48" />
+        <Skeleton className="mt-2 h-4 w-44" />
+      </div>
 
       {/* Stats grid skeleton */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

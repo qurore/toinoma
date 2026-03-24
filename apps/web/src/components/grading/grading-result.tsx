@@ -442,6 +442,14 @@ export function GradingResultDisplay({
           <p className="text-lg font-semibold text-foreground">
             {result.totalScore} / {result.maxScore} 点
           </p>
+          {/* Tier-based encouragement message */}
+          <p className={cn("mt-1.5 text-sm font-medium", colors.text)}>
+            {percentage >= 80
+              ? "素晴らしい成績です！"
+              : percentage >= 50
+                ? "よく頑張りました！"
+                : "次はもっと伸ばせます！"}
+          </p>
 
           {/* Section score chips */}
           <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -478,16 +486,52 @@ export function GradingResultDisplay({
 
       {/* Overall feedback */}
       <Card>
-        <CardHeader>
+        <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-base">
             <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
             総合フィードバック
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+        <CardContent className="space-y-4">
+          <p className="text-sm leading-relaxed text-foreground">
             {result.overallFeedback}
           </p>
+
+          {/* Per-section summary chips */}
+          <div className="space-y-2 border-t border-border pt-3">
+            <p className="text-xs font-medium text-muted-foreground">
+              大問別の得点率
+            </p>
+            <div className="space-y-2">
+              {result.sections.map((section) => {
+                const secPct =
+                  section.maxScore > 0
+                    ? Math.round((section.score / section.maxScore) * 100)
+                    : 0;
+                const secTier = getScoreTier(secPct);
+                const secColors = TIER_COLORS[secTier];
+                return (
+                  <div key={section.number} className="flex items-center gap-3">
+                    <span className="w-16 text-xs font-medium text-muted-foreground">
+                      大問{section.number}
+                    </span>
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-700 ease-out",
+                          secColors.bar
+                        )}
+                        style={{ width: `${secPct}%` }}
+                      />
+                    </div>
+                    <span className={cn("min-w-[3.5rem] text-right text-xs font-semibold tabular-nums", secColors.text)}>
+                      {section.score}/{section.maxScore}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </CardContent>
       </Card>
 
@@ -519,6 +563,66 @@ export function GradingResultDisplay({
           </Button>
           <ShareResultButton result={result} problemSetId={problemSetId} />
         </div>
+      )}
+
+      {/* Next steps — guide the student toward continued learning */}
+      {showActions && problemSetId && (
+        <Card className="border-primary/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
+              <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
+              次のステップ
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-3">
+              {/* Identify weakest section and suggest review */}
+              {(() => {
+                const weakest = result.sections.reduce((min, s) =>
+                  s.maxScore > 0 && (s.score / s.maxScore) < (min.score / (min.maxScore || 1))
+                    ? s
+                    : min
+                , result.sections[0]);
+                const weakPct = weakest.maxScore > 0
+                  ? Math.round((weakest.score / weakest.maxScore) * 100)
+                  : 0;
+                if (weakPct < 80) {
+                  return (
+                    <li className="flex items-start gap-2.5 text-sm">
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-warning/10 text-[10px] font-bold text-warning">1</span>
+                      <span className="text-muted-foreground">
+                        大問{weakest.number}の得点率が{weakPct}%です。この大問のフィードバックを確認し、弱点を把握しましょう。
+                      </span>
+                    </li>
+                  );
+                }
+                return null;
+              })()}
+              <li className="flex items-start gap-2.5 text-sm">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                  {percentage < 80 ? "2" : "1"}
+                </span>
+                <span className="text-muted-foreground">
+                  <Link href={`/problem/${problemSetId}/history`} className="font-medium text-primary hover:underline">
+                    解答履歴
+                  </Link>
+                  で過去のスコア推移を確認し、学習の進捗を把握しましょう。
+                </span>
+              </li>
+              <li className="flex items-start gap-2.5 text-sm">
+                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
+                  {percentage < 80 ? "3" : "2"}
+                </span>
+                <span className="text-muted-foreground">
+                  <Link href="/explore" className="font-medium text-primary hover:underline">
+                    他の問題セット
+                  </Link>
+                  にも挑戦して、幅広い出題パターンに対応できるようにしましょう。
+                </span>
+              </li>
+            </ul>
+          </CardContent>
+        </Card>
       )}
     </div>
   );
