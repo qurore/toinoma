@@ -21,26 +21,36 @@ export default async function NotificationSettingsPage() {
 
   if (result.error || !result.data) {
     return (
-      <div>
-        <h1 className="mb-1 text-xl font-bold tracking-tight">通知設定</h1>
-        <p className="mb-6 text-sm text-muted-foreground">
-          メール通知とアプリ内通知の設定を管理します
-        </p>
-        <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-4">
-          <p className="text-sm text-destructive">
-            通知設定の読み込みに失敗しました。ページを再読み込みしてください。
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-xl font-semibold tracking-tight">通知設定</h1>
+          <p className="text-sm text-muted-foreground">
+            メール通知とアプリ内通知の設定を管理します
           </p>
+        </div>
+        <div className="flex items-start gap-3 rounded-lg border border-destructive/20 bg-destructive/5 p-4">
+          <span className="mt-0.5 text-destructive" aria-hidden="true">!</span>
+          <div>
+            <p className="text-sm font-medium text-destructive">
+              読み込みに失敗しました
+            </p>
+            <p className="mt-0.5 text-xs text-muted-foreground">
+              通知設定を取得できませんでした。ページを再読み込みしてください。
+            </p>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div>
-      <h1 className="mb-1 text-xl font-bold tracking-tight">通知設定</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        メール通知とアプリ内通知の設定を管理します
-      </p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight">通知設定</h1>
+        <p className="text-sm text-muted-foreground">
+          メール通知とアプリ内通知の設定を管理します
+        </p>
+      </div>
 
       <NotificationSettingsForm initialPreferences={result.data} />
     </div>

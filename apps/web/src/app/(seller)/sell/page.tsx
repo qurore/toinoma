@@ -26,7 +26,7 @@ import { ProblemSetList } from "./problem-set-list";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "出品者ダッシュボード | 問の間",
+  title: "出品者ダッシュボード - 問の間",
 };
 
 export default async function SellerDashboardPage() {
@@ -266,48 +266,71 @@ export default async function SellerDashboardPage() {
     <main className="container mx-auto px-4 py-8">
       {/* Onboarding completion banner */}
       {!onboardingComplete && (
-        <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 p-4">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="font-medium">
+        <div className="mb-8 overflow-hidden rounded-xl border border-primary/20 bg-gradient-to-r from-primary/5 via-primary/[0.03] to-transparent">
+          <div className="flex items-start gap-4 p-5">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+              <Circle className="h-5 w-5 text-primary" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-base font-semibold">
                 セットアップを完了して、出品を始めましょう
               </p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-sm text-muted-foreground">
                 {!profileComplete
                   ? "プロフィールを設定すると、あなたの問題セットが購入者に表示されます"
                   : "支払い設定を完了すると、有料問題セットの販売収益を受け取れます"}
               </p>
-              {/* Step progress */}
-              <div className="mt-3 flex items-center gap-4 text-sm">
-                <span className="flex items-center gap-1.5 text-success">
-                  <Check className="h-3.5 w-3.5" />
-                  利用規約
+              {/* Step progress bar */}
+              <div className="mt-4 flex items-center gap-6 text-sm">
+                <span className="flex items-center gap-2 text-success">
+                  <span className="flex h-5 w-5 items-center justify-center rounded-full bg-success/15">
+                    <Check className="h-3 w-3" />
+                  </span>
+                  <span className="font-medium">利用規約</span>
                 </span>
-                <span className="flex items-center gap-1.5">
-                  {profileComplete ? (
-                    <Check className="h-3.5 w-3.5 text-success" />
-                  ) : (
-                    <Circle className="h-3.5 w-3.5 text-muted-foreground/40" />
-                  )}
+                <span className="flex items-center gap-2">
                   <span
                     className={
                       profileComplete
-                        ? "text-success"
-                        : "text-muted-foreground"
+                        ? "flex h-5 w-5 items-center justify-center rounded-full bg-success/15 text-success"
+                        : "flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-xs font-bold text-muted-foreground"
+                    }
+                  >
+                    {profileComplete ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      "2"
+                    )}
+                  </span>
+                  <span
+                    className={
+                      profileComplete
+                        ? "font-medium text-success"
+                        : "font-medium text-muted-foreground"
                     }
                   >
                     プロフィール
                   </span>
                 </span>
-                <span className="flex items-center gap-1.5">
-                  {stripeComplete ? (
-                    <Check className="h-3.5 w-3.5 text-success" />
-                  ) : (
-                    <Circle className="h-3.5 w-3.5 text-muted-foreground/40" />
-                  )}
+                <span className="flex items-center gap-2">
                   <span
                     className={
-                      stripeComplete ? "text-success" : "text-muted-foreground"
+                      stripeComplete
+                        ? "flex h-5 w-5 items-center justify-center rounded-full bg-success/15 text-success"
+                        : "flex h-5 w-5 items-center justify-center rounded-full border border-border bg-card text-xs font-bold text-muted-foreground"
+                    }
+                  >
+                    {stripeComplete ? (
+                      <Check className="h-3 w-3" />
+                    ) : (
+                      "3"
+                    )}
+                  </span>
+                  <span
+                    className={
+                      stripeComplete
+                        ? "font-medium text-success"
+                        : "font-medium text-muted-foreground"
                     }
                   >
                     支払い設定
@@ -315,13 +338,22 @@ export default async function SellerDashboardPage() {
                 </span>
               </div>
             </div>
-            <Button size="sm" asChild>
+            <Button asChild>
               <Link href="/sell/onboarding">
                 {!profileComplete
                   ? "プロフィールを設定"
                   : "支払い設定を完了"}
               </Link>
             </Button>
+          </div>
+          {/* Progress bar */}
+          <div className="h-1 w-full bg-border">
+            <div
+              className="h-full bg-primary transition-all duration-300"
+              style={{
+                width: `${((profileComplete ? 2 : 1) / 3) * 100}%`,
+              }}
+            />
           </div>
         </div>
       )}
@@ -413,38 +445,61 @@ export default async function SellerDashboardPage() {
 
       {/* Revenue chart (30-day trend) */}
       <Card className="mb-8">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-base font-semibold">
             売上推移（直近30日間）
           </CardTitle>
+          <span className="text-sm text-muted-foreground">
+            合計 ¥{currentRevenueTotal.toLocaleString()}
+          </span>
         </CardHeader>
         <CardContent>
-          <div className="flex h-40 items-end gap-[2px]">
-            {chartData.map((d, i) => {
-              const heightPct = (d.revenue / chartMax) * 100;
-              return (
-                <div
-                  key={i}
-                  className="group relative flex flex-1 flex-col items-center"
-                >
+          {currentRevenueTotal === 0 && prevRevenueTotal === 0 ? (
+            <div className="flex h-40 flex-col items-center justify-center text-center">
+              <BarChart3 className="mb-2 h-8 w-8 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">
+                この期間の売上データはありません
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/60">
+                問題セットが購入されると、ここにグラフが表示されます
+              </p>
+            </div>
+          ) : (
+            <div className="flex h-40 items-end gap-[2px]">
+              {chartData.map((d, i) => {
+                const heightPct = (d.revenue / chartMax) * 100;
+                return (
                   <div
-                    className="w-full rounded-t bg-primary/80 transition-colors group-hover:bg-primary"
-                    style={{ height: `${Math.max(heightPct, 1)}%` }}
-                  />
-                  {/* Tooltip on hover */}
-                  <div className="pointer-events-none absolute -top-10 left-1/2 z-10 hidden -translate-x-1/2 rounded bg-foreground px-2 py-1 text-[10px] text-background group-hover:block">
-                    {d.date}: ¥{d.revenue.toLocaleString()}
+                    key={i}
+                    className="group relative flex flex-1 flex-col items-center"
+                  >
+                    <div
+                      className={`w-full rounded-t transition-colors ${
+                        d.revenue > 0
+                          ? "bg-primary/70 group-hover:bg-primary"
+                          : "bg-muted/50"
+                      }`}
+                      style={{
+                        height: `${d.revenue > 0 ? Math.max(heightPct, 4) : 2}%`,
+                      }}
+                    />
+                    {/* Tooltip on hover */}
+                    {d.revenue > 0 && (
+                      <div className="pointer-events-none absolute -top-10 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[10px] text-background shadow-md group-hover:block">
+                        {d.date}: ¥{d.revenue.toLocaleString()}
+                      </div>
+                    )}
+                    {/* Show every 5th label */}
+                    {i % 5 === 0 && (
+                      <span className="mt-1 text-[9px] text-muted-foreground">
+                        {d.date}
+                      </span>
+                    )}
                   </div>
-                  {/* Show every 5th label */}
-                  {i % 5 === 0 && (
-                    <span className="mt-1 text-[9px] text-muted-foreground">
-                      {d.date}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -512,6 +567,7 @@ export default async function SellerDashboardPage() {
                   </thead>
                   <tbody className="divide-y divide-border">
                     {latestSubmissions.map((sub) => {
+
                       const setTitle =
                         (sub.problem_sets as unknown as { title: string } | null)
                           ?.title ?? "---";
@@ -522,7 +578,7 @@ export default async function SellerDashboardPage() {
                           } | null
                         )?.display_name ?? "匿名";
                       return (
-                        <tr key={sub.id}>
+                        <tr key={sub.id} className="transition-colors hover:bg-muted/50">
                           <td className="max-w-[140px] truncate py-2 font-medium">
                             {setTitle}
                           </td>
@@ -558,51 +614,80 @@ export default async function SellerDashboardPage() {
 
       {/* Problem Set List */}
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold">問題セット一覧</h2>
-        <Button size="sm" asChild>
-          <Link href="/sell/sets/new">新規作成</Link>
-        </Button>
+        <div>
+          <h2 className="text-lg font-semibold">問題セット一覧</h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            {sets.length > 0
+              ? `${publishedCount}件公開中 / ${draftCount}件下書き`
+              : "問題セットを作成して出品しましょう"}
+          </p>
+        </div>
+        {sets.length > 0 && (
+          <Button size="sm" asChild>
+            <Link href="/sell/sets/new">
+              <PlusCircle className="mr-1.5 h-3.5 w-3.5" />
+              新規作成
+            </Link>
+          </Button>
+        )}
       </div>
 
       {sets.length === 0 ? (
-        <Card>
-          <CardContent className="py-12">
-            <div className="mx-auto max-w-sm text-center">
-              <p className="mb-2 text-lg font-medium">
+        <Card className="border-dashed">
+          <CardContent className="py-16">
+            <div className="mx-auto max-w-md text-center">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
+                <BookOpen className="h-8 w-8 text-primary" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold">
                 最初の問題セットを作成しましょう
+              </h3>
+              <p className="mb-8 text-sm text-muted-foreground">
+                問題プールに問題を追加し、セットにまとめて公開すると、すぐに販売を開始できます
               </p>
-              <p className="mb-6 text-sm text-muted-foreground">
-                問題を作成してルーブリックを設定すれば、すぐに公開できます
-              </p>
-              <div className="mb-6 grid grid-cols-3 gap-3 text-center">
-                <div className="flex flex-col items-center gap-1.5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                    <BookOpen className="h-5 w-5 text-foreground/60" />
+              <div className="mb-8 grid grid-cols-3 gap-4 text-center">
+                <div className="flex flex-col items-center gap-2 rounded-lg border border-border/50 bg-muted/30 p-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                    <BookOpen className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    問題作成
+                  <span className="text-xs font-medium">問題を作成</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    記述・選択・穴埋め
                   </span>
                 </div>
-                <div className="flex flex-col items-center gap-1.5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                    <Upload className="h-5 w-5 text-foreground/60" />
+                <div className="flex flex-col items-center gap-2 rounded-lg border border-border/50 bg-muted/30 p-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                    <Upload className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    PDF入稿
+                  <span className="text-xs font-medium">セットに追加</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    PDF入稿も対応
                   </span>
                 </div>
-                <div className="flex flex-col items-center gap-1.5">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                    <BarChart3 className="h-5 w-5 text-foreground/60" />
+                <div className="flex flex-col items-center gap-2 rounded-lg border border-border/50 bg-muted/30 p-4">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10">
+                    <BarChart3 className="h-5 w-5 text-primary" />
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    販売分析
+                  <span className="text-xs font-medium">販売開始</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    売上分析も充実
                   </span>
                 </div>
               </div>
-              <Button asChild>
-                <Link href="/sell/sets/new">新規作成</Link>
-              </Button>
+              <div className="flex items-center justify-center gap-3">
+                <Button variant="outline" asChild>
+                  <Link href="/sell/pool/new">
+                    <PlusCircle className="mr-1.5 h-4 w-4" />
+                    問題を作成
+                  </Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/sell/sets/new">
+                    <PlusCircle className="mr-1.5 h-4 w-4" />
+                    セットを作成
+                  </Link>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

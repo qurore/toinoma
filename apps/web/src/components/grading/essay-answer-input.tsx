@@ -306,6 +306,7 @@ export function EssayAnswerInput({
             )}
 
             <Textarea
+              autoResize={!verticalMode}
               placeholder={
                 showLatexToggle
                   ? "解答を入力してください... （数式は $...$ や $$...$$ で囲んでください）"
@@ -313,14 +314,15 @@ export function EssayAnswerInput({
               }
               value={text}
               onChange={(e) => handleTextChange(e.target.value)}
-              rows={8}
+              rows={6}
               maxLength={maxLength}
               className={cn(
-                "resize-y font-sans text-base leading-relaxed",
+                "min-h-[160px] font-sans text-base leading-relaxed",
+                !verticalMode && "resize-none",
                 genkoYoshi &&
                   "bg-transparent font-serif leading-[1.5em] tracking-widest",
                 verticalMode &&
-                  "min-h-[300px] overflow-x-auto text-base writing-vertical-rl",
+                  "min-h-[300px] resize-y overflow-x-auto text-base writing-vertical-rl",
                 isOverLimit && "border-destructive focus-visible:ring-destructive"
               )}
               style={
@@ -331,17 +333,36 @@ export function EssayAnswerInput({
             />
           </div>
 
-          {/* Character count */}
-          <div className="flex items-center justify-between">
+          {/* Character count + hints */}
+          <div className="flex items-center justify-between gap-2">
             {showLatexToggle && !showLatexPreview && (
               <p className="text-xs text-muted-foreground">
                 $...$ で数式を記述できます
               </p>
             )}
-            <span className={cn("ml-auto text-xs tabular-nums", charCountColor)}>
-              {charCount.toLocaleString()}
-              {maxLength ? ` / ${maxLength.toLocaleString()}` : ""} 文字
-            </span>
+            <div className="ml-auto flex items-center gap-2">
+              {maxLength && (
+                <div className="h-1 w-12 overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-200",
+                      isOverLimit
+                        ? "bg-destructive"
+                        : charCount / maxLength > 0.9
+                          ? "bg-amber-500"
+                          : "bg-primary"
+                    )}
+                    style={{
+                      width: `${Math.min(100, (charCount / maxLength) * 100)}%`,
+                    }}
+                  />
+                </div>
+              )}
+              <span className={cn("text-xs tabular-nums", charCountColor)}>
+                {charCount.toLocaleString()}
+                {maxLength ? ` / ${maxLength.toLocaleString()}` : ""} 文字
+              </span>
+            </div>
           </div>
 
           {/* LaTeX preview panel */}

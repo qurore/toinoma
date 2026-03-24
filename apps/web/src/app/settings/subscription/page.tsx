@@ -14,11 +14,14 @@ import {
   CreditCard,
   AlertTriangle,
   ArrowRight,
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { Metadata } from "next";
 
-export const metadata = {
-  title: "サブスクリプション設定 | 問の間",
+export const metadata: Metadata = {
+  title: "サブスクリプション設定 - 問の間",
+  description: "現在のプランとAI採点の利用状況を確認します",
 };
 
 export default async function SubscriptionSettingsPage(props: {
@@ -118,7 +121,9 @@ export default async function SubscriptionSettingsPage(props: {
             </CardTitle>
             <Badge
               variant={subState.tier === "free" ? "secondary" : "default"}
+              className="gap-1"
             >
+              {subState.tier === "pro" && <Crown className="h-3 w-3" />}
               {tierConfig.label}
             </Badge>
           </div>

@@ -10,7 +10,7 @@ import type { Subject } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ランキング | 問の間",
+  title: "ランキング - 問の間",
   description: "人気の問題セットランキング。科目別・総合ランキングをチェック。",
 };
 

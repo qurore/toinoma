@@ -190,13 +190,11 @@ export function AdminUsersClient({
 
   return (
     <div>
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">ユーザー管理</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {totalCount}件のユーザー
-          </p>
-        </div>
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold tracking-tight">ユーザー管理</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {totalCount.toLocaleString()}件のユーザーを管理しています
+        </p>
       </div>
 
       {/* Filters */}
@@ -251,9 +249,15 @@ export function AdminUsersClient({
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">
-              条件に一致するユーザーが見つかりません
-            </p>
+            <div className="flex flex-col items-center gap-2 py-12 text-center">
+              <div className="rounded-full bg-muted p-3">
+                <Search className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="font-medium">条件に一致するユーザーが見つかりません</p>
+              <p className="text-sm text-muted-foreground">
+                検索条件やフィルターを変更してお試しください
+              </p>
+            </div>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">

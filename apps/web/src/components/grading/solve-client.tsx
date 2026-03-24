@@ -1069,11 +1069,16 @@ export function SolveClient({
               <TabsList className="mb-4 w-full">
                 <TabsTrigger value="problem" className="flex-1">
                   <FileText className="mr-1.5 h-3.5 w-3.5" />
-                  問題
+                  問題文
                 </TabsTrigger>
                 <TabsTrigger value="answers" className="flex-1">
                   <Edit3 className="mr-1.5 h-3.5 w-3.5" />
                   解答
+                  {progress.totalAnswered > 0 && (
+                    <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-primary">
+                      {progress.totalAnswered}/{progress.totalQuestions}
+                    </span>
+                  )}
                 </TabsTrigger>
               </TabsList>
 

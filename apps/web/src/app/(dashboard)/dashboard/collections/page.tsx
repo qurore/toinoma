@@ -11,7 +11,7 @@ import { ja } from "date-fns/locale";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "コレクション | 問の間",
+  title: "コレクション - 問の間",
 };
 
 export default async function CollectionsPage() {

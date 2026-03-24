@@ -5,7 +5,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft,
   Plus,
   FileText,
   CheckSquare,
@@ -20,7 +19,7 @@ import type { Subject, Difficulty, AnswerType } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "問題プール | 問の間",
+  title: "問題プール - 問の間",
 };
 
 const TYPE_ICONS: Record<string, typeof FileText> = {
@@ -89,16 +88,6 @@ export default async function ProblemPoolPage({
 
   return (
     <main className="container mx-auto px-4 py-8">
-      {/* Back navigation */}
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/sell">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
-          </Link>
-        </Button>
-      </div>
-
       {/* Header with title and actions */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -123,20 +112,23 @@ export default async function ProblemPoolPage({
         </div>
       </div>
 
-      {/* Type-level stats */}
-      <div className="mb-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-        <span>{totalCount ?? 0} 問</span>
+      {/* Type-level stats as cards */}
+      <div className="mb-6 flex flex-wrap items-center gap-2">
         {Object.entries(TYPE_LABELS).map(([type, label]) => {
-          // Show counts for all types, using the full (unfiltered) data would require
-          // additional queries; for now, show from the currently loaded set
+          const Icon = TYPE_ICONS[type] ?? FileText;
           const count = allQuestions.filter(
             (item) => item.question_type === type
           ).length;
-          return count > 0 ? (
-            <span key={type}>
-              {label}: {count}
-            </span>
-          ) : null;
+          return (
+            <div
+              key={type}
+              className="flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs"
+            >
+              <Icon className="h-3 w-3 text-muted-foreground" />
+              <span className="text-muted-foreground">{label}</span>
+              <span className="font-semibold">{count}</span>
+            </div>
+          );
         })}
       </div>
 
@@ -210,23 +202,28 @@ export default async function ProblemPoolPage({
       {allQuestions.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-center">
-            <FileText className="mb-4 h-12 w-12 text-muted-foreground/50" />
+            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
+              <FileText className="h-8 w-8 text-muted-foreground/40" />
+            </div>
             <h2 className="mb-2 text-lg font-semibold">
               {hasActiveFilters
                 ? "条件に一致する問題がありません"
-                : "問題プールに問題がありません"}
+                : "まだ問題がありません"}
             </h2>
-            <p className="mb-6 max-w-sm text-sm text-muted-foreground">
+            <p className="mb-8 max-w-sm text-sm text-muted-foreground">
               {hasActiveFilters
-                ? "フィルターや検索条件を変更してください。"
-                : "問題プールに問題を追加して、問題セットを作成しましょう。"}
+                ? "フィルターや検索条件を変更してお試しください"
+                : "問題プールに問題を追加して、問題セットの作成を始めましょう"}
             </p>
             {hasActiveFilters ? (
               <Button variant="outline" asChild>
-                <Link href="/sell/pool">フィルターをクリア</Link>
+                <Link href="/sell/pool">
+                  <Search className="mr-1.5 h-4 w-4" />
+                  フィルターをクリア
+                </Link>
               </Button>
             ) : (
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Button variant="outline" asChild>
                   <Link href="/sell/pool/import">
                     <FileUp className="mr-1.5 h-4 w-4" />

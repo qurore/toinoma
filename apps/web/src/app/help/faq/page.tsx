@@ -326,7 +326,7 @@ export default function FaqPage() {
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="FAQを検索..."
+          placeholder="キーワードで質問を検索..."
           className="pl-10"
           aria-label="FAQ検索"
         />
@@ -339,14 +339,25 @@ export default function FaqPage() {
 
       {/* FAQ categories */}
       {filteredCategories.length === 0 ? (
-        <div className="py-16 text-center">
-          <HelpCircle className="mx-auto mb-3 h-10 w-10 text-muted-foreground" />
-          <p className="text-muted-foreground">
-            該当するFAQが見つかりませんでした
-          </p>
+        <div className="flex flex-col items-center py-16 text-center">
+          <div className="mb-3 rounded-full bg-muted p-4">
+            <HelpCircle className="h-8 w-8 text-muted-foreground" />
+          </div>
+          <p className="font-medium">該当するFAQが見つかりませんでした</p>
           <p className="mt-1 text-sm text-muted-foreground">
-            キーワードを変えてお試しください
+            キーワードを変えるか、
+            <Link href="mailto:support@toinoma.jp" className="text-primary hover:underline">
+              お問い合わせ
+            </Link>
+            ください
           </p>
+          <button
+            type="button"
+            onClick={() => setSearch("")}
+            className="mt-3 text-sm text-primary hover:underline"
+          >
+            検索をクリア
+          </button>
         </div>
       ) : (
         <div className="space-y-8">

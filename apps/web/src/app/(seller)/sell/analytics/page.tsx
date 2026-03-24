@@ -4,13 +4,13 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, Download } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Download, BarChart3 } from "lucide-react";
 import { SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "分析 | 問の間",
+  title: "分析 - 問の間",
 };
 
 export default async function SalesAnalyticsPage() {
@@ -156,20 +156,18 @@ export default async function SalesAnalyticsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/sell">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
-          </Link>
-        </Button>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">販売分析</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            売上・購入・採点の統計データ
+          </p>
+        </div>
         <Button variant="outline" size="sm">
           <Download className="mr-1.5 h-3.5 w-3.5" />
           データをエクスポート
         </Button>
       </div>
-
-      <h1 className="mb-8 text-3xl font-bold tracking-tight">販売分析</h1>
 
       {/* Revenue overview cards with growth */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -249,43 +247,57 @@ export default async function SalesAnalyticsPage() {
         </Card>
       </div>
 
-      {/* Monthly revenue chart (simple bar representation) */}
+      {/* Monthly revenue chart (horizontal bar chart) */}
       <Card className="mb-8">
         <CardHeader>
           <CardTitle className="text-base">月別売上推移</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            {monthlyRevenue.map((m) => {
-              const maxRevenue = Math.max(
-                ...monthlyRevenue.map((r) => r.revenue),
-                1
-              );
-              const widthPercent = (m.revenue / maxRevenue) * 100;
+          {totalRevenue === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <BarChart3 className="mb-2 h-8 w-8 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">
+                売上データがありません
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/60">
+                問題セットが購入されると、ここに月別の推移が表示されます
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {monthlyRevenue.map((m) => {
+                const maxRevenue = Math.max(
+                  ...monthlyRevenue.map((r) => r.revenue),
+                  1
+                );
+                const widthPercent = (m.revenue / maxRevenue) * 100;
 
-              return (
-                <div key={m.month} className="flex items-center gap-3">
-                  <span className="w-16 shrink-0 text-sm text-muted-foreground">
-                    {m.month}
-                  </span>
-                  <div className="flex-1">
-                    <div
-                      className="h-6 rounded bg-primary/20"
-                      style={{ width: `${Math.max(widthPercent, 2)}%` }}
-                    >
-                      <div
-                        className="h-full rounded bg-primary transition-all"
-                        style={{ width: m.revenue > 0 ? "100%" : "0%" }}
-                      />
+                return (
+                  <div key={m.month} className="flex items-center gap-3">
+                    <span className="w-16 shrink-0 text-sm text-muted-foreground">
+                      {m.month}
+                    </span>
+                    <div className="flex-1">
+                      <div className="h-7 w-full overflow-hidden rounded bg-muted/40">
+                        <div
+                          className="h-full rounded bg-primary/80 transition-all"
+                          style={{
+                            width: `${m.revenue > 0 ? Math.max(widthPercent, 3) : 0}%`,
+                          }}
+                        />
+                      </div>
                     </div>
+                    <span className="w-32 shrink-0 text-right text-sm font-medium">
+                      ¥{m.revenue.toLocaleString()}
+                      <span className="ml-1 text-xs font-normal text-muted-foreground">
+                        ({m.count}件)
+                      </span>
+                    </span>
                   </div>
-                  <span className="w-28 shrink-0 text-right text-sm font-medium">
-                    ¥{m.revenue.toLocaleString()} ({m.count}件)
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -383,7 +395,7 @@ export default async function SalesAnalyticsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-muted-foreground">
+                  <tr className="border-b text-left text-xs text-muted-foreground">
                     <th className="pb-3 pr-4 font-medium">順位</th>
                     <th className="pb-3 pr-4 font-medium">問題セット</th>
                     <th className="pb-3 pr-4 text-right font-medium">購入数</th>
@@ -393,7 +405,7 @@ export default async function SalesAnalyticsPage() {
                 </thead>
                 <tbody className="divide-y">
                   {topSelling.map((ps, idx) => (
-                    <tr key={ps.id}>
+                    <tr key={ps.id} className="transition-colors hover:bg-muted/50">
                       <td className="py-3 pr-4">
                         <Badge variant={idx < 3 ? "default" : "secondary"} className="text-xs">
                           {idx + 1}
@@ -439,19 +451,19 @@ export default async function SalesAnalyticsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-3 pr-4">問題セット</th>
-                    <th className="pb-3 pr-4">科目</th>
-                    <th className="pb-3 pr-4 text-right">価格</th>
-                    <th className="pb-3 pr-4 text-right">購入数</th>
-                    <th className="pb-3 pr-4 text-right">採点数</th>
-                    <th className="pb-3 pr-4 text-right">売上</th>
-                    <th className="pb-3 text-right">平均正答率</th>
+                  <tr className="border-b text-left text-xs text-muted-foreground">
+                    <th className="pb-3 pr-4 font-medium">問題セット</th>
+                    <th className="pb-3 pr-4 font-medium">科目</th>
+                    <th className="pb-3 pr-4 text-right font-medium">価格</th>
+                    <th className="pb-3 pr-4 text-right font-medium">購入数</th>
+                    <th className="pb-3 pr-4 text-right font-medium">採点数</th>
+                    <th className="pb-3 pr-4 text-right font-medium">売上</th>
+                    <th className="pb-3 text-right font-medium">平均正答率</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {perSetStats.map((ps) => (
-                    <tr key={ps.id}>
+                    <tr key={ps.id} className="transition-colors hover:bg-muted/50">
                       <td className="py-3 pr-4">
                         <Link
                           href={`/sell/${ps.id}/edit`}

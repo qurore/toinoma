@@ -91,36 +91,47 @@ function EssayReview({
 
   return (
     <div className="space-y-4">
-      {/* Student answer */}
-      <div className="space-y-2">
-        <p className="text-xs font-medium text-muted-foreground">あなたの解答</p>
-        <div className="rounded-md border border-border bg-muted/30 p-3">
-          {student?.text ? (
-            <p className="whitespace-pre-wrap text-sm">{student.text}</p>
-          ) : student?.imageUrl ? (
-            <Image
-              src={student.imageUrl}
-              alt="解答画像"
-              width={400}
-              height={240}
-              className="max-h-60 rounded-md object-contain"
-              unoptimized
-            />
-          ) : (
-            <p className="text-sm text-muted-foreground">未解答</p>
-          )}
-        </div>
-      </div>
-
-      {/* Model answer */}
-      {model?.text && (
+      {/* Side-by-side: student vs model */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {/* Student answer */}
         <div className="space-y-2">
-          <p className="text-xs font-medium text-muted-foreground">模範解答</p>
-          <div className="rounded-md border border-primary/20 bg-primary/5 p-3">
-            <p className="whitespace-pre-wrap text-sm">{model.text}</p>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-amber-500" />
+            <p className="text-xs font-medium text-muted-foreground">あなたの解答</p>
+          </div>
+          <div className="min-h-[100px] rounded-md border border-border bg-muted/30 p-3">
+            {student?.text ? (
+              <p className="whitespace-pre-wrap text-sm leading-relaxed">{student.text}</p>
+            ) : student?.imageUrl ? (
+              <Image
+                src={student.imageUrl}
+                alt="解答画像"
+                width={400}
+                height={240}
+                className="max-h-60 rounded-md object-contain"
+                unoptimized
+              />
+            ) : (
+              <p className="text-sm italic text-muted-foreground">未解答</p>
+            )}
           </div>
         </div>
-      )}
+
+        {/* Model answer */}
+        <div className="space-y-2">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2 w-2 rounded-full bg-success" />
+            <p className="text-xs font-medium text-muted-foreground">模範解答</p>
+          </div>
+          <div className="min-h-[100px] rounded-md border border-success/20 bg-success/5 p-3">
+            {model?.text ? (
+              <p className="whitespace-pre-wrap text-sm leading-relaxed">{model.text}</p>
+            ) : (
+              <p className="text-sm italic text-muted-foreground">模範解答なし</p>
+            )}
+          </div>
+        </div>
+      </div>
 
       {/* Rubric element breakdown */}
       {gradingResult && gradingResult.rubricMatches.length > 0 && (
@@ -129,29 +140,58 @@ function EssayReview({
             採点基準別スコア
           </p>
           <div className="space-y-2">
-            {gradingResult.rubricMatches.map((match, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-2 rounded-md border border-border bg-card p-3"
-              >
-                {match.matched ? (
-                  <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-success" />
-                ) : (
-                  <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-destructive" />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-medium">{match.element}</p>
-                    <span className="shrink-0 text-xs text-muted-foreground">
-                      {match.pointsAwarded} / {match.pointsPossible}
-                    </span>
+            {gradingResult.rubricMatches.map((match, i) => {
+              const ratio =
+                match.pointsPossible > 0
+                  ? match.pointsAwarded / match.pointsPossible
+                  : 0;
+              const matchColor =
+                ratio >= 1
+                  ? "border-success/20 bg-success/5"
+                  : ratio > 0
+                    ? "border-amber-500/20 bg-amber-50"
+                    : "border-destructive/20 bg-destructive/5";
+              const iconColor =
+                ratio >= 1
+                  ? "text-success"
+                  : ratio > 0
+                    ? "text-amber-500"
+                    : "text-destructive";
+
+              return (
+                <div
+                  key={i}
+                  className={cn(
+                    "flex items-start gap-2 rounded-md border p-3",
+                    matchColor
+                  )}
+                >
+                  {ratio >= 1 ? (
+                    <CheckCircle2 className={cn("mt-0.5 h-4 w-4 shrink-0", iconColor)} />
+                  ) : ratio > 0 ? (
+                    <Minus className={cn("mt-0.5 h-4 w-4 shrink-0", iconColor)} />
+                  ) : (
+                    <XCircle className={cn("mt-0.5 h-4 w-4 shrink-0", iconColor)} />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-medium">{match.element}</p>
+                      <span
+                        className={cn(
+                          "shrink-0 text-xs font-semibold tabular-nums",
+                          iconColor
+                        )}
+                      >
+                        {match.pointsAwarded} / {match.pointsPossible}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                      {match.explanation}
+                    </p>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {match.explanation}
-                  </p>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -176,6 +216,7 @@ function MarkSheetReview({
 
   return (
     <div className="space-y-3">
+      {/* Bubble grid with correctness indicators */}
       <div className="flex flex-wrap gap-2">
         {choices.map((choice) => {
           const isStudentChoice = student?.selected === choice;
@@ -185,44 +226,60 @@ function MarkSheetReview({
             <div
               key={choice}
               className={cn(
-                "flex h-10 min-w-10 items-center justify-center gap-1.5 rounded-lg border px-4 text-sm font-medium",
+                "relative flex h-11 min-w-11 items-center justify-center gap-1.5 rounded-full border-2 px-3 text-sm font-semibold transition-all",
                 isCorrectChoice && isStudentChoice &&
-                  "border-success bg-success/10 text-success",
+                  "border-success bg-success text-success-foreground shadow-sm",
                 isCorrectChoice && !isStudentChoice &&
-                  "border-primary bg-primary/10 text-primary",
+                  "border-success/60 bg-success/10 text-success",
                 !isCorrectChoice && isStudentChoice &&
-                  "border-destructive bg-destructive/10 text-destructive",
+                  "border-destructive bg-destructive text-destructive-foreground shadow-sm",
                 !isCorrectChoice && !isStudentChoice &&
                   "border-border bg-card text-muted-foreground"
               )}
             >
               {choice}
-              {isCorrectChoice && isStudentChoice && (
-                <CheckCircle2 className="h-3.5 w-3.5" />
-              )}
-              {isCorrectChoice && !isStudentChoice && (
-                <CheckCircle2 className="h-3.5 w-3.5" />
-              )}
-              {!isCorrectChoice && isStudentChoice && (
-                <XCircle className="h-3.5 w-3.5" />
+              {/* Status icon overlay */}
+              {(isCorrectChoice || isStudentChoice) && (
+                <span className="absolute -right-1 -top-1">
+                  {isCorrectChoice && isStudentChoice ? (
+                    <CheckCircle2 className="h-4 w-4 text-success drop-shadow-sm" />
+                  ) : isCorrectChoice ? (
+                    <CheckCircle2 className="h-4 w-4 text-success drop-shadow-sm" />
+                  ) : (
+                    <XCircle className="h-4 w-4 text-destructive drop-shadow-sm" />
+                  )}
+                </span>
               )}
             </div>
           );
         })}
       </div>
+
+      {/* Result label */}
       {student && model && (
-        <p className="text-sm">
-          {isCorrect ? (
-            <span className="text-success">正解</span>
-          ) : (
-            <span className="text-destructive">
-              不正解（正解: {model.correct}）
-            </span>
+        <div
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-medium",
+            isCorrect
+              ? "bg-success/10 text-success"
+              : "bg-destructive/10 text-destructive"
           )}
-        </p>
+        >
+          {isCorrect ? (
+            <>
+              <CheckCircle2 className="h-3.5 w-3.5" />
+              正解
+            </>
+          ) : (
+            <>
+              <XCircle className="h-3.5 w-3.5" />
+              不正解（正解: {model.correct}）
+            </>
+          )}
+        </div>
       )}
       {!student && (
-        <p className="text-sm text-muted-foreground">未解答</p>
+        <p className="text-sm italic text-muted-foreground">未解答</p>
       )}
     </div>
   );
@@ -247,19 +304,31 @@ function FillInBlankReview({
 
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-4 sm:grid-cols-2">
         {/* Student answer */}
-        <div className="space-y-1">
-          <p className="text-xs font-medium text-muted-foreground">
-            あなたの解答
-          </p>
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5">
+            <span
+              className={cn(
+                "h-2 w-2 rounded-full",
+                student
+                  ? isCorrect
+                    ? "bg-success"
+                    : "bg-destructive"
+                  : "bg-muted-foreground/30"
+              )}
+            />
+            <p className="text-xs font-medium text-muted-foreground">
+              あなたの解答
+            </p>
+          </div>
           <div
             className={cn(
-              "flex items-center gap-2 rounded-md border p-3",
+              "flex items-center gap-2.5 rounded-md border-2 p-3",
               student
                 ? isCorrect
-                  ? "border-success bg-success/5"
-                  : "border-destructive bg-destructive/5"
+                  ? "border-success/40 bg-success/5"
+                  : "border-destructive/40 bg-destructive/5"
                 : "border-border bg-muted/30"
             )}
           >
@@ -270,12 +339,19 @@ function FillInBlankReview({
                 ) : (
                   <XCircle className="h-4 w-4 shrink-0 text-destructive" />
                 )}
-                <span className="text-sm">{student.text || "（空欄）"}</span>
+                <span
+                  className={cn(
+                    "text-sm font-medium",
+                    isCorrect ? "text-success" : "text-destructive"
+                  )}
+                >
+                  {student.text || "（空欄）"}
+                </span>
               </>
             ) : (
               <>
                 <Minus className="h-4 w-4 shrink-0 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">未解答</span>
+                <span className="text-sm italic text-muted-foreground">未解答</span>
               </>
             )}
           </div>
@@ -283,14 +359,22 @@ function FillInBlankReview({
 
         {/* Model answer */}
         {model && (
-          <div className="space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">
-              正解
-            </p>
-            <div className="rounded-md border border-primary/20 bg-primary/5 p-3">
-              <span className="text-sm">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-1.5">
+              <span className="h-2 w-2 rounded-full bg-success" />
+              <p className="text-xs font-medium text-muted-foreground">
+                正解
+              </p>
+            </div>
+            <div className="rounded-md border-2 border-success/30 bg-success/5 p-3">
+              <span className="text-sm font-medium text-foreground">
                 {model.acceptedAnswers.join(" / ")}
               </span>
+              {!model.caseSensitive && (
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  ※ 大文字・小文字は区別しません
+                </p>
+              )}
             </div>
           </div>
         )}
@@ -366,7 +450,7 @@ export function ReviewMode({
         </CardContent>
       </Card>
 
-      {/* Question navigation dots */}
+      {/* Question navigation chips */}
       <div className="flex flex-wrap items-center justify-center gap-1.5">
         {questions.map((q, i) => {
           const qResult = q.gradingResult;
@@ -374,25 +458,44 @@ export function ReviewMode({
             qResult && qResult.maxScore > 0
               ? (qResult.score / qResult.maxScore) * 100
               : null;
+
+          const chipColor =
+            qPercentage === null
+              ? "bg-muted text-muted-foreground"
+              : qPercentage >= 80
+                ? "bg-success/10 text-success"
+                : qPercentage >= 50
+                  ? "bg-amber-500/10 text-amber-600"
+                  : "bg-destructive/10 text-destructive";
+
+          const dotColor =
+            qPercentage === null
+              ? "bg-muted-foreground/30"
+              : qPercentage >= 80
+                ? "bg-success"
+                : qPercentage >= 50
+                  ? "bg-amber-500"
+                  : "bg-destructive";
+
           return (
             <button
               key={q.key}
               type="button"
               onClick={() => setCurrentIndex(i)}
               className={cn(
-                "h-3 w-3 rounded-full transition-all",
-                i === currentIndex && "ring-2 ring-primary ring-offset-1",
-                qPercentage === null
-                  ? "bg-muted-foreground/20"
-                  : qPercentage >= 80
-                    ? "bg-success"
-                    : qPercentage >= 50
-                      ? "bg-amber-500"
-                      : "bg-destructive"
+                "flex h-8 min-w-8 items-center justify-center gap-1 rounded-lg px-2 text-xs font-medium transition-all",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                i === currentIndex
+                  ? "ring-2 ring-primary ring-offset-1 ring-offset-background"
+                  : "",
+                chipColor
               )}
-              aria-label={`問${q.key}`}
-              aria-current={i === currentIndex ? "true" : undefined}
-            />
+              aria-label={`問${q.key}${qPercentage !== null ? ` — ${Math.round(qPercentage)}%` : ""}`}
+              aria-current={i === currentIndex ? "step" : undefined}
+            >
+              <span className={cn("h-2 w-2 rounded-full", dotColor)} />
+              {i + 1}
+            </button>
           );
         })}
       </div>

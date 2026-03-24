@@ -216,27 +216,39 @@ export function PublishControls({
         {/* Validation checklist — only show when in draft */}
         {!isPublished && (
           <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium text-muted-foreground">
-                公開前チェック
-              </span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium text-muted-foreground">
+                  公開前チェック
+                </span>
+              </div>
+              {!allRequiredPassed && !isValidating && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={runValidation}
+                  className="h-7 text-xs"
+                >
+                  再検証
+                </Button>
+              )}
             </div>
 
             {isValidating ? (
-              <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-3 text-sm text-muted-foreground">
                 <Loader2 className="h-4 w-4 animate-spin" />
                 検証中...
               </div>
             ) : (
-              <ul className="space-y-1.5">
+              <ul className="space-y-1">
                 {checks.map((check) => (
                   <li
                     key={check.label}
-                    className="flex items-center gap-2 text-sm"
+                    className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm"
                   >
                     {check.passed ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
                     ) : (
                       <XCircle className="h-4 w-4 shrink-0 text-destructive" />
                     )}
@@ -252,16 +264,6 @@ export function PublishControls({
                   </li>
                 ))}
               </ul>
-            )}
-
-            {!allRequiredPassed && !isValidating && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={runValidation}
-              >
-                再検証
-              </Button>
             )}
           </div>
         )}

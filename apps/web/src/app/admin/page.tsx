@@ -310,28 +310,46 @@ export default async function AdminDashboardPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">
-        管理者ダッシュボード
-      </h1>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">
+          管理者ダッシュボード
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          プラットフォーム全体の利用状況を確認できます
+        </p>
+      </div>
 
       {/* Primary summary stats */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-        <StatCard title="総ユーザー数" value={totalUsers} icon={Users} />
-        <StatCard title="出品者数" value={totalSellers} icon={Store} />
+        <StatCard
+          title="総ユーザー数"
+          value={totalUsers.toLocaleString()}
+          icon={Users}
+          subtitle="登録済みアカウント"
+        />
+        <StatCard
+          title="出品者数"
+          value={totalSellers.toLocaleString()}
+          icon={Store}
+          subtitle="オンボーディング完了済み"
+        />
         <StatCard
           title="公開中の問題セット"
-          value={publishedSets}
+          value={publishedSets.toLocaleString()}
           icon={BookOpen}
+          subtitle="マーケットプレイスに掲載"
         />
         <StatCard
           title="総売上"
           value={`\xA5${totalRevenue.toLocaleString()}`}
           icon={TrendingUp}
+          subtitle="累計取引額"
         />
         <StatCard
           title="有料サブスク"
-          value={paidSubs}
+          value={paidSubs.toLocaleString()}
           icon={CreditCard}
+          subtitle="ベーシック + プロ"
         />
       </div>
 
@@ -549,10 +567,12 @@ function StatCard({
   title,
   value,
   icon: Icon,
+  subtitle,
 }: {
   title: string;
   value: string | number;
   icon?: typeof Users;
+  subtitle?: string;
 }) {
   return (
     <Card>
@@ -564,6 +584,9 @@ function StatCard({
       </CardHeader>
       <CardContent>
         <p className="text-2xl font-bold">{value}</p>
+        {subtitle && (
+          <p className="mt-0.5 text-xs text-muted-foreground">{subtitle}</p>
+        )}
       </CardContent>
     </Card>
   );

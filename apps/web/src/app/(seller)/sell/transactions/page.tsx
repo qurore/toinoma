@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   Receipt,
@@ -53,19 +52,12 @@ export default async function SellerTransactionsPage(props: {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/sell">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
-          </Link>
-        </Button>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">取引履歴</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          問題セットの売上と手数料の詳細を確認できます
+        </p>
       </div>
-
-      <h1 className="mb-2 text-2xl font-bold tracking-tight">取引履歴</h1>
-      <p className="mb-8 text-sm text-muted-foreground">
-        問題セットの売上と手数料の詳細を確認できます
-      </p>
 
       {/* Summary cards */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -153,14 +145,14 @@ export default async function SellerTransactionsPage(props: {
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="px-4 py-3">日付</th>
-                    <th className="px-4 py-3">購入者</th>
-                    <th className="px-4 py-3">問題セット</th>
-                    <th className="px-4 py-3 text-right">売上</th>
-                    <th className="px-4 py-3 text-right">手数料</th>
-                    <th className="px-4 py-3 text-right">手取り</th>
-                    <th className="px-4 py-3 text-center">クーポン</th>
+                  <tr className="border-b text-left text-xs text-muted-foreground">
+                    <th className="px-4 py-3 font-medium">日付</th>
+                    <th className="px-4 py-3 font-medium">購入者</th>
+                    <th className="px-4 py-3 font-medium">問題セット</th>
+                    <th className="px-4 py-3 text-right font-medium">売上</th>
+                    <th className="px-4 py-3 text-right font-medium">手数料</th>
+                    <th className="px-4 py-3 text-right font-medium">手取り</th>
+                    <th className="px-4 py-3 text-center font-medium">クーポン</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">

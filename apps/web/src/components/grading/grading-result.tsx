@@ -211,11 +211,29 @@ function SectionResult({
               return (
                 <div
                   key={question.number}
-                  className="space-y-3 rounded-lg border border-border p-4"
+                  className={cn(
+                    "space-y-3 rounded-lg border p-4",
+                    qColors.border
+                  )}
                 >
                   {/* Question header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
+                      <span
+                        className={cn(
+                          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
+                          qColors.bg,
+                          qColors.text
+                        )}
+                      >
+                        {qTier === "high" ? (
+                          <CheckCircle2 className="h-3.5 w-3.5" />
+                        ) : qTier === "low" ? (
+                          <XCircle className="h-3.5 w-3.5" />
+                        ) : (
+                          <MinusCircle className="h-3.5 w-3.5" />
+                        )}
+                      </span>
                       <span className="text-sm font-medium">
                         {question.number}
                       </span>
@@ -229,9 +247,25 @@ function SectionResult({
                         {qPct}%
                       </div>
                     </div>
-                    <span className="text-sm font-semibold tabular-nums">
+                    <span
+                      className={cn(
+                        "text-sm font-semibold tabular-nums",
+                        qColors.text
+                      )}
+                    >
                       {question.score} / {question.maxScore}
                     </span>
+                  </div>
+
+                  {/* Score micro-bar */}
+                  <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                    <div
+                      className={cn(
+                        "h-full rounded-full transition-all duration-500",
+                        qColors.bar
+                      )}
+                      style={{ width: `${qPct}%` }}
+                    />
                   </div>
 
                   {/* Feedback */}
@@ -358,22 +392,55 @@ export function GradingResultDisplay({
   return (
     <div className="space-y-6">
       {/* Overall score hero */}
-      <Card className={cn("ring-2", colors.ring)}>
-        <CardHeader className="text-center">
-          {/* Score circle */}
-          <div
-            className={cn(
-              "mx-auto mb-2 flex h-24 w-24 items-center justify-center rounded-full",
-              colors.bg
-            )}
-          >
-            <span className={cn("text-3xl font-bold", colors.text)}>
-              {percentage}%
-            </span>
+      <Card className={cn("overflow-hidden ring-2", colors.ring)}>
+        {/* Score gradient header */}
+        <div
+          className={cn(
+            "relative px-6 pb-6 pt-8 text-center",
+            colors.bg
+          )}
+        >
+          {/* Large percentage ring */}
+          <div className="mx-auto mb-3 flex h-28 w-28 items-center justify-center">
+            <svg
+              className="absolute h-28 w-28 -rotate-90"
+              viewBox="0 0 120 120"
+              aria-hidden="true"
+            >
+              <circle
+                cx="60"
+                cy="60"
+                r="52"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="8"
+                className="text-border/30"
+              />
+              <circle
+                cx="60"
+                cy="60"
+                r="52"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="8"
+                strokeDasharray={`${percentage * 3.267} ${(100 - percentage) * 3.267}`}
+                strokeLinecap="round"
+                className={cn(
+                  "transition-all duration-1000 ease-out",
+                  colors.text
+                )}
+              />
+            </svg>
+            <div className="relative">
+              <span className={cn("text-3xl font-bold", colors.text)}>
+                {percentage}
+              </span>
+              <span className={cn("text-lg font-semibold", colors.text)}>%</span>
+            </div>
           </div>
-          <CardTitle className="text-xl">
+          <p className="text-lg font-semibold text-foreground">
             {result.totalScore} / {result.maxScore} 点
-          </CardTitle>
+          </p>
 
           {/* Section score chips */}
           <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -394,8 +461,8 @@ export function GradingResultDisplay({
               );
             })}
           </div>
-        </CardHeader>
-        <CardContent>
+        </div>
+        <CardContent className="pt-4">
           <ScoreBar score={result.totalScore} maxScore={result.maxScore} />
         </CardContent>
       </Card>

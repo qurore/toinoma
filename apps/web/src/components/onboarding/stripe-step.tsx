@@ -24,19 +24,42 @@ export function StripeStep({
 
   if (stripeReturn && stripeAccountId) {
     return (
-      <Card className="mx-auto max-w-2xl">
-        <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
-            <CheckCircle2 className="h-8 w-8 text-success" />
+      <Card className="mx-auto max-w-2xl overflow-hidden">
+        {/* Success gradient banner */}
+        <div className="h-2 bg-gradient-to-r from-primary via-green-light to-primary" />
+        <CardHeader className="pb-2 pt-8 text-center">
+          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-success/10 shadow-[0_0_0_8px_hsl(142_71%_45%/0.06)]">
+            <CheckCircle2 className="h-10 w-10 text-success" />
           </div>
-          <CardTitle>Stripe連携完了</CardTitle>
-          <CardDescription>
-            決済の準備が整いました。問題セットの販売を始めましょう。
+          <CardTitle className="text-xl">セットアップ完了！</CardTitle>
+          <CardDescription className="text-base">
+            すべての準備が整いました。問題セットの販売を始めましょう。
           </CardDescription>
         </CardHeader>
-        <CardFooter>
-          <Button className="w-full" asChild>
-            <a href="/sell">販売者ダッシュボードへ</a>
+        <CardContent className="pb-2">
+          <div className="rounded-lg bg-muted/50 p-4">
+            <ul className="space-y-2 text-sm text-muted-foreground">
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
+                利用規約に同意済み
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
+                販売者プロフィールを設定済み
+              </li>
+              <li className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
+                Stripe決済を連携済み
+              </li>
+            </ul>
+          </div>
+        </CardContent>
+        <CardFooter className="flex-col gap-2 pt-4">
+          <Button className="w-full" size="lg" asChild>
+            <a href="/sell">ダッシュボードへ進む</a>
+          </Button>
+          <Button variant="ghost" size="sm" className="w-full" asChild>
+            <a href="/sell/pool/new">最初の問題を作成する</a>
           </Button>
         </CardFooter>
       </Card>
@@ -48,28 +71,52 @@ export function StripeStep({
       <CardHeader>
         <CardTitle>Stripe決済連携</CardTitle>
         <CardDescription>
-          売上の受け取りにはStripeアカウントの連携が必要です。Stripeの画面で本人確認を完了してください。
+          売上の受け取りにはStripeアカウントの連携が必要です。
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <div className="rounded-lg border border-border bg-muted/50 p-6 text-center">
           <CreditCard className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Stripeの安全な画面に移動して、本人確認と口座情報を登録します。
-            <br />
-            完了後、自動的にこのページに戻ります。
+          <p className="mb-1 text-sm font-medium">
+            Stripeの安全な画面で本人確認を行います
+          </p>
+          <p className="text-xs text-muted-foreground">
+            完了後、自動的にこのページに戻ります
           </p>
         </div>
+
+        {/* Key information bullets */}
+        <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+            <span>プラットフォーム手数料: 販売価格の<strong className="text-foreground">15%</strong></span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+            <span>Stripe決済手数料はプラットフォームが負担します</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <span className="mt-0.5 block h-1.5 w-1.5 shrink-0 rounded-full bg-primary" />
+            <span>無料問題セットの出品にはStripe連携は不要です</span>
+          </div>
+        </div>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex-col gap-2">
         <form action={action} className="w-full">
-          <Button type="submit" className="w-full" disabled={isPending}>
+          <Button type="submit" className="w-full" size="lg" disabled={isPending}>
             {isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : null}
+            ) : (
+              <CreditCard className="mr-2 h-4 w-4" />
+            )}
             Stripe連携を開始
           </Button>
         </form>
+        <p className="text-center text-[11px] text-muted-foreground">
+          無料問題のみ出品する場合は、
+          <a href="/sell" className="text-primary hover:underline">スキップ</a>
+          して後から設定できます
+        </p>
       </CardFooter>
     </Card>
   );

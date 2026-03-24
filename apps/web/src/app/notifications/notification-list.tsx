@@ -142,12 +142,19 @@ export function NotificationList({
   return (
     <div className="space-y-4" ref={listRef}>
       {/* Header actions */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm text-muted-foreground">
-          {unreadCount > 0
-            ? `${unreadCount}件の未読通知`
-            : "未読通知はありません"}
-        </p>
+      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 px-4 py-3">
+        <div className="flex items-center gap-2">
+          {unreadCount > 0 ? (
+            <>
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
+                {unreadCount}
+              </span>
+              <span className="text-sm text-muted-foreground">件の未読通知</span>
+            </>
+          ) : (
+            <span className="text-sm text-muted-foreground">未読通知はありません</span>
+          )}
+        </div>
         {unreadCount > 0 && (
           <Button
             variant="outline"

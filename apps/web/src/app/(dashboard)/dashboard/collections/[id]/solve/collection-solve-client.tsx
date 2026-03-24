@@ -201,8 +201,11 @@ export function CollectionSolveClient({
         <CardContent className="flex items-center justify-between p-4">
           <div className="flex items-center gap-3">
             <ProgressIndicator
-              totalQuestions={problems.length}
-              answeredQuestions={completedCount}
+              questions={problems.map((p, i) => ({
+                index: i,
+                label: `問${i + 1}`,
+                answered: states[p.id]?.status === "completed",
+              }))}
               currentQuestion={currentIndex}
               onQuestionClick={(i) => {
                 if (states[problems[i].id]?.status !== "solving") {

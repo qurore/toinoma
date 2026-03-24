@@ -12,7 +12,7 @@ import {
 import type { NotificationType } from "@/types/database";
 
 export const metadata: Metadata = {
-  title: "通知 | 問の間",
+  title: "通知 - 問の間",
   description: "お知らせ、購入、採点結果などの通知を確認できます。",
 };
 
@@ -79,7 +79,12 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
     <>
       <AppNavbar {...navbarData} />
       <main className="container mx-auto max-w-2xl px-4 py-8 pt-16">
-        <h1 className="mb-6 text-2xl font-bold tracking-tight">通知</h1>
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold tracking-tight">通知</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            お知らせ、購入、採点結果などの通知を確認できます
+          </p>
+        </div>
 
         <Suspense fallback={<NotificationListSkeleton />}>
           <NotificationList

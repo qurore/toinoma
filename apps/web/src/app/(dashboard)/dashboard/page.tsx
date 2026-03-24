@@ -20,7 +20,7 @@ import type { Subject } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ダッシュボード | 問の間",
+  title: "ダッシュボード - 問の間",
 };
 
 export default async function DashboardPage() {

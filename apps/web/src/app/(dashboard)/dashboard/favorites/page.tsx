@@ -7,7 +7,7 @@ import type { Subject, Difficulty } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "お気に入り | 問の間",
+  title: "お気に入り - 問の間",
 };
 
 export default async function FavoritesPage() {

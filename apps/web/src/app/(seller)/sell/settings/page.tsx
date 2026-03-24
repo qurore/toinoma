@@ -21,7 +21,7 @@ import { Separator } from "@/components/ui/separator";
 import { SellerSettingsForm } from "./seller-settings-form";
 
 export const metadata = {
-  title: "出品者設定 | Toinoma",
+  title: "出品者設定 - 問の間",
 };
 
 export default async function SellerSettingsPage() {

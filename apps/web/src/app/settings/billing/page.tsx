@@ -132,13 +132,15 @@ export default async function BillingPage() {
         : tierConfig.monthlyPrice;
 
   return (
-    <div>
-      <h1 className="mb-2 text-2xl font-bold tracking-tight">
-        請求・お支払い
-      </h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        サブスクリプション情報と購入履歴を確認できます
-      </p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight">
+          請求・お支払い
+        </h1>
+        <p className="text-sm text-muted-foreground">
+          サブスクリプション情報と購入履歴を確認できます
+        </p>
+      </div>
 
       <div className="space-y-6">
         {/* Subscription status card */}
@@ -289,7 +291,7 @@ export default async function BillingPage() {
         </Card>
 
         {/* Invoice history (Stripe) */}
-        {invoices.length > 0 && (
+        {subState.tier !== "free" && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-base">
@@ -298,73 +300,85 @@ export default async function BillingPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b text-left text-muted-foreground">
-                      <th className="pb-3 pr-4 font-medium">日付</th>
-                      <th className="pb-3 pr-4 font-medium">内容</th>
-                      <th className="pb-3 pr-4 text-right font-medium">
-                        金額
-                      </th>
-                      <th className="pb-3 text-center font-medium">
-                        ステータス
-                      </th>
-                      <th className="pb-3 text-right font-medium" />
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y">
-                    {invoices.map((inv) => (
-                      <tr key={inv.id} className="hover:bg-muted/50">
-                        <td className="py-3 pr-4 text-muted-foreground">
-                          {new Date(inv.date * 1000).toLocaleDateString(
-                            "ja-JP"
-                          )}
-                        </td>
-                        <td className="py-3 pr-4 font-medium">
-                          {inv.description}
-                        </td>
-                        <td className="py-3 pr-4 text-right">
-                          ¥{inv.amount.toLocaleString()}
-                        </td>
-                        <td className="py-3 text-center">
-                          <Badge
-                            variant={
-                              inv.status === "paid"
-                                ? "secondary"
-                                : inv.status === "open"
-                                  ? "outline"
-                                  : "destructive"
-                            }
-                            className="text-xs"
-                          >
-                            {inv.status === "paid"
-                              ? "支払い済み"
-                              : inv.status === "open"
-                                ? "未払い"
-                                : inv.status === "void"
-                                  ? "無効"
-                                  : inv.status}
-                          </Badge>
-                        </td>
-                        <td className="py-3 text-right">
-                          {inv.url && (
-                            <a
-                              href={inv.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
-                            >
-                              表示
-                              <ExternalLink className="h-3 w-3" />
-                            </a>
-                          )}
-                        </td>
+              {invoices.length === 0 ? (
+                <div className="flex flex-col items-center py-8 text-center">
+                  <FileText className="mb-3 h-8 w-8 text-muted-foreground/40" />
+                  <p className="text-sm text-muted-foreground">
+                    まだ請求書はありません
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    次の請求日に請求書が発行されます
+                  </p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b text-left text-muted-foreground">
+                        <th className="pb-3 pr-4 font-medium">日付</th>
+                        <th className="pb-3 pr-4 font-medium">内容</th>
+                        <th className="pb-3 pr-4 text-right font-medium">
+                          金額
+                        </th>
+                        <th className="pb-3 text-center font-medium">
+                          ステータス
+                        </th>
+                        <th className="pb-3 text-right font-medium" />
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y">
+                      {invoices.map((inv) => (
+                        <tr key={inv.id} className="hover:bg-muted/50">
+                          <td className="py-3 pr-4 text-muted-foreground">
+                            {new Date(inv.date * 1000).toLocaleDateString(
+                              "ja-JP"
+                            )}
+                          </td>
+                          <td className="py-3 pr-4 font-medium">
+                            {inv.description}
+                          </td>
+                          <td className="py-3 pr-4 text-right">
+                            ¥{inv.amount.toLocaleString()}
+                          </td>
+                          <td className="py-3 text-center">
+                            <Badge
+                              variant={
+                                inv.status === "paid"
+                                  ? "secondary"
+                                  : inv.status === "open"
+                                    ? "outline"
+                                    : "destructive"
+                              }
+                              className="text-xs"
+                            >
+                              {inv.status === "paid"
+                                ? "支払い済み"
+                                : inv.status === "open"
+                                  ? "未払い"
+                                  : inv.status === "void"
+                                    ? "無効"
+                                    : inv.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3 text-right">
+                            {inv.url && (
+                              <a
+                                href={inv.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1 text-xs text-primary hover:underline"
+                              >
+                                表示
+                                <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

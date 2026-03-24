@@ -74,55 +74,65 @@ export function SellerTosGate() {
   // Success state — shown briefly after acceptance
   if (accepted) {
     return (
-      <main className="container mx-auto flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-12">
-        <div className="flex flex-col items-center gap-4 text-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-success/10">
-            <CheckCircle2 className="h-8 w-8 text-success" />
+      <>
+        <div className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" />
+        <main className="fixed inset-0 z-50 flex items-center justify-center px-4 py-12">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-success/10 shadow-[0_0_0_8px_hsl(142_71%_45%/0.06)]">
+              <CheckCircle2 className="h-10 w-10 text-success" />
+            </div>
+            <h2 className="text-xl font-bold tracking-tight">
+              ようこそ、出品者モードへ！
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              ダッシュボードを準備しています...
+            </p>
           </div>
-          <h2 className="text-xl font-semibold tracking-tight">
-            ようこそ、出品者モードへ！
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            ダッシュボードを準備しています...
-          </p>
-        </div>
-      </main>
+        </main>
+      </>
     );
   }
 
   return (
-    <main className="container mx-auto flex min-h-[calc(100vh-3.5rem)] items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg">
-        <Card>
-          <CardHeader className="text-center">
-            <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-              <Store className="h-6 w-6 text-primary" />
-            </div>
-            <CardTitle className="text-xl">
-              出品者として始めましょう
-            </CardTitle>
-            <CardDescription>
-              問題セットを作成・販売して、受験生の学習をサポートしましょう
-            </CardDescription>
-          </CardHeader>
+    <>
+      {/* Non-dismissable backdrop overlay */}
+      <div className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" />
 
-          <CardContent className="space-y-6">
-            {/* Value propositions */}
-            <div className="grid gap-3">
-              {VALUE_PROPS.map((prop) => (
-                <div key={prop.title} className="flex items-start gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
-                    <prop.icon className="h-4 w-4 text-foreground/60" />
+      <main className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto px-4 py-12">
+        <div className="w-full max-w-lg">
+          <Card className="shadow-lg">
+            <CardHeader className="text-center">
+              <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 shadow-[0_0_0_6px_hsl(142_71%_38%/0.06)]">
+                <Store className="h-7 w-7 text-primary" />
+              </div>
+              <CardTitle className="text-xl">
+                出品者として始めましょう
+              </CardTitle>
+              <CardDescription>
+                問題セットを作成・販売して、受験生の学習をサポートしましょう
+              </CardDescription>
+            </CardHeader>
+
+            <CardContent className="space-y-6">
+              {/* Value propositions */}
+              <div className="grid gap-3">
+                {VALUE_PROPS.map((prop) => (
+                  <div
+                    key={prop.title}
+                    className="flex items-start gap-3 rounded-lg border border-border/50 bg-muted/30 p-3"
+                  >
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                      <prop.icon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium">{prop.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {prop.description}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">{prop.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {prop.description}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
             {/* ToS content — scrollable with gradient fade */}
             <div>
@@ -232,5 +242,6 @@ export function SellerTosGate() {
         </Card>
       </div>
     </main>
+    </>
   );
 }

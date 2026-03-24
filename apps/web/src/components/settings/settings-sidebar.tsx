@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Separator } from "@/components/ui/separator";
 
 // ──────────────────────────────────────────────
 // Navigation item type
@@ -144,18 +145,23 @@ export function SettingsSidebar({
 
           return (
             <li key={`${item.href}-${item.label}`}>
+              {isDestructive && <Separator className="my-2" />}
               <Link
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
                   isActive
                     ? "bg-secondary text-foreground"
                     : isDestructive
                       ? "text-destructive hover:bg-destructive/10 hover:text-destructive"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
                 )}
+                aria-current={isActive ? "page" : undefined}
               >
-                <Icon className="h-4 w-4 shrink-0" />
+                {isActive && (
+                  <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
+                )}
+                <Icon className={cn("h-4 w-4 shrink-0", isActive && !isDestructive && "text-primary")} />
                 {item.label}
               </Link>
             </li>

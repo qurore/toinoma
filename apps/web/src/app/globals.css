@@ -263,6 +263,18 @@
   }
 }
 
+@keyframes grading-slide {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(200%);
+  }
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
 @layer utilities {
   .text-gradient-green {
     background-image: var(--gradient-green);

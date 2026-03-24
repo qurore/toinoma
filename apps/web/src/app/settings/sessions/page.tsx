@@ -57,14 +57,16 @@ export default async function SessionsPage() {
   ];
 
   return (
-    <div>
-      <h1 className="mb-1 text-xl font-bold tracking-tight">セッション管理</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        ログイン中のセッション情報を確認し、他のセッションをログアウトできます
-      </p>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-semibold tracking-tight">セッション管理</h1>
+        <p className="text-sm text-muted-foreground">
+          ログイン中のセッション情報を確認し、他のセッションをログアウトできます
+        </p>
+      </div>
 
       {/* Current session info */}
-      <Card className="mb-6">
+      <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base">現在のセッション</CardTitle>
           <Badge
@@ -89,6 +91,13 @@ export default async function SessionsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Security notice */}
+      <div className="rounded-lg border border-border bg-muted/30 p-4">
+        <p className="text-xs text-muted-foreground">
+          不審なアクティビティがある場合は、「他のセッションをログアウト」を実行してパスワードを変更してください。
+        </p>
+      </div>
 
       {/* Session controls: sign out others / everywhere */}
       <SessionControls />

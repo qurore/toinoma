@@ -195,7 +195,7 @@ export function AdminReportsClient({
       <div className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">報告管理</h1>
         <p className="mt-1 text-sm text-muted-foreground">
-          {totalCount}件の報告
+          {totalCount.toLocaleString()}件の報告を管理しています
         </p>
       </div>
 
@@ -244,9 +244,15 @@ export function AdminReportsClient({
         </CardHeader>
         <CardContent>
           {reports.length === 0 ? (
-            <p className="py-8 text-center text-muted-foreground">
-              条件に一致する報告はありません
-            </p>
+            <div className="flex flex-col items-center gap-2 py-12 text-center">
+              <div className="rounded-full bg-muted p-3">
+                <Shield className="h-6 w-6 text-muted-foreground" />
+              </div>
+              <p className="font-medium">条件に一致する報告はありません</p>
+              <p className="text-sm text-muted-foreground">
+                フィルターを変更してお試しください
+              </p>
+            </div>
           ) : (
             <div className="space-y-3">
               {reports.map((report) => {

@@ -22,6 +22,10 @@ interface ProblemDetailTabsProps {
   userId: string | null;
   reviewsSection: ReactNode;
   qaSection: ReactNode;
+  /** Optional review count to display on the reviews tab */
+  reviewCount?: number;
+  /** Optional Q&A count to display on the Q&A tab */
+  qaCount?: number;
 }
 
 export function ProblemDetailTabs({
@@ -34,6 +38,8 @@ export function ProblemDetailTabs({
   userId,
   reviewsSection,
   qaSection,
+  reviewCount,
+  qaCount,
 }: ProblemDetailTabsProps) {
   return (
     <Tabs defaultValue="overview" className="w-full">
@@ -60,6 +66,11 @@ export function ProblemDetailTabs({
         >
           <MessageSquare className="mr-1.5 h-3.5 w-3.5" />
           レビュー
+          {reviewCount != null && reviewCount > 0 && (
+            <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
+              {reviewCount}
+            </span>
+          )}
         </TabsTrigger>
         <TabsTrigger
           value="qa"
@@ -67,6 +78,11 @@ export function ProblemDetailTabs({
         >
           <HelpCircle className="mr-1.5 h-3.5 w-3.5" />
           Q&A
+          {qaCount != null && qaCount > 0 && (
+            <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
+              {qaCount}
+            </span>
+          )}
         </TabsTrigger>
       </TabsList>
 

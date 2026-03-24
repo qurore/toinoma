@@ -19,7 +19,7 @@ import type { Subject, Difficulty } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "購入完了 | 問の間",
+  title: "購入完了 - 問の間",
 };
 
 interface ProblemSetInfo {

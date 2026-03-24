@@ -74,6 +74,13 @@ const CATEGORIES: Category[] = [
     inappKey: "inapp_qa",
   },
   {
+    id: "system",
+    label: "システム通知",
+    description: "セキュリティ関連やメンテナンスのお知らせ",
+    emailKey: "email_system" as keyof NotificationPreferences,
+    inappKey: "inapp_system" as keyof NotificationPreferences,
+  },
+  {
     id: "marketing",
     label: "マーケティング",
     description: "新機能やキャンペーンのお知らせ",
@@ -184,7 +191,12 @@ export function NotificationSettingsForm({
       </Card>
 
       {/* Save action bar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-between rounded-lg border border-border bg-muted/30 p-4">
+        <p className="text-sm text-muted-foreground">
+          {hasChanges
+            ? "未保存の変更があります"
+            : "すべての変更は保存済みです"}
+        </p>
         <Button onClick={handleSave} disabled={isPending || !hasChanges}>
           {isPending ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -193,11 +205,6 @@ export function NotificationSettingsForm({
           )}
           保存する
         </Button>
-        {hasChanges && (
-          <p className="text-xs text-muted-foreground">
-            未保存の変更があります
-          </p>
-        )}
       </div>
     </div>
   );

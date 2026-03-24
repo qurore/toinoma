@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "解答履歴 | 問の間",
+  title: "解答履歴 - 問の間",
 };
 
 export default async function ProblemHistoryPage({

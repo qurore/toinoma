@@ -1,19 +1,50 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Clock } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Clock, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
+// ──────────────────────────────────────────────
+// Types
+// ──────────────────────────────────────────────
+
 interface SolveTimerProps {
+  /** Time limit in minutes. null = count-up stopwatch mode */
   timeLimitMinutes: number | null;
+  /** Callback when countdown reaches zero */
   onTimeUp?: () => void;
+  /** Warning thresholds in seconds [warn, critical] */
+  warningThresholds?: [number, number];
 }
 
-export function SolveTimer({ timeLimitMinutes, onTimeUp }: SolveTimerProps) {
+// ──────────────────────────────────────────────
+// Timer display
+// ──────────────────────────────────────────────
+
+function formatTime(totalSeconds: number): string {
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  if (h > 0) {
+    return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+  return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+// ──────────────────────────────────────────────
+// Main component
+// ──────────────────────────────────────────────
+
+export function SolveTimer({
+  timeLimitMinutes,
+  onTimeUp,
+  warningThresholds = [300, 60],
+}: SolveTimerProps) {
   const isCountdown = timeLimitMinutes !== null && timeLimitMinutes > 0;
   const initialSeconds = isCountdown ? timeLimitMinutes! * 60 : 0;
 
   const [seconds, setSeconds] = useState(initialSeconds);
+  const timeUpTriggered = useRef(false);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -22,7 +53,10 @@ export function SolveTimer({ timeLimitMinutes, onTimeUp }: SolveTimerProps) {
           const next = prev - 1;
           if (next <= 0) {
             clearInterval(interval);
-            onTimeUp?.();
+            if (!timeUpTriggered.current) {
+              timeUpTriggered.current = true;
+              onTimeUp?.();
+            }
             return 0;
           }
           return next;
@@ -35,30 +69,33 @@ export function SolveTimer({ timeLimitMinutes, onTimeUp }: SolveTimerProps) {
   }, [isCountdown, onTimeUp]);
 
   const displaySeconds = Math.abs(seconds);
-  const hours = Math.floor(displaySeconds / 3600);
-  const mins = Math.floor((displaySeconds % 3600) / 60);
-  const secs = displaySeconds % 60;
+  const timeStr = formatTime(displaySeconds);
 
-  const timeStr = hours > 0
-    ? `${hours}:${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`
-    : `${mins}:${String(secs).padStart(2, "0")}`;
-
-  const isWarning = isCountdown && seconds <= 300 && seconds > 60;
-  const isCritical = isCountdown && seconds <= 60;
+  const [warnAt, criticalAt] = warningThresholds;
+  const isWarning = isCountdown && seconds <= warnAt && seconds > criticalAt;
+  const isCritical = isCountdown && seconds <= criticalAt;
+  const isTimeUp = isCountdown && seconds <= 0;
 
   return (
     <div
       className={cn(
-        "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-mono font-medium",
-        isCritical && "bg-destructive/10 text-destructive animate-pulse",
+        "flex items-center gap-1.5 rounded-md px-2.5 py-1 text-sm font-mono font-semibold tabular-nums transition-colors",
+        isCritical && "bg-destructive/10 text-destructive",
         isWarning && "bg-amber-500/10 text-amber-600",
-        !isWarning && !isCritical && "text-muted-foreground"
+        !isWarning && !isCritical && "bg-muted text-muted-foreground"
       )}
       role="timer"
       aria-label={isCountdown ? "残り時間" : "経過時間"}
+      aria-live={isCritical ? "assertive" : "off"}
     >
-      <Clock className="h-3.5 w-3.5" />
-      {timeStr}
+      {isCritical ? (
+        <AlertTriangle className={cn("h-3.5 w-3.5", !isTimeUp && "animate-pulse")} />
+      ) : (
+        <Clock className="h-3.5 w-3.5" />
+      )}
+      <span className={cn(isCritical && !isTimeUp && "animate-pulse")}>
+        {timeStr}
+      </span>
     </div>
   );
 }

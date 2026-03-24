@@ -7,7 +7,7 @@ import { StripeStep } from "@/components/onboarding/stripe-step";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "販売者登録 | 問の間",
+  title: "販売者登録 - 問の間",
   description: "3つのステップで販売者登録を完了し、問題セットの販売を始めましょう。",
 };
 
@@ -60,17 +60,17 @@ export default async function SellerOnboardingPage({
 
   return (
     <main className="container mx-auto max-w-3xl px-4 py-12">
-      <div className="mb-10">
-        <h1 className="mb-2 text-center text-2xl font-bold tracking-tight">
+      <div className="mb-12">
+        <h1 className="mb-1 text-center text-2xl font-bold tracking-tight">
           販売者登録
         </h1>
-        <p className="mb-2 text-center text-sm text-muted-foreground">
+        <p className="mb-8 text-center text-sm text-muted-foreground">
           3つのステップで販売者登録を完了しましょう
         </p>
-        <p className="mb-8 text-center text-xs text-muted-foreground">
+        <StepIndicator currentStep={step} />
+        <p className="mt-6 text-center text-xs text-muted-foreground">
           {stepDescriptions[step - 1]}
         </p>
-        <StepIndicator currentStep={step} />
       </div>
 
       {step === 1 && <TosStep />}

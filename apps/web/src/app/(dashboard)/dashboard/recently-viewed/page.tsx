@@ -15,7 +15,7 @@ import { ja } from "date-fns/locale";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "最近閲覧した問題 | 問の間",
+  title: "最近閲覧した問題 - 問の間",
 };
 
 export default async function RecentlyViewedPage() {

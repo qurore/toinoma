@@ -11,7 +11,8 @@ import type { Database } from "@/types/database";
 type SellerProfile = Database["public"]["Tables"]["seller_profiles"]["Row"];
 
 export const metadata = {
-  title: "出品者情報",
+  title: "出品者情報 - 問の間",
+  description: "問題集の出品・販売に関する設定",
 };
 
 export default async function SellerSettingsPage() {

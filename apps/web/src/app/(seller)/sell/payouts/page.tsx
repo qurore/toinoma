@@ -3,11 +3,11 @@ import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink } from "lucide-react";
+import { ExternalLink, CreditCard, Wallet } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "振込履歴 - 問の間",
+  title: "振込・収益 - 問の間",
 };
 
 export default async function PayoutsPage() {
@@ -43,16 +43,12 @@ export default async function PayoutsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/sell">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
-          </Link>
-        </Button>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">振込・収益</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          売上の確認と振込設定の管理
+        </p>
       </div>
-
-      <h1 className="mb-6 text-2xl font-bold tracking-tight">振込・収益</h1>
 
       <div className="mb-8 grid gap-4 sm:grid-cols-3">
         <Card>
@@ -96,7 +92,13 @@ export default async function PayoutsPage() {
       {hasStripe ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">振込設定</CardTitle>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-base">振込設定</CardTitle>
+              <span className="flex items-center gap-1.5 rounded-full bg-success/10 px-2.5 py-1 text-xs font-medium text-success">
+                <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                接続済み
+              </span>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             <p className="text-sm text-muted-foreground">
@@ -116,37 +118,59 @@ export default async function PayoutsPage() {
           </CardContent>
         </Card>
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <p className="mb-4 text-muted-foreground">
-              振込を受け取るには、Stripe Connectの設定が必要です
+        <Card className="border-dashed">
+          <CardContent className="py-12 text-center">
+            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
+              <CreditCard className="h-7 w-7 text-muted-foreground/60" />
+            </div>
+            <h3 className="mb-1 text-base font-semibold">
+              Stripe Connectの設定が必要です
+            </h3>
+            <p className="mb-6 text-sm text-muted-foreground">
+              有料問題セットの販売収益を受け取るには、Stripeアカウントの連携が必要です
             </p>
             <Button asChild>
-              <Link href="/sell/onboarding">支払い設定を完了する</Link>
+              <Link href="/sell/onboarding?step=3">
+                <CreditCard className="mr-1.5 h-4 w-4" />
+                支払い設定を完了する
+              </Link>
             </Button>
           </CardContent>
         </Card>
       )}
 
       {/* Recent sales */}
-      {allPurchases.length > 0 && (
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-base">直近の売上</CardTitle>
-          </CardHeader>
-          <CardContent>
+      <Card className="mt-6">
+        <CardHeader>
+          <CardTitle className="text-base">直近の売上</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {allPurchases.length === 0 ? (
+            <div className="flex flex-col items-center py-8 text-center">
+              <Wallet className="mb-2 h-8 w-8 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">
+                まだ売上がありません
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground/60">
+                問題セットが購入されると、ここに売上履歴が表示されます
+              </p>
+            </div>
+          ) : (
             <div className="overflow-x-auto">
               <table className="w-full text-sm">
                 <thead>
-                  <tr className="border-b text-left text-muted-foreground">
-                    <th className="pb-3 pr-4">日付</th>
-                    <th className="pb-3 pr-4 text-right">売上</th>
-                    <th className="pb-3 text-right">手取り</th>
+                  <tr className="border-b text-left text-xs text-muted-foreground">
+                    <th className="pb-3 pr-4 font-medium">日付</th>
+                    <th className="pb-3 pr-4 text-right font-medium">売上</th>
+                    <th className="pb-3 text-right font-medium">手取り</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {allPurchases.slice(0, 20).map((p) => (
-                    <tr key={p.id}>
+                    <tr
+                      key={p.id}
+                      className="transition-colors hover:bg-muted/50"
+                    >
                       <td className="py-3 pr-4 text-muted-foreground">
                         {new Date(p.created_at).toLocaleDateString("ja-JP")}
                       </td>
@@ -161,9 +185,9 @@ export default async function PayoutsPage() {
                 </tbody>
               </table>
             </div>
-          </CardContent>
-        </Card>
-      )}
+          )}
+        </CardContent>
+      </Card>
     </main>
   );
 }

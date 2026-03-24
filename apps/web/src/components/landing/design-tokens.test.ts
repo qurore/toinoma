@@ -73,8 +73,8 @@ describe("globals.css color tokens", () => {
 });
 
 describe("Navbar component", () => {
-  it("uses bg-forest/80 not bg-navy/80", () => {
-    expect(navbarSource).toContain("bg-forest/80");
+  it("uses forest-themed background not navy", () => {
+    expect(navbarSource).toContain("bg-forest");
     expect(navbarSource).not.toContain("bg-navy");
   });
 

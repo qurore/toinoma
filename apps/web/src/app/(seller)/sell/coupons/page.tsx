@@ -1,10 +1,9 @@
-import Link from "next/link";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Plus, Tag, Ticket } from "lucide-react";
+import { Plus, Tag, Ticket } from "lucide-react";
 import { CouponListActions } from "@/components/seller/coupon-list-actions";
 import type { Database } from "@/types/database";
 import type { Metadata } from "next";
@@ -77,16 +76,7 @@ export default async function CouponsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/sell">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            ダッシュボード
-          </Link>
-        </Button>
-      </div>
-
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">クーポン管理</h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -106,12 +96,21 @@ export default async function CouponsPage() {
         />
       </div>
 
-      {/* Stats */}
+      {/* Stats row */}
       {allCoupons.length > 0 && (
-        <div className="mb-6 flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{allCoupons.length} 件</span>
-          <span>有効: {activeCount}</span>
-          <span>総利用回数: {totalUses}</span>
+        <div className="mb-6 grid grid-cols-3 gap-3">
+          <div className="rounded-lg border border-border bg-card p-3">
+            <p className="text-xs text-muted-foreground">合計</p>
+            <p className="text-lg font-bold">{allCoupons.length}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-3">
+            <p className="text-xs text-muted-foreground">有効</p>
+            <p className="text-lg font-bold text-success">{activeCount}</p>
+          </div>
+          <div className="rounded-lg border border-border bg-card p-3">
+            <p className="text-xs text-muted-foreground">総利用回数</p>
+            <p className="text-lg font-bold">{totalUses}</p>
+          </div>
         </div>
       )}
 
