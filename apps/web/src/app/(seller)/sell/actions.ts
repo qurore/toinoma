@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { problemSetRubricSchema } from "@toinoma/shared/schemas";
 import type { Database } from "@/types/database";
 
+type ProblemSetRow = Database["public"]["Tables"]["problem_sets"]["Row"];
 type ProblemSetInsert = Database["public"]["Tables"]["problem_sets"]["Insert"];
 type Subject = Database["public"]["Enums"]["subject"];
 type Difficulty = Database["public"]["Enums"]["difficulty"];
@@ -293,4 +294,101 @@ export async function updateProblemPdfUrl(
 
   revalidatePath(`/sell/${problemSetId}/edit`);
   return { success: true };
+}
+
+export async function updateCoverImageUrl(
+  problemSetId: string,
+  url: string | null
+) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "認証が必要です" };
+
+  const { error } = await supabase
+    .from("problem_sets")
+    .update({ cover_image_url: url })
+    .eq("id", problemSetId)
+    .eq("seller_id", user.id);
+
+  if (error) return { error: "カバー画像URLの保存に失敗しました" };
+
+  revalidatePath(`/sell/${problemSetId}/edit`);
+  return { success: true };
+}
+
+export async function duplicateProblemSet(problemSetId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "認証が必要です" };
+
+  // Fetch the original problem set
+  const { data: original } = await supabase
+    .from("problem_sets")
+    .select("title, description, subject, university, difficulty, price, problem_pdf_url, solution_pdf_url, rubric, cover_image_url, time_limit_minutes, total_points, preview_question_ids")
+    .eq("id", problemSetId)
+    .eq("seller_id", user.id)
+    .single();
+
+  if (!original) return { error: "問題セットが見つかりません" };
+
+  // Create a copy with "(コピー)" suffix and draft status
+  const { data: copy, error: insertError } = await supabase
+    .from("problem_sets")
+    .insert({
+      seller_id: user.id,
+      title: `${original.title}（コピー）`,
+      description: original.description,
+      subject: original.subject,
+      university: original.university,
+      difficulty: original.difficulty,
+      price: original.price,
+      status: "draft" as const,
+      problem_pdf_url: original.problem_pdf_url,
+      solution_pdf_url: original.solution_pdf_url,
+      rubric: original.rubric,
+      cover_image_url: original.cover_image_url,
+      time_limit_minutes: original.time_limit_minutes,
+      total_points: original.total_points,
+      preview_question_ids: original.preview_question_ids,
+    })
+    .select("id")
+    .single();
+
+  if (insertError || !copy) {
+    return { error: "問題セットの複製に失敗しました" };
+  }
+
+  // Copy all linked questions (problem_set_questions)
+  const { data: linkedQuestions } = await supabase
+    .from("problem_set_questions")
+    .select("question_id, section_number, section_title, position, points_override")
+    .eq("problem_set_id", problemSetId);
+
+  if (linkedQuestions && linkedQuestions.length > 0) {
+    const junctionRows = linkedQuestions.map((lq) => ({
+      problem_set_id: copy.id,
+      question_id: lq.question_id,
+      section_number: lq.section_number,
+      section_title: lq.section_title,
+      position: lq.position,
+      points_override: lq.points_override,
+    }));
+
+    const { error: junctionError } = await supabase
+      .from("problem_set_questions")
+      .insert(junctionRows);
+
+    if (junctionError) {
+      // Clean up the copy if junction insert fails
+      await supabase.from("problem_sets").delete().eq("id", copy.id);
+      return { error: "問題の関連付けに失敗しました" };
+    }
+  }
+
+  revalidatePath("/sell");
+  return { success: true, newId: copy.id };
 }

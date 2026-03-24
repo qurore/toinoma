@@ -4,6 +4,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { gradeSubmission } from "@/lib/ai/grading-engine";
 import { getSubscriptionState } from "@/lib/subscription";
 import { notifyGrading } from "@/lib/notifications";
+import { checkAndNotifyUsage } from "@/lib/usage-warnings";
 import { problemSetRubricSchema, type QuestionAnswer } from "@toinoma/shared/schemas";
 import type { Json } from "@/types/database";
 
@@ -119,6 +120,16 @@ export async function POST(request: Request) {
     tokens_used: result.tokensUsed ?? 0,
     cost_usd: result.costUsd ?? 0,
     model: result.model ?? "gemini-2.0-flash",
+  });
+
+  // NTF-007: Check usage thresholds and send warning notifications (fire-and-forget)
+  checkAndNotifyUsage(
+    user.id,
+    subState.tier,
+    subState.gradingsUsedThisMonth + 1,
+    subState.gradingLimit
+  ).catch(() => {
+    // Non-critical — do not block response
   });
 
   // Notify user of grading completion (fire-and-forget)

@@ -89,6 +89,7 @@ export default async function EditProblemSetPage({
         <PublishControls
           problemSetId={id}
           currentStatus={ps.status}
+          price={ps.price}
         />
       </div>
     </main>

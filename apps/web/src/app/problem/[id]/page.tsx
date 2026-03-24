@@ -15,11 +15,14 @@ import { ReviewsSection } from "@/components/reviews/reviews-section";
 import { QaSection } from "@/components/qa/qa-section";
 import { PdfDownloadButton } from "@/components/solving/pdf-download-button";
 import { ReportDialog } from "@/components/marketplace/report-dialog";
+import { ProblemSetCard } from "@/components/marketplace/problem-set-card";
+import { SampleQuestionPreview } from "@/components/marketplace/sample-question-preview";
+import { trackView } from "@/lib/recently-viewed";
 import {
   generateProblemSetMetadata,
   buildProductJsonLd,
 } from "@/lib/metadata";
-import type { Subject, Difficulty } from "@/types/database";
+import type { Subject, Difficulty, AnswerType } from "@/types/database";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -76,7 +79,7 @@ export default async function ProblemDetailPage({
   // Fetch problem set with seller info
   const { data: ps } = await supabase
     .from("problem_sets")
-    .select("id, title, description, subject, university, difficulty, price, problem_pdf_url, seller_id, status")
+    .select("id, title, description, subject, university, difficulty, price, problem_pdf_url, seller_id, status, preview_question_ids")
     .eq("id", id)
     .eq("status", "published")
     .single();
@@ -104,6 +107,71 @@ export default async function ProblemDetailPage({
       .eq("problem_set_id", id)
       .single();
     hasPurchased = !!purchase;
+  }
+
+  // MKT-018: Track recently viewed (fire-and-forget for authenticated users)
+  if (user) {
+    trackView(user.id, id).catch(() => {
+      // Silently ignore tracking errors — non-critical
+    });
+  }
+
+  // MKT-011: Fetch preview questions if available
+  const previewQuestionIds = (ps.preview_question_ids ?? []) as string[];
+  let previewQuestions: Array<{
+    id: string;
+    question_type: AnswerType;
+    question_text: string;
+    points: number;
+  }> = [];
+  if (previewQuestionIds.length > 0) {
+    const { data: questions } = await supabase
+      .from("questions")
+      .select("id, question_type, question_text, points")
+      .in("id", previewQuestionIds.slice(0, 2));
+    previewQuestions = (questions ?? []) as typeof previewQuestions;
+  }
+
+  // MKT-013: Fetch related problem sets (same subject, excluding current)
+  const { data: relatedSets } = await supabase
+    .from("problem_sets")
+    .select("id, title, subject, difficulty, price, cover_image_url, university, seller_id")
+    .eq("subject", ps.subject)
+    .eq("status", "published")
+    .neq("id", id)
+    .order("created_at", { ascending: false })
+    .limit(4);
+
+  // Fetch seller display names for related sets
+  let relatedWithSellers: Array<{
+    id: string;
+    title: string;
+    subject: Subject;
+    difficulty: Difficulty;
+    price: number;
+    cover_image_url: string | null;
+    university: string | null;
+    seller_display_name: string | null;
+  }> = [];
+  if (relatedSets && relatedSets.length > 0) {
+    const sellerIds = [...new Set(relatedSets.map((s) => s.seller_id))];
+    const { data: sellers } = await supabase
+      .from("seller_profiles")
+      .select("id, seller_display_name")
+      .in("id", sellerIds);
+    const sellerMap = new Map(
+      (sellers ?? []).map((s) => [s.id, s.seller_display_name])
+    );
+    relatedWithSellers = relatedSets.map((s) => ({
+      id: s.id,
+      title: s.title,
+      subject: s.subject as Subject,
+      difficulty: s.difficulty as Difficulty,
+      price: s.price,
+      cover_image_url: s.cover_image_url,
+      university: s.university,
+      seller_display_name: sellerMap.get(s.seller_id) ?? null,
+    }));
   }
 
   return (
@@ -140,6 +208,11 @@ export default async function ProblemDetailPage({
 
         {ps.description && (
           <p className="text-muted-foreground">{ps.description}</p>
+        )}
+
+        {/* MKT-011: Sample question preview */}
+        {previewQuestions.length > 0 && (
+          <SampleQuestionPreview questions={previewQuestions} />
         )}
 
         <Separator />
@@ -217,6 +290,25 @@ export default async function ProblemDetailPage({
           sellerId={ps.seller_id}
           userId={user?.id ?? null}
         />
+
+        {/* MKT-013: Related problem sets */}
+        {relatedWithSellers.length > 0 && (
+          <>
+            <Separator />
+            <div>
+              <h2 className="mb-4 text-lg font-semibold">関連する問題セット</h2>
+              <div className="grid gap-4 sm:grid-cols-2">
+                {relatedWithSellers.map((related) => (
+                  <ProblemSetCard
+                    key={related.id}
+                    data={related}
+                    userId={user?.id ?? null}
+                  />
+                ))}
+              </div>
+            </div>
+          </>
+        )}
 
         {/* Report content */}
         <div className="flex justify-end">

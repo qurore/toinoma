@@ -84,6 +84,7 @@ export default async function ProblemSolvePage({
       <SolveClient
         problemSetId={id}
         rubric={rubricResult.data}
+        userId={user.id}
       />
 
       <AiAssistantDialog problemSetId={id} isPro={isPro} />

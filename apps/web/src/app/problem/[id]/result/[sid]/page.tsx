@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { PdfDownloadButton } from "@/components/solving/pdf-download-button";
-import { ArrowLeft, History } from "lucide-react";
+import { ArrowLeft, History, Star } from "lucide-react";
 import { gradingResultSchema } from "@toinoma/shared/schemas";
 import { GradingResultDisplay } from "@/components/grading/grading-result";
 import { AiAssistantDialog } from "@/components/ai-assistant/ai-assistant-dialog";
@@ -34,12 +34,28 @@ export default async function GradingResultPage({
   if (!submission) notFound();
   if (submission.problem_set_id !== id) notFound();
 
-  // Fetch problem set title and subscription state in parallel
-  const [{ data: ps }, subState] = await Promise.all([
-    supabase.from("problem_sets").select("title").eq("id", id).single(),
-    getSubscriptionState(user.id),
-  ]);
+  // Fetch problem set title, subscription state, and review eligibility in parallel
+  const [{ data: ps }, subState, { count: submissionCount }, { data: existingReview }] =
+    await Promise.all([
+      supabase.from("problem_sets").select("title").eq("id", id).single(),
+      getSubscriptionState(user.id),
+      supabase
+        .from("submissions")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", user.id)
+        .eq("problem_set_id", id),
+      supabase
+        .from("reviews")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("problem_set_id", id)
+        .maybeSingle(),
+    ]);
   const isPro = subState.tier === "pro";
+
+  // Show review prompt if user has 3+ submissions and hasn't reviewed yet
+  const showReviewPrompt =
+    !existingReview && (submissionCount ?? 0) >= 3;
 
   // Fetch video URLs from questions linked to this problem set
   const { data: junctionRows } = await supabase
@@ -122,6 +138,28 @@ export default async function GradingResultPage({
       {videos.length > 0 && (
         <div className="mt-6">
           <VideoPlayer videos={videos} />
+        </div>
+      )}
+
+      {/* REV-009: Review prompt after solving */}
+      {showReviewPrompt && (
+        <div className="mt-6 rounded-lg border border-border bg-muted/30 p-4">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-medium">
+                この問題セットを評価しませんか？
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                レビューは他の学生の参考になります
+              </p>
+            </div>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/problem/${id}#reviews`}>
+                <Star className="mr-1.5 h-3.5 w-3.5" />
+                レビューを書く
+              </Link>
+            </Button>
+          </div>
         </div>
       )}
 

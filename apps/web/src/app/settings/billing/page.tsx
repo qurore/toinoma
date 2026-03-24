@@ -18,6 +18,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ManagePaymentButton } from "./manage-payment-button";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -211,20 +212,25 @@ export default async function BillingPage() {
               </div>
             </div>
 
-            {/* Manage subscription link */}
+            {/* Manage subscription link + payment method */}
             {subState.tier !== "free" && (
               <>
                 <Separator />
-                <p className="text-xs text-muted-foreground">
-                  プランの変更・解約は
-                  <a
-                    href="/settings/subscription"
-                    className="ml-1 text-primary underline-offset-4 hover:underline"
-                  >
-                    サブスクリプション設定
-                  </a>
-                  から行えます。
-                </p>
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                  <p className="text-xs text-muted-foreground">
+                    プランの変更・解約は
+                    <a
+                      href="/settings/subscription"
+                      className="ml-1 text-primary underline-offset-4 hover:underline"
+                    >
+                      サブスクリプション設定
+                    </a>
+                    から行えます。
+                  </p>
+                  {subRecord?.stripe_customer_id && (
+                    <ManagePaymentButton />
+                  )}
+                </div>
               </>
             )}
           </CardContent>

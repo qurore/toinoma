@@ -1,35 +1,162 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
-import { Loader2, Globe, EyeOff, Trash2 } from "lucide-react";
+import {
+  Loader2,
+  Globe,
+  EyeOff,
+  Trash2,
+  CheckCircle2,
+  XCircle,
+  AlertTriangle,
+} from "lucide-react";
 import {
   publishProblemSet,
   unpublishProblemSet,
   deleteProblemSet,
 } from "@/app/(seller)/sell/actions";
+import { createClient } from "@/lib/supabase/client";
+
+interface ValidationCheck {
+  label: string;
+  passed: boolean;
+  required: boolean;
+}
 
 export function PublishControls({
   problemSetId,
   currentStatus,
+  price,
 }: {
   problemSetId: string;
   currentStatus: string;
+  /** Price in yen, used to check if Stripe onboarding is required */
+  price?: number;
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attested, setAttested] = useState(false);
+  const [checks, setChecks] = useState<ValidationCheck[]>([]);
+  const [isValidating, setIsValidating] = useState(true);
+
+  const runValidation = useCallback(async () => {
+    setIsValidating(true);
+
+    try {
+      const supabase = createClient();
+
+      // Fetch problem set data
+      const { data: ps } = await supabase
+        .from("problem_sets")
+        .select("title, subject, total_points, rubric, problem_pdf_url")
+        .eq("id", problemSetId)
+        .single();
+
+      // Fetch linked questions
+      const { data: linkedQuestions } = await supabase
+        .from("problem_set_questions")
+        .select("question_id")
+        .eq("problem_set_id", problemSetId);
+
+      // Check if linked questions have rubrics
+      let allQuestionsHaveRubrics = true;
+      if (linkedQuestions && linkedQuestions.length > 0) {
+        const questionIds = linkedQuestions.map((lq) => lq.question_id);
+        const { data: questions } = await supabase
+          .from("questions")
+          .select("id, rubric")
+          .in("id", questionIds);
+
+        if (questions) {
+          allQuestionsHaveRubrics = questions.every(
+            (q) => q.rubric !== null && q.rubric !== undefined
+          );
+        }
+      }
+
+      // Check Stripe onboarding if price > 0
+      let stripeOnboarded = true;
+      const effectivePrice = price ?? ps?.total_points ?? 0;
+      if (effectivePrice > 0) {
+        const { data: userData } = await supabase.auth.getUser();
+        if (userData.user) {
+          const { data: sellerProfile } = await supabase
+            .from("seller_profiles")
+            .select("stripe_account_id")
+            .eq("id", userData.user.id)
+            .single();
+
+          stripeOnboarded = !!sellerProfile?.stripe_account_id;
+        }
+      }
+
+      const questionCount = linkedQuestions?.length ?? 0;
+
+      const validationChecks: ValidationCheck[] = [
+        {
+          label: "タイトルが入力されている",
+          passed: !!ps?.title?.trim(),
+          required: true,
+        },
+        {
+          label: "教科が選択されている",
+          passed: !!ps?.subject,
+          required: true,
+        },
+        {
+          label: "問題が1つ以上追加されている",
+          passed: questionCount > 0,
+          required: true,
+        },
+        {
+          label: "すべての問題にルーブリックが設定されている",
+          passed: questionCount > 0 && allQuestionsHaveRubrics,
+          required: true,
+        },
+        {
+          label: "合計配点が0点より大きい",
+          passed: (ps?.total_points ?? 0) > 0,
+          required: true,
+        },
+        ...(effectivePrice > 0
+          ? [
+              {
+                label: "Stripe決済が設定されている（有料の場合必須）",
+                passed: stripeOnboarded,
+                required: true,
+              },
+            ]
+          : []),
+      ];
+
+      setChecks(validationChecks);
+    } finally {
+      setIsValidating(false);
+    }
+  }, [problemSetId, price]);
+
+  useEffect(() => {
+    if (currentStatus !== "published") {
+      runValidation();
+    } else {
+      setIsValidating(false);
+    }
+  }, [currentStatus, runValidation]);
+
+  const allRequiredPassed = checks
+    .filter((c) => c.required)
+    .every((c) => c.passed);
+
+  const canPublish = allRequiredPassed && attested && !isValidating;
 
   const handlePublish = async () => {
-    if (!attested) {
-      setError("オリジナリティの確認にチェックを入れてください");
-      return;
-    }
+    if (!canPublish) return;
     setIsLoading(true);
     setError(null);
     const result = await publishProblemSet(problemSetId, true);
@@ -86,6 +213,59 @@ export function PublishControls({
           </div>
         )}
 
+        {/* Validation checklist — only show when in draft */}
+        {!isPublished && (
+          <div className="space-y-3">
+            <div className="flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm font-medium text-muted-foreground">
+                公開前チェック
+              </span>
+            </div>
+
+            {isValidating ? (
+              <div className="flex items-center gap-2 py-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                検証中...
+              </div>
+            ) : (
+              <ul className="space-y-1.5">
+                {checks.map((check) => (
+                  <li
+                    key={check.label}
+                    className="flex items-center gap-2 text-sm"
+                  >
+                    {check.passed ? (
+                      <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-600" />
+                    ) : (
+                      <XCircle className="h-4 w-4 shrink-0 text-destructive" />
+                    )}
+                    <span
+                      className={
+                        check.passed
+                          ? "text-muted-foreground"
+                          : "text-foreground"
+                      }
+                    >
+                      {check.label}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {!allRequiredPassed && !isValidating && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={runValidation}
+              >
+                再検証
+              </Button>
+            )}
+          </div>
+        )}
+
         {/* FR-017: Originality attestation — only show when publishing */}
         {!isPublished && (
           <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/50 p-4">
@@ -126,7 +306,7 @@ export function PublishControls({
             <>
               <Button
                 onClick={handlePublish}
-                disabled={isLoading || !attested}
+                disabled={isLoading || !canPublish}
                 className="flex-1"
               >
                 {isLoading ? (

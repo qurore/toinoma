@@ -73,7 +73,74 @@ export interface GradingResultWithUsage extends GradingResult {
   model?: string;
 }
 
-// AI grading for essay questions (FR-004)
+// SLV-021: Detect whether an answer contains a handwritten image
+function hasImageAnswer(
+  sections: Array<{
+    questions: Array<{
+      answer: Extract<QuestionAnswer, { type: "essay" }>;
+    }>;
+  }>
+): boolean {
+  return sections.some((s) =>
+    s.questions.some(
+      (q) => "imageUrl" in q.answer && q.answer.imageUrl
+    )
+  );
+}
+
+// Build multimodal prompt parts for Vercel AI SDK
+// When images are present, we use the `messages` format with image_url content parts
+type ContentPart =
+  | { type: "text"; text: string }
+  | { type: "image"; image: URL };
+
+function buildMultimodalPromptParts(
+  sections: Array<{
+    sectionNumber: number;
+    questions: Array<{
+      rubric: Extract<QuestionRubric, { type: "essay" }>;
+      answer: Extract<QuestionAnswer, { type: "essay" }>;
+    }>;
+  }>
+): ContentPart[] {
+  const parts: ContentPart[] = [];
+  parts.push({ type: "text", text: "Student answers:\n" });
+
+  for (const section of sections) {
+    for (const q of section.questions) {
+      const key = `${section.sectionNumber}-${q.rubric.number}`;
+
+      if (q.answer.text) {
+        parts.push({
+          type: "text",
+          text: `${key}: ${q.answer.text}\n`,
+        });
+      }
+
+      if ("imageUrl" in q.answer && q.answer.imageUrl) {
+        parts.push({
+          type: "text",
+          text: `${key} (handwritten answer image follows):\n`,
+        });
+        parts.push({
+          type: "image",
+          image: new URL(q.answer.imageUrl),
+        });
+      }
+
+      if (!q.answer.text && !("imageUrl" in q.answer && q.answer.imageUrl)) {
+        parts.push({
+          type: "text",
+          text: `${key}: [No answer provided]\n`,
+        });
+      }
+    }
+  }
+
+  return parts;
+}
+
+// AI grading for essay questions (FR-004, SLV-021)
 async function gradeEssayBatch(
   sections: Array<{
     sectionNumber: number;
@@ -99,13 +166,7 @@ async function gradeEssayBatch(
     })),
   };
 
-  const answers: Record<string, string> = {};
-  for (const section of sections) {
-    for (const q of section.questions) {
-      answers[`${section.sectionNumber}-${q.rubric.number}`] =
-        q.answer.text ?? "[Image submission — see attached]";
-    }
-  }
+  const containsImages = hasImageAnswer(sections);
 
   const systemPrompt = `You are an expert exam grader. Grade the student's answers strictly according to the provided rubric.
 
@@ -115,19 +176,60 @@ Rules:
 - For math questions, verify each step and check the final answer
 - Be fair but strict — do not award points for vague or tangential responses
 - Provide constructive feedback for each question in Japanese
-- All scores must be integers
+- All scores must be integers${containsImages ? `
+- For handwritten answer images: first read and transcribe the handwritten text, then grade the transcribed content according to the rubric
+- If handwriting is illegible, note this in the feedback and grade only what is clearly readable
+- Consider the visual layout and mathematical notation in handwritten answers` : ""}
 
 Rubric:
 ${JSON.stringify(aiRubric, null, 2)}`;
 
-  const { object, usage } = await generateObject({
-    model: google("gemini-2.0-flash"),
-    schema: gradingResultSchema,
-    system: systemPrompt,
-    prompt: `Student answers:\n${JSON.stringify(answers, null, 2)}`,
-  });
+  let object: GradingResult;
+  let tokensUsed: number;
 
-  const tokensUsed = (usage?.inputTokens ?? 0) + (usage?.outputTokens ?? 0);
+  if (containsImages) {
+    // SLV-021: Use multimodal prompt with image content for handwritten answers
+    const promptParts = buildMultimodalPromptParts(sections);
+
+    const response = await generateObject({
+      model: google("gemini-2.0-flash"),
+      schema: gradingResultSchema,
+      system: systemPrompt,
+      messages: [
+        {
+          role: "user",
+          content: promptParts,
+        },
+      ],
+    });
+
+    object = response.object;
+    tokensUsed =
+      (response.usage?.inputTokens ?? 0) +
+      (response.usage?.outputTokens ?? 0);
+  } else {
+    // Text-only answers — use simple prompt
+    const answers: Record<string, string> = {};
+    for (const section of sections) {
+      for (const q of section.questions) {
+        answers[`${section.sectionNumber}-${q.rubric.number}`] =
+          q.answer.text ?? "[No answer provided]";
+      }
+    }
+
+    const response = await generateObject({
+      model: google("gemini-2.0-flash"),
+      schema: gradingResultSchema,
+      system: systemPrompt,
+      prompt: `Student answers:\n${JSON.stringify(answers, null, 2)}`,
+    });
+
+    object = response.object;
+    tokensUsed =
+      (response.usage?.inputTokens ?? 0) +
+      (response.usage?.outputTokens ?? 0);
+  }
+
   return { result: object, tokensUsed };
 }
 

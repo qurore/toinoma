@@ -15,19 +15,29 @@ export function AnswerForm({
   rubric,
   problemSetId,
   onSubmit,
+  initialAnswers,
+  onAnswersChange,
 }: {
   rubric: ProblemSetRubric;
   problemSetId: string;
   onSubmit: (answers: Record<string, QuestionAnswer>) => Promise<void>;
+  initialAnswers?: Record<string, QuestionAnswer>;
+  onAnswersChange?: (answers: Record<string, QuestionAnswer>) => void;
 }) {
-  const [answers, setAnswers] = useState<Record<string, QuestionAnswer>>({});
+  const [answers, setAnswers] = useState<Record<string, QuestionAnswer>>(
+    initialAnswers ?? {}
+  );
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleAnswerChange = useCallback(
     (key: string, value: QuestionAnswer) => {
-      setAnswers((prev) => ({ ...prev, [key]: value }));
+      setAnswers((prev) => {
+        const next = { ...prev, [key]: value };
+        onAnswersChange?.(next);
+        return next;
+      });
     },
-    []
+    [onAnswersChange]
   );
 
   const handleSubmit = async () => {
