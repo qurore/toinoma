@@ -138,7 +138,7 @@ export function ProblemSetForm({
                 name="price"
                 type="number"
                 min="0"
-                step="100"
+                step="1"
                 defaultValue={initialData?.price ?? 0}
                 placeholder="0（無料）"
               />

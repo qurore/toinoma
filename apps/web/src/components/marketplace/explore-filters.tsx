@@ -145,8 +145,8 @@ function describeActiveFilters(state: FilterState): string {
     parts.push(state.difficulties.map((d) => DIFFICULTY_LABELS[d]).join("、"));
   }
   if (state.freeOnly) parts.push("無料のみ");
-  if (state.priceMin) parts.push(`\u00A5${state.priceMin}以上`);
-  if (state.priceMax) parts.push(`\u00A5${state.priceMax}以下`);
+  if (state.priceMin) parts.push(`¥${state.priceMin}以上`);
+  if (state.priceMax) parts.push(`¥${state.priceMax}以下`);
   if (state.minRating > 0) parts.push(`${state.minRating}星以上`);
   return parts.length > 0 ? parts.join("、") : "なし";
 }
@@ -197,7 +197,7 @@ function ActiveFilterChips({
   if (state.priceMin) {
     chips.push({
       key: "price-min",
-      label: `\u00A5${state.priceMin}以上`,
+      label: `¥${state.priceMin}以上`,
       onRemove: () => onChange({ priceMin: "" }),
     });
   }
@@ -205,7 +205,7 @@ function ActiveFilterChips({
   if (state.priceMax) {
     chips.push({
       key: "price-max",
-      label: `\u00A5${state.priceMax}以下`,
+      label: `¥${state.priceMax}以下`,
       onRemove: () => onChange({ priceMax: "" }),
     });
   }
@@ -267,31 +267,6 @@ function FilterContent({
     <div className="space-y-6" role="form" aria-label="検索フィルター">
       {/* Active filter chips */}
       <ActiveFilterChips state={state} onChange={onChange} />
-
-      {/* Sort */}
-      <div>
-        <h3 className="mb-2.5 text-sm font-semibold" id="filter-sort-label">
-          並び替え
-        </h3>
-        <Select
-          value={state.sort}
-          onValueChange={(v) => onChange({ sort: v as SortOption })}
-          aria-labelledby="filter-sort-label"
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {SORT_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Separator />
 
       {/* Subject checkboxes */}
       <fieldset>
@@ -380,8 +355,8 @@ function FilterContent({
             <Input
               type="number"
               min="0"
-              step="100"
-              placeholder="\u00A5 下限"
+              step="1"
+              placeholder="¥ 下限"
               value={state.priceMin}
               onChange={(e) => onChange({ priceMin: e.target.value })}
               className="h-9 text-sm"
@@ -393,8 +368,8 @@ function FilterContent({
             <Input
               type="number"
               min="0"
-              step="100"
-              placeholder="\u00A5 上限"
+              step="1"
+              placeholder="¥ 上限"
               value={state.priceMax}
               onChange={(e) => onChange({ priceMax: e.target.value })}
               className="h-9 text-sm"

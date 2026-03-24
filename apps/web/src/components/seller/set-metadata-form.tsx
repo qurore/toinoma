@@ -190,7 +190,7 @@ export function SetMetadataForm({
             id="set-price"
             type="number"
             min="0"
-            step="100"
+            step="1"
             value={metadata.price}
             onChange={(e) =>
               update({ price: Math.max(0, parseInt(e.target.value, 10) || 0) })

@@ -125,7 +125,7 @@ function RankingCard({ ps, rank }: { ps: RankedSet; rank: number }) {
             <p className="text-sm font-bold">
               {ps.price === 0
                 ? "無料"
-                : `\u00A5${ps.price.toLocaleString()}`}
+                : `¥${ps.price.toLocaleString()}`}
             </p>
             <p className="text-[11px] tabular-nums text-muted-foreground">
               {ps.purchaseCount.toLocaleString()}件購入

@@ -224,7 +224,7 @@ function PriceTag({
   price: number;
   variant: "overlay" | "inline";
 }) {
-  const label = price === 0 ? "無料" : `\u00A5${price.toLocaleString()}`;
+  const label = price === 0 ? "無料" : `¥${price.toLocaleString()}`;
 
   if (variant === "overlay") {
     return (

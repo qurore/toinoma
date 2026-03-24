@@ -44,7 +44,7 @@ export interface MonthlyDataRow {
 }
 
 function formatJpy(amount: number): string {
-  return `\u00A5${amount.toLocaleString("ja-JP")}`;
+  return `¥${amount.toLocaleString("ja-JP")}`;
 }
 
 export default async function AdminRevenuePage(props: {

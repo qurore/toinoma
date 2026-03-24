@@ -139,7 +139,7 @@ function findMatchingSubjects(term: string): SubjectSuggestion[] {
 // ──────────────────────────────────────────────
 
 function formatPrice(price: number): string {
-  return price === 0 ? "無料" : `\u00A5${price.toLocaleString()}`;
+  return price === 0 ? "無料" : `¥${price.toLocaleString()}`;
 }
 
 // ──────────────────────────────────────────────
