@@ -108,8 +108,6 @@ export default async function AdminRevenuePage(props: {
       0
     );
 
-  const netRevenue = totalRevenue - platformFees - stripeFees;
-
   // Fetch problem set details for breakdowns
   const setIds = [
     ...new Set(allPurchases.map((p) => p.problem_set_id)),

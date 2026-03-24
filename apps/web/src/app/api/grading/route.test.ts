@@ -370,7 +370,7 @@ describe("POST /api/grading", () => {
   // 6. Successful grading and storage
   // -----------------------------------------------------------------------
   it("should grade and store submission successfully", async () => {
-    const mockSb = setupSupabaseMock({});
+    setupSupabaseMock({});
 
     vi.mocked(gradeSubmission).mockResolvedValue(mockGradingResult);
 

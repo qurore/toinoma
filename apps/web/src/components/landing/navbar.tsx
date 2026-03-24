@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
@@ -19,21 +19,18 @@ export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const handleScroll = useCallback(() => {
-    setScrolled(window.scrollY > 16);
+  useEffect(() => {
+    const onScroll = () => {
+      const isScrolled = window.scrollY > 16;
+      setScrolled((prev) => (prev !== isScrolled ? isScrolled : prev));
+    };
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    // Set initial state in case of a mid-page load (e.g., back-nav)
-    handleScroll();
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [handleScroll]);
-
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileOpen(false);
-  }, [pathname]);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional: close mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
   return (
     <header

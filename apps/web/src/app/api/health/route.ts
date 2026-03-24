@@ -22,7 +22,7 @@ export async function GET() {
       db: "connected",
       timestamp: new Date().toISOString(),
     });
-  } catch (err) {
+  } catch {
     return NextResponse.json(
       { status: "unhealthy", error: "Internal error" },
       { status: 503 }

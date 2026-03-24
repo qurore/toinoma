@@ -6,7 +6,6 @@ import { createClient } from "@/lib/supabase/server";
 import { problemSetRubricSchema } from "@toinoma/shared/schemas";
 import type { Database } from "@/types/database";
 
-type ProblemSetRow = Database["public"]["Tables"]["problem_sets"]["Row"];
 type ProblemSetInsert = Database["public"]["Tables"]["problem_sets"]["Insert"];
 type Subject = Database["public"]["Enums"]["subject"];
 type Difficulty = Database["public"]["Enums"]["difficulty"];
@@ -72,7 +71,7 @@ export async function createProblemSet(formData: FormData) {
     status: "draft",
   };
 
-  const { data, error } = await supabase
+  const { data: created, error } = await supabase
     .from("problem_sets")
     .insert(insert)
     .select("id")
@@ -82,7 +81,7 @@ export async function createProblemSet(formData: FormData) {
     return { error: "問題セットの作成に失敗しました" };
   }
 
-  redirect(`/sell/${data.id}/edit`);
+  redirect(`/sell/${created.id}/edit`);
 }
 
 export async function updateProblemSet(

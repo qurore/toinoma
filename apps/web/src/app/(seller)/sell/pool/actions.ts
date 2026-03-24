@@ -66,7 +66,7 @@ export async function createQuestion(formData: FormData) {
     }
   }
 
-  const { data, error } = await supabase.from("questions")
+  const { error } = await supabase.from("questions")
     .insert({
       seller_id: user.id,
       question_type: questionType as AnswerType,

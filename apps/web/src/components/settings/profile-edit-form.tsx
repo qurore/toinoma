@@ -21,7 +21,7 @@ export function ProfileEditForm({
   initialAvatarUrl,
 }: ProfileEditFormProps) {
   const [displayName, setDisplayName] = useState(initialDisplayName);
-  const [avatarUrl, setAvatarUrl] = useState<string | null>(initialAvatarUrl);
+  const [avatarUrl] = useState<string | null>(initialAvatarUrl);
   const [isSaving, setIsSaving] = useState(false);
 
   const initials = (displayName || "?")

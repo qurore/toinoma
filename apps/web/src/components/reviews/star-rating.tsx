@@ -79,8 +79,6 @@ export function RatingSummary({
   totalReviews,
   distribution,
 }: RatingSummaryProps) {
-  const maxCount = Math.max(...Object.values(distribution), 1);
-
   return (
     <div className="flex items-start gap-6">
       {/* Average */}

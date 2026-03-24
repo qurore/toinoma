@@ -41,7 +41,7 @@ interface QaThreadProps {
 export function QaThread({
   question,
   problemSetId,
-  sellerId,
+  // sellerId reserved for future seller-specific Q&A features
   userId,
   isSeller,
 }: QaThreadProps) {

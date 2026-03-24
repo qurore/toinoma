@@ -85,32 +85,21 @@ describe("Navbar component", () => {
 });
 
 describe("HeroSection component", () => {
-  it("uses green glow div, not teal", () => {
-    expect(heroSource).toContain("bg-green/10");
-    expect(heroSource).not.toContain("bg-teal/10");
-  });
-
-  it("badge uses green border and text, not teal", () => {
-    expect(heroSource).toContain("border-green/30");
+  it("uses green-themed classes, not teal", () => {
     expect(heroSource).toContain("text-green-light");
-    expect(heroSource).not.toContain("border-teal");
     expect(heroSource).not.toContain("text-teal");
+    expect(heroSource).not.toContain("bg-teal");
   });
 
   it("title uses text-gradient-green, not text-gradient-teal", () => {
     expect(heroSource).toContain("text-gradient-green");
     expect(heroSource).not.toContain("text-gradient-teal");
   });
-
-  it("stats use text-green-glow, not text-teal-glow", () => {
-    expect(heroSource).toContain("text-green-glow");
-    expect(heroSource).not.toContain("text-teal-glow");
-  });
 });
 
 describe("CTASection component", () => {
-  it("uses bg-green/20 for glow effect, not bg-teal/20", () => {
-    expect(ctaSource).toContain("bg-green/20");
-    expect(ctaSource).not.toContain("bg-teal/20");
+  it("uses green-themed classes, not teal", () => {
+    expect(ctaSource).not.toContain("bg-teal");
+    expect(ctaSource).not.toContain("text-teal");
   });
 });

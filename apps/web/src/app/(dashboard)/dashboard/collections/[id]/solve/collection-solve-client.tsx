@@ -2,9 +2,9 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AnswerForm } from "@/components/grading/answer-form";
 import { GradingResultDisplay } from "@/components/grading/grading-result";
@@ -58,7 +58,6 @@ export function CollectionSolveClient({
   completionMap,
   unpurchasedCount,
 }: CollectionSolveClientProps) {
-  const router = useRouter();
   const [problems, setProblems] = useState(initialProblems);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [states, setStates] = useState<Record<string, ItemState>>(() => {

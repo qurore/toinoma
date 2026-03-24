@@ -8,7 +8,7 @@
  * In "combined" mode: shows question text + model answers together.
  */
 
-import type { Database, AnswerType, Json } from "@/types/database";
+import type { Database, Json } from "@/types/database";
 
 type QuestionRow = Database["public"]["Tables"]["questions"]["Row"];
 
@@ -59,6 +59,7 @@ export function PrintQuestion({
       {showQuestionText && hasImages(question.question_images) && (
         <div style={{ marginBottom: "10pt" }}>
           {getImageUrls(question.question_images).map((url, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               key={i}
               src={url}
@@ -142,6 +143,7 @@ function EssaySection({
         {hasImages(question.model_answer_images) && (
           <div style={{ marginTop: "6pt" }}>
             {getImageUrls(question.model_answer_images).map((url, i) => (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 key={i}
                 src={url}

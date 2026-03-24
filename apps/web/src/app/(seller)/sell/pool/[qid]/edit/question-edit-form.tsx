@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+
 import {
   ArrowLeft,
   Loader2,
@@ -150,8 +150,6 @@ function extractCorrectOptionIds(rubric: Record<string, unknown>): string {
 // ─── Component ────────────────────────────────────────────────────────
 
 export function QuestionEditForm({ question }: QuestionEditFormProps) {
-  const router = useRouter();
-
   // Form state
   const [questionType, setQuestionType] = useState(question.question_type);
   const [isSubmitting, setIsSubmitting] = useState(false);
