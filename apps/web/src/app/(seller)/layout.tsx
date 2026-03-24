@@ -23,7 +23,7 @@ export default async function SellerLayout({
         - Mobile: pt-24 = navbar (h-14=56px) + mobile tab bar (h-10=40px) = 96px
         - Desktop: pt-14 = navbar (h-14=56px) only, pl-60 = sidebar (w-60=240px)
       */}
-      <div className="pt-24 md:pl-60 md:pt-14">
+      <div id="main-content" className="pt-24 md:pl-60 md:pt-14">
         {children}
       </div>
     </>

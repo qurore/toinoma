@@ -61,7 +61,9 @@ export function SearchAutocomplete({
 
     try {
       const supabase = createClient();
-      const pattern = `%${term.trim()}%`;
+      // Escape PostgREST ilike special characters to prevent filter injection
+      const escaped = term.trim().replace(/[%_\\]/g, (ch) => `\\${ch}`);
+      const pattern = `%${escaped}%`;
 
       const { data } = await supabase
         .from("problem_sets")

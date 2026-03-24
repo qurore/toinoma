@@ -4,9 +4,14 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BookOpen, History, Heart, FolderOpen } from "lucide-react";
+import { BookOpen, History, Heart, FolderOpen, Search } from "lucide-react";
 import { SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject } from "@/types/database";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "ダッシュボード | 問の間",
+};
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -56,53 +61,86 @@ export default async function DashboardPage() {
     <main className="container mx-auto px-4 py-8">
       <h1 className="mb-6 text-3xl font-bold tracking-tight">ダッシュボード</h1>
 
-      {/* Stats */}
-      <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              購入済み
-            </CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{purchaseCount ?? 0}</p>
+      {/* Stats — clickable cards linking to relevant pages */}
+      {(purchaseCount ?? 0) === 0 &&
+       (submissionCount ?? 0) === 0 &&
+       (favoriteCount ?? 0) === 0 &&
+       (collectionCount ?? 0) === 0 ? (
+        <Card className="mb-8 border-dashed">
+          <CardContent className="flex flex-col items-center py-12 text-center">
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
+              <Search className="h-7 w-7 text-primary" />
+            </div>
+            <h2 className="mb-2 text-lg font-semibold">
+              問の間へようこそ!
+            </h2>
+            <p className="mb-6 max-w-sm text-sm text-muted-foreground">
+              まだ問題セットを購入していません。AI採点付きの入試問題で学習を始めましょう。
+            </p>
+            <Button asChild>
+              <Link href="/explore">
+                <Search className="mr-1.5 h-4 w-4" />
+                問題を探す
+              </Link>
+            </Button>
           </CardContent>
         </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              解答回数
-            </CardTitle>
-            <History className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{submissionCount ?? 0}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              お気に入り
-            </CardTitle>
-            <Heart className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{favoriteCount ?? 0}</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              コレクション
-            </CardTitle>
-            <FolderOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{collectionCount ?? 0}</p>
-          </CardContent>
-        </Card>
-      </div>
+      ) : (
+        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <Link href="/dashboard/history" className="group">
+            <Card className="transition-colors group-hover:border-primary/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  購入済み
+                </CardTitle>
+                <BookOpen className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold">{purchaseCount ?? 0}</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/dashboard/history" className="group">
+            <Card className="transition-colors group-hover:border-primary/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  解答回数
+                </CardTitle>
+                <History className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold">{submissionCount ?? 0}</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/dashboard/favorites" className="group">
+            <Card className="transition-colors group-hover:border-primary/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  お気に入り
+                </CardTitle>
+                <Heart className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold">{favoriteCount ?? 0}</p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link href="/dashboard/collections" className="group">
+            <Card className="transition-colors group-hover:border-primary/30">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  コレクション
+                </CardTitle>
+                <FolderOpen className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold">{collectionCount ?? 0}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      )}
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Purchases */}

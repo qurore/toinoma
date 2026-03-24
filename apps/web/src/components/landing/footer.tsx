@@ -7,6 +7,9 @@ const footerLinks = [
   { label: "プライバシー", href: "/privacy" },
   { label: "特定商取引法", href: "/legal" },
   { label: "お問い合わせ", href: "/contact" },
+  { label: "よくある質問", href: "/help/faq" },
+  { label: "出品者ガイド", href: "/help/seller-guide" },
+  { label: "ヘルプ", href: "/help" },
 ];
 
 export function Footer() {
@@ -25,7 +28,7 @@ export function Footer() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
                 {link.label}
               </Link>

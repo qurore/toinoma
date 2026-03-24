@@ -65,8 +65,10 @@ function LoginContent() {
     errorParam ? "ログインに失敗しました。もう一度お試しください。" : null
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [oauthLoading, setOauthLoading] = useState<"google" | "twitter" | null>(null);
 
   const handleOAuthLogin = async (provider: "google" | "twitter") => {
+    setOauthLoading(provider);
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider,
@@ -98,13 +100,26 @@ function LoginContent() {
     window.location.assign(next);
   };
 
+  const isOAuthDisabled = oauthLoading !== null;
+
   return (
-    <main className="flex min-h-screen items-center justify-center px-4">
+    <main className="flex min-h-screen flex-col items-center justify-center px-4">
+      {/* Back-to-home logo */}
+      <Link
+        href="/"
+        className="mb-8 flex items-center gap-2 transition-opacity hover:opacity-80"
+      >
+        <BookOpen className="h-7 w-7 text-primary" />
+        <div className="flex flex-col leading-none">
+          <span className="font-display text-xl font-bold text-foreground">問の間</span>
+          <span className="text-[10px] font-medium tracking-wider text-foreground/50">
+            TOINOMA
+          </span>
+        </div>
+      </Link>
+
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-            <BookOpen className="h-7 w-7 text-primary" />
-          </div>
           <CardTitle className="text-2xl">問の間にログイン</CardTitle>
           <CardDescription>
             アカウントにログインして、問題の購入やAI採点を利用しましょう
@@ -136,7 +151,7 @@ function LoginContent() {
                 <Label htmlFor="password">パスワード</Label>
                 <Link
                   href="/forgot-password"
-                  className="text-xs text-muted-foreground underline hover:text-foreground"
+                  className="rounded-sm px-1 py-2 text-xs text-muted-foreground underline transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 >
                   パスワードをお忘れですか？
                 </Link>
@@ -170,8 +185,13 @@ function LoginContent() {
             variant="outline"
             className="w-full"
             onClick={() => handleOAuthLogin("google")}
+            disabled={isOAuthDisabled}
           >
-            <GoogleIcon />
+            {oauthLoading === "google" ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <GoogleIcon />
+            )}
             Googleでログイン
           </Button>
 
@@ -179,8 +199,13 @@ function LoginContent() {
             variant="outline"
             className="w-full"
             onClick={() => handleOAuthLogin("twitter")}
+            disabled={isOAuthDisabled}
           >
-            <XIcon />
+            {oauthLoading === "twitter" ? (
+              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            ) : (
+              <XIcon />
+            )}
             X (Twitter) でログイン
           </Button>
 
@@ -196,13 +221,13 @@ function LoginContent() {
 
           <p className="text-center text-xs text-muted-foreground">
             ログインすることで、
-            <a href="/terms" className="underline hover:text-foreground">
+            <Link href="/terms" className="underline hover:text-foreground">
               利用規約
-            </a>
+            </Link>
             と
-            <a href="/privacy" className="underline hover:text-foreground">
+            <Link href="/privacy" className="underline hover:text-foreground">
               プライバシーポリシー
-            </a>
+            </Link>
             に同意したことになります。
           </p>
         </CardContent>
@@ -213,7 +238,13 @@ function LoginContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense>
+    <Suspense
+      fallback={
+        <main className="flex min-h-screen items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </main>
+      }
+    >
       <LoginContent />
     </Suspense>
   );

@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { FileText, GraduationCap, Flag } from "lucide-react";
+import { FileText, GraduationCap, Flag, Download } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { PurchaseSection } from "@/components/marketplace/purchase-section";
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
@@ -177,12 +177,27 @@ export default async function ProblemDetailPage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="container mx-auto max-w-3xl px-4 py-8 pt-[calc(3.5rem+2rem)]">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/explore">問題一覧に戻る</Link>
-        </Button>
-      </div>
+      <main className="container mx-auto max-w-3xl px-4 py-8 pt-16">
+      {/* Breadcrumb-style navigation — browser back handles context-aware return */}
+      <nav aria-label="パンくずリスト" className="mb-6">
+        <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <li>
+            <Link href="/" className="transition-colors hover:text-foreground">
+              ホーム
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li>
+            <Link href="/explore" className="transition-colors hover:text-foreground">
+              問題を探す
+            </Link>
+          </li>
+          <li aria-hidden="true">/</li>
+          <li className="truncate text-foreground" aria-current="page">
+            {ps.title}
+          </li>
+        </ol>
+      </nav>
 
       <div className="space-y-6">
         {/* Header with share button */}
@@ -238,18 +253,32 @@ export default async function ProblemDetailPage({
         {ps.problem_pdf_url && (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
+              <h2 className="flex items-center gap-2 font-display text-base font-semibold leading-none tracking-tight">
                 <FileText className="h-4 w-4" />
                 問題PDF
-              </CardTitle>
+              </h2>
             </CardHeader>
             <CardContent>
               {hasPurchased ? (
-                <iframe
-                  src={ps.problem_pdf_url}
-                  className="h-[600px] w-full rounded-lg border border-border"
-                  title="問題PDF"
-                />
+                <div>
+                  <iframe
+                    src={ps.problem_pdf_url}
+                    className="h-[300px] w-full rounded-lg border border-border sm:h-[500px] lg:h-[600px]"
+                    title="問題PDF"
+                  />
+                  <p className="mt-2 text-center text-xs text-muted-foreground">
+                    PDFを読み込めない場合は{" "}
+                    <a
+                      href={ps.problem_pdf_url}
+                      download
+                      className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                    >
+                      <Download className="h-3 w-3" />
+                      ダウンロード
+                    </a>
+                    {" "}してください
+                  </p>
+                </div>
               ) : (
                 <div className="flex items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/50 py-16">
                   <p className="text-muted-foreground">

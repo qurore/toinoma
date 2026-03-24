@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(
     process.env.NEXT_PUBLIC_APP_URL ?? "https://toinoma.jp"
   ),
+  other: {
+    "theme-color": "#16523a",
+  },
 };
 
 export default function RootLayout({
@@ -37,10 +40,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ja" className={`${inter.variable} ${notoSansJP.variable}`}>
-      <body>
+      <body className="font-sans antialiased">
         <SkipToContent />
         {children}
-        <Toaster richColors position="top-right" />
+        <Toaster richColors position="bottom-center" />
         <CookieConsent />
       </body>
     </html>

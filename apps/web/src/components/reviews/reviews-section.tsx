@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { RatingSummary } from "./star-rating";
 import { ReviewList, type ReviewData } from "./review-list";
@@ -112,7 +112,9 @@ export async function ReviewsSection({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-base">レビュー</CardTitle>
+        <h2 className="font-display text-base font-semibold leading-none tracking-tight">
+          レビュー
+        </h2>
       </CardHeader>
       <CardContent className="space-y-6">
         {totalReviews > 0 && (

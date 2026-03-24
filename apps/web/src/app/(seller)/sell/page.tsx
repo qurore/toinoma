@@ -23,6 +23,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SellerTosGate } from "@/components/seller/seller-tos-gate";
 import { ProblemSetList } from "./problem-set-list";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "出品者ダッシュボード | 問の間",
+};
 
 export default async function SellerDashboardPage() {
   const { user, sellerProfile, tosAccepted } = await getSellerTosStatus();

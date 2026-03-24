@@ -49,6 +49,8 @@
   --color-success-foreground: hsl(0 0% 100%);
   --color-warning: hsl(38 92% 50%);
   --color-warning-foreground: hsl(0 0% 100%);
+  --color-info: hsl(210 80% 55%);
+  --color-info-foreground: hsl(0 0% 100%);
 
   /* Radius */
   --radius-sm: 0.375rem;
@@ -218,5 +220,23 @@
     .print-page-break {
       page-break-before: always;
     }
+  }
+
+  /* Motion-safe utility: only apply animations when user has no reduced-motion preference */
+  .motion-safe {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Reduced motion: collapse all animations to near-zero for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

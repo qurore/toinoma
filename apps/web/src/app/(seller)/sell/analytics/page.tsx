@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject } from "@/types/database";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "分析 | 問の間",
+};
 
 export default async function SalesAnalyticsPage() {
   const { user } = await requireSellerTos();

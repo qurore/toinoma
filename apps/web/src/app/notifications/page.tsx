@@ -12,7 +12,7 @@ import {
 import type { NotificationType } from "@/types/database";
 
 export const metadata: Metadata = {
-  title: "通知 - 問の間",
+  title: "通知 | 問の間",
 };
 
 const PAGE_SIZE = 20;
@@ -74,7 +74,7 @@ export default async function NotificationsPage({ searchParams }: PageProps) {
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="container mx-auto max-w-2xl px-4 py-8 pt-20">
+      <main className="container mx-auto max-w-2xl px-4 py-8 pt-16">
         <h1 className="mb-6 text-2xl font-bold tracking-tight">通知</h1>
 
         <Suspense fallback={<NotificationListSkeleton />}>

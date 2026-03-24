@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { MessageCircleQuestion } from "lucide-react";
 import { QaQuestionList } from "./qa-question-list";
@@ -129,7 +129,9 @@ export async function QaSection({
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <MessageCircleQuestion className="h-5 w-5 text-primary" />
-            <CardTitle className="text-base">Q&A</CardTitle>
+            <h2 className="font-display text-base font-semibold leading-none tracking-tight">
+              Q&A
+            </h2>
             {totalQuestions > 0 && (
               <span className="text-sm text-muted-foreground">
                 ({totalQuestions})

@@ -4,6 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "解答履歴 | 問の間",
+};
 
 export default async function SubmissionHistoryPage() {
   const supabase = await createClient();
@@ -22,6 +28,13 @@ export default async function SubmissionHistoryPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "マイページ", href: "/dashboard" },
+          { label: "解答履歴", href: "/dashboard/history" },
+        ]}
+      />
       <h1 className="mb-6 text-2xl font-bold tracking-tight">解答履歴</h1>
 
       {items.length === 0 ? (

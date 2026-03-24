@@ -4,6 +4,12 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FolderOpen } from "lucide-react";
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "コレクション | 問の間",
+};
 
 export default async function CollectionsPage() {
   const supabase = await createClient();
@@ -42,6 +48,13 @@ export default async function CollectionsPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "マイページ", href: "/dashboard" },
+          { label: "コレクション", href: "/dashboard/collections" },
+        ]}
+      />
       <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold tracking-tight">コレクション</h1>
         <CreateCollectionDialog />

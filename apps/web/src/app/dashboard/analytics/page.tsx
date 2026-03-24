@@ -15,6 +15,7 @@ import {
   type ScoreComparisonData,
   type ScoreComparisonAttempt,
 } from "@/components/solving/score-comparison";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 
 export const metadata: Metadata = {
   title: "学習分析 - 問の間",
@@ -206,6 +207,13 @@ export default async function DashboardAnalyticsPage() {
 
   return (
     <div className="p-4 md:p-6">
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "マイページ", href: "/dashboard" },
+          { label: "学習分析", href: "/dashboard/analytics" },
+        ]}
+      />
       <h1 className="mb-6 text-2xl font-bold tracking-tight">学習分析</h1>
 
       {totalAttempts < 3 ? (

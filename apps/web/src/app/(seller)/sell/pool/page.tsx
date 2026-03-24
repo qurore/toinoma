@@ -10,7 +10,7 @@ import type { Subject, Difficulty } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "問題プール - 問の間",
+  title: "問題プール | 問の間",
 };
 
 const TYPE_ICONS: Record<string, typeof FileText> = {

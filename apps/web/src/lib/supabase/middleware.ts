@@ -41,9 +41,14 @@ export async function updateSession(request: NextRequest) {
 
   if (!user && isProtectedRoute) {
     const url = request.nextUrl.clone();
+    const currentPath = request.nextUrl.pathname;
     url.pathname = "/login";
+    url.searchParams.set("next", currentPath);
     return NextResponse.redirect(url);
   }
+
+  // Forward the current URL so server components can read it via headers()
+  supabaseResponse.headers.set("x-url", request.url);
 
   return supabaseResponse;
 }

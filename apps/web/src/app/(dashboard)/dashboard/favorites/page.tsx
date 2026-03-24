@@ -6,6 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
+import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "お気に入り | 問の間",
+};
 
 export default async function FavoritesPage() {
   const supabase = await createClient();
@@ -24,6 +30,13 @@ export default async function FavoritesPage() {
 
   return (
     <main className="container mx-auto px-4 py-8">
+      <Breadcrumbs
+        items={[
+          { label: "ホーム", href: "/" },
+          { label: "マイページ", href: "/dashboard" },
+          { label: "お気に入り", href: "/dashboard/favorites" },
+        ]}
+      />
       <h1 className="mb-6 text-2xl font-bold tracking-tight">お気に入り</h1>
 
       {items.length === 0 ? (

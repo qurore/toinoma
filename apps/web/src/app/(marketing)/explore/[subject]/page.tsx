@@ -160,7 +160,9 @@ export default async function SubjectExplorePage({
 
   const sp = await searchParams;
   const subjectLabel = SUBJECT_LABELS[subject];
-  const q = sp.q ?? "";
+  const rawQ = sp.q ?? "";
+  // Escape PostgREST ilike special characters to prevent filter injection
+  const q = rawQ.replace(/[%_\\]/g, (ch) => `\\${ch}`);
   const difficultyParam = sp.difficulty ?? "";
   const freeOnly = sp.free === "1";
   const priceMin = sp.price_min ? parseInt(sp.price_min, 10) : null;
@@ -371,7 +373,7 @@ export default async function SubjectExplorePage({
   // Build href helper for pagination
   function buildPageHref(p: number): string {
     const searchParamsObj = new URLSearchParams();
-    if (q) searchParamsObj.set("q", q);
+    if (rawQ) searchParamsObj.set("q", rawQ);
     if (difficultyParam) searchParamsObj.set("difficulty", difficultyParam);
     if (freeOnly) searchParamsObj.set("free", "1");
     if (priceMin != null) searchParamsObj.set("price_min", String(priceMin));

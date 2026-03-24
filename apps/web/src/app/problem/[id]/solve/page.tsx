@@ -2,7 +2,7 @@ import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { problemSetRubricSchema } from "@toinoma/shared/schemas";
 import { SolveClient } from "@/components/grading/solve-client";
 import { AiAssistantDialog } from "@/components/ai-assistant/ai-assistant-dialog";
@@ -34,7 +34,7 @@ export default async function ProblemSolvePage({
   // Fetch problem set with rubric
   const { data: ps } = await supabase
     .from("problem_sets")
-    .select("title, rubric, problem_pdf_url")
+    .select("title, rubric, problem_pdf_url, time_limit_minutes")
     .eq("id", id)
     .single();
 
@@ -56,38 +56,50 @@ export default async function ProblemSolvePage({
   }
 
   return (
-    <main className="container mx-auto max-w-3xl px-4 py-8">
-      <div className="mb-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={`/problem/${id}`}>
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            問題詳細に戻る
-          </Link>
-        </Button>
-      </div>
-
-      <h1 className="mb-2 text-2xl font-bold tracking-tight">{ps.title}</h1>
-      <p className="mb-6 text-sm text-muted-foreground">
-        解答を入力してAI採点を受けましょう
-      </p>
-
-      {ps.problem_pdf_url && (
-        <div className="mb-6">
-          <iframe
-            src={ps.problem_pdf_url}
-            className="h-[500px] w-full rounded-lg border border-border"
-            title="問題PDF"
-          />
+    <>
+      {/* Minimal exam-mode header bar */}
+      <header className="fixed top-0 z-50 w-full border-b border-border bg-white/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6">
+          <h1 className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">
+            {ps.title}
+          </h1>
+          {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
+            <span className="mx-4 shrink-0 rounded-md bg-muted px-2.5 py-1 text-xs font-medium text-muted-foreground tabular-nums">
+              {ps.time_limit_minutes}分
+            </span>
+          )}
+          <Button variant="outline" size="sm" className="shrink-0" asChild>
+            <Link href={`/problem/${id}`}>
+              <LogOut className="mr-1.5 h-3.5 w-3.5" />
+              終了する
+            </Link>
+          </Button>
         </div>
-      )}
+      </header>
 
-      <SolveClient
-        problemSetId={id}
-        rubric={rubricResult.data}
-        userId={user.id}
-      />
+      <main className="container mx-auto max-w-3xl px-4 pb-8 pt-20">
+        <p className="mb-6 text-sm text-muted-foreground">
+          解答を入力してAI採点を受けましょう
+        </p>
 
-      <AiAssistantDialog problemSetId={id} isPro={isPro} />
-    </main>
+        {ps.problem_pdf_url && (
+          <div className="mb-6">
+            <iframe
+              src={ps.problem_pdf_url}
+              className="h-[500px] w-full rounded-lg border border-border"
+              title="問題PDF"
+            />
+          </div>
+        )}
+
+        <SolveClient
+          problemSetId={id}
+          rubric={rubricResult.data}
+          userId={user.id}
+        />
+
+        <AiAssistantDialog problemSetId={id} isPro={isPro} />
+      </main>
+    </>
   );
 }

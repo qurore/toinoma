@@ -46,7 +46,9 @@ export default async function AdminUsersPage(props: {
   if (!profile?.is_admin) redirect("/");
 
   const searchParams = await props.searchParams;
-  const query = searchParams.q ?? "";
+  const rawQuery = searchParams.q ?? "";
+  // Escape PostgREST ilike special characters to prevent filter injection
+  const query = rawQuery.replace(/[%_\\]/g, (ch) => `\\${ch}`);
   const roleFilter = searchParams.role ?? "all";
   const statusFilter = searchParams.status ?? "all";
   const page = Math.max(1, parseInt(searchParams.page ?? "1", 10));
@@ -138,7 +140,7 @@ export default async function AdminUsersPage(props: {
   return (
     <AdminUsersClient
       users={filteredRows}
-      query={query}
+      query={rawQuery}
       roleFilter={roleFilter}
       statusFilter={statusFilter}
       currentPage={page}

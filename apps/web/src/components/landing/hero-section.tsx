@@ -11,14 +11,14 @@ const stats = [
 
 export function HeroSection() {
   return (
-    <section className="bg-hero relative flex min-h-[90vh] items-center overflow-hidden pt-16">
+    <section className="bg-hero relative flex min-h-[90dvh] items-center overflow-hidden pt-14">
       {/* Glow effect */}
       <div className="absolute left-1/2 top-1/4 h-96 w-96 -translate-x-1/2 rounded-full bg-green/10 blur-3xl" />
 
       <div className="relative mx-auto max-w-7xl px-6 py-24 md:py-32">
         <div className="max-w-3xl">
           {/* Badge */}
-          <div className="opacity-0 animate-fade-up">
+          <div className="motion-safe:opacity-0 motion-safe:animate-fade-up">
             <Badge className="mb-6 border-green/30 bg-green/10 px-4 py-1.5 text-sm font-medium text-green-light backdrop-blur-sm">
               <Sparkles className="mr-1.5 h-3.5 w-3.5" />
               AI採点で、学びが変わる
@@ -26,14 +26,14 @@ export function HeroSection() {
           </div>
 
           {/* Title */}
-          <h1 className="opacity-0 animate-fade-up font-display text-5xl font-bold leading-tight tracking-tight md:text-7xl [animation-delay:100ms]">
+          <h1 className="motion-safe:opacity-0 motion-safe:animate-fade-up font-display text-5xl font-bold leading-tight tracking-tight md:text-7xl [animation-delay:100ms]">
             <span className="text-white">問の間</span>
             <br />
             <span className="text-gradient-green">Toinoma</span>
           </h1>
 
           {/* Subtitle */}
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70 opacity-0 animate-fade-up [animation-delay:200ms]">
+          <p className="mt-6 max-w-xl text-lg leading-relaxed text-white/70 motion-safe:opacity-0 motion-safe:animate-fade-up [animation-delay:200ms]">
             大学生が作るオリジナル入試問題を、
             <br className="hidden sm:block" />
             AIが即座に採点・フィードバック。
@@ -42,20 +42,20 @@ export function HeroSection() {
           </p>
 
           {/* CTA */}
-          <div className="mt-10 flex flex-wrap gap-4 opacity-0 animate-fade-up [animation-delay:300ms]">
-            <Button variant="hero" size="lg" asChild>
+          <div className="mt-10 flex flex-wrap gap-4 motion-safe:opacity-0 motion-safe:animate-fade-up [animation-delay:300ms]">
+            <Button variant="hero" size="lg" asChild className="focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-forest">
               <Link href="/explore">
                 問題を探す
                 <ArrowRight className="ml-1 h-4 w-4" />
               </Link>
             </Button>
-            <Button variant="heroOutline" size="lg" asChild>
+            <Button variant="heroOutline" size="lg" asChild className="focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-forest">
               <Link href="/sell/onboarding">出題者になる</Link>
             </Button>
           </div>
 
           {/* Stats */}
-          <div className="mt-16 grid grid-cols-3 gap-8 opacity-0 animate-fade-up [animation-delay:400ms]">
+          <div className="mt-16 grid grid-cols-1 gap-8 sm:grid-cols-3 motion-safe:opacity-0 motion-safe:animate-fade-up [animation-delay:400ms]">
             {stats.map((stat) => (
               <div key={stat.label}>
                 <div className="font-display text-2xl font-bold text-green-glow md:text-3xl">

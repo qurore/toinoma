@@ -63,9 +63,9 @@ function Pagination({
   return (
     <nav aria-label="ページナビゲーション" className="flex justify-center">
       <ul className="flex items-center gap-1">
-        {/* Previous */}
-        {currentPage > 1 && (
-          <li>
+        {/* Previous — always rendered, disabled on page 1 for layout stability */}
+        <li>
+          {currentPage > 1 ? (
             <a
               href={buildHref(currentPage - 1)}
               className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
@@ -73,8 +73,15 @@ function Pagination({
             >
               前へ
             </a>
-          </li>
-        )}
+          ) : (
+            <span
+              className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground/40"
+              aria-disabled="true"
+            >
+              前へ
+            </span>
+          )}
+        </li>
 
         {pages.map((page, idx) =>
           page === "ellipsis" ? (
@@ -100,9 +107,9 @@ function Pagination({
           )
         )}
 
-        {/* Next */}
-        {currentPage < totalPages && (
-          <li>
+        {/* Next — always rendered, disabled on last page for layout stability */}
+        <li>
+          {currentPage < totalPages ? (
             <a
               href={buildHref(currentPage + 1)}
               className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground transition-colors hover:bg-muted"
@@ -110,8 +117,15 @@ function Pagination({
             >
               次へ
             </a>
-          </li>
-        )}
+          ) : (
+            <span
+              className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground/40"
+              aria-disabled="true"
+            >
+              次へ
+            </span>
+          )}
+        </li>
       </ul>
     </nav>
   );
@@ -127,7 +141,9 @@ export default async function ExplorePage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const params = await searchParams;
-  const q = params.q ?? "";
+  const rawQ = params.q ?? "";
+  // Escape PostgREST ilike special characters to prevent filter injection
+  const q = rawQ.replace(/[%_\\]/g, (ch) => `\\${ch}`);
   const subjectParam = params.subject ?? "";
   const difficultyParam = params.difficulty ?? "";
   const freeOnly = params.free === "1";
@@ -359,7 +375,7 @@ export default async function ExplorePage({
   // Build href helper for pagination
   function buildPageHref(p: number): string {
     const sp = new URLSearchParams();
-    if (q) sp.set("q", q);
+    if (rawQ) sp.set("q", rawQ);
     if (subjectParam) sp.set("subject", subjectParam);
     if (difficultyParam) sp.set("difficulty", difficultyParam);
     if (freeOnly) sp.set("free", "1");
@@ -375,7 +391,7 @@ export default async function ExplorePage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-7xl px-4 pb-12 pt-20 sm:px-6">
+      <main className="mx-auto max-w-7xl px-4 pb-12 pt-16 sm:px-6">
         {/* Page header */}
         <div className="mb-6">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">

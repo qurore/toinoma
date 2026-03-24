@@ -10,6 +10,8 @@ const FOOTER_LINKS = {
   サポート: [
     { href: "/help/faq", label: "よくある質問" },
     { href: "/help/guide", label: "ご利用ガイド" },
+    { href: "/help/seller-guide", label: "出品者ガイド" },
+    { href: "/help", label: "ヘルプ" },
     { href: "/legal/content-policy", label: "コンテンツポリシー" },
   ],
   法的情報: [
@@ -51,7 +53,7 @@ export function SiteFooter() {
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                      className="inline-block py-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
                     >
                       {link.label}
                     </Link>

@@ -8,7 +8,7 @@ import type { Subject } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "ランキング - 問の間",
+  title: "ランキング | 問の間",
   description: "人気の問題セットランキング。科目別・総合ランキングをチェック。",
 };
 
@@ -65,7 +65,7 @@ export default async function RankingsPage() {
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="container mx-auto px-4 py-8 pt-20">
+      <main className="container mx-auto px-4 py-8 pt-16">
         <h1 className="mb-2 text-3xl font-bold tracking-tight">ランキング</h1>
         <p className="mb-8 text-muted-foreground">
           購入数で見る人気の問題セット
