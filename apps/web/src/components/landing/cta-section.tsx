@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles, Star } from "lucide-react";
+import { ArrowRight, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function CTASection() {
@@ -19,9 +19,8 @@ export function CTASection() {
       />
 
       <div className="relative mx-auto max-w-3xl px-4 text-center sm:px-6">
-        {/* Decorative sparkle */}
-        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
-          <Sparkles className="h-3.5 w-3.5 text-green-light" />
+        {/* Tagline badge */}
+        <div className="mb-6 inline-flex items-center rounded-full border border-white/15 bg-white/5 px-4 py-1.5 backdrop-blur-sm">
           <span className="text-xs font-medium text-white/70">
             登録無料 — 今すぐ始められます
           </span>

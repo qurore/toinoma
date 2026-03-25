@@ -1,23 +1,17 @@
-import { Search, FileText, Brain } from "lucide-react";
-import { cn } from "@/lib/utils";
-
 const steps = [
   {
-    icon: Search,
     step: 1,
     title: "問題を探す",
     description:
       "科目・難易度・大学別にフィルタリング。自分のレベルに合った問題セットを見つけましょう。",
   },
   {
-    icon: FileText,
     step: 2,
     title: "解答する",
     description:
       "実際の入試形式で解答を提出。記述式・マークシート・穴埋めなど、多様な出題形式に対応しています。",
   },
   {
-    icon: Brain,
     step: 3,
     title: "AI採点を受ける",
     description:
@@ -76,25 +70,9 @@ export function HowItWorksSection() {
                   />
                 )}
 
-                {/* Step number badge + icon container */}
-                <div className="relative mb-6">
-                  {/* Outer glow ring */}
-                  <div className="absolute -inset-3 rounded-full bg-primary/5" />
-
-                  {/* Icon circle */}
-                  <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-primary/20 bg-card shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-md">
-                    <item.icon className="h-6 w-6 text-foreground" />
-                  </div>
-
-                  {/* Number badge */}
-                  <span
-                    className={cn(
-                      "absolute -right-1 -top-1 flex h-7 w-7 items-center justify-center rounded-full text-xs font-bold shadow-sm",
-                      "bg-primary text-primary-foreground"
-                    )}
-                  >
-                    {item.step}
-                  </span>
+                {/* Step number circle */}
+                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/20 bg-card text-lg font-bold text-foreground shadow-sm">
+                  {item.step}
                 </div>
 
                 {/* Title */}

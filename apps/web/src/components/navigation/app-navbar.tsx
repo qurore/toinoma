@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { UserDropdown } from "./user-dropdown";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { SearchAutocomplete } from "@/components/marketplace/search-autocomplete";
-import { MobileNavMenu } from "./mobile-nav-menu";
 import { NavLinkClient } from "./nav-item-client";
 import type { SubscriptionTier } from "@/types/database";
 
@@ -141,8 +140,6 @@ export function AppNavbar({
                 avatarUrl={avatarUrl}
                 subscriptionTier={subscriptionTier}
               />
-              {/* Mobile hamburger menu */}
-              <MobileNavMenu user={user} isSeller={isSeller} />
             </>
           ) : (
             <>
@@ -152,8 +149,6 @@ export function AppNavbar({
               <Button size="sm" asChild>
                 <Link href="/signup">無料で始める</Link>
               </Button>
-              {/* Mobile hamburger menu for unauthenticated users */}
-              <MobileNavMenu user={null} isSeller={false} />
             </>
           )}
         </div>

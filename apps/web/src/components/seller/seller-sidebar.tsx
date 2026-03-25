@@ -162,32 +162,34 @@ export function SellerSidebar() {
 }
 
 // Mobile horizontal tab bar — shown below AppNavbar on small screens (md:hidden).
+// Text-only tabs for clean, minimal mobile nav (no icons — matches note.com/studysapuri pattern).
 export function MobileSellerNav() {
   const pathname = usePathname();
 
   return (
-    <nav className="fixed left-0 right-0 top-16 z-40 h-10 border-b border-border bg-card md:hidden">
-      <ul className="flex h-full overflow-x-auto">
+    <nav
+      className="fixed left-0 right-0 top-16 z-40 h-10 border-b border-border bg-card md:hidden"
+      aria-label="出品者ナビゲーション"
+    >
+      <ul className="flex h-full overflow-x-auto scrollbar-thin">
         {SELLER_NAV_ITEMS.map((item) => {
           const isActive = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);
-          const Icon = item.icon;
 
           return (
             <li key={item.href} className="flex shrink-0 items-stretch">
               <Link
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-1.5 border-b-2 px-3 text-xs font-medium",
+                  "flex items-center border-b-2 px-3 text-xs font-medium whitespace-nowrap",
                   "transition-colors duration-150",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
                   isActive
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"
                 )}
+                aria-current={isActive ? "page" : undefined}
               >
-                <Icon className="h-3.5 w-3.5 shrink-0" />
                 {item.label}
               </Link>
             </li>

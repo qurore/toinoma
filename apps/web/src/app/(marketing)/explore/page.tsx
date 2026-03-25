@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { SearchX, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
@@ -144,9 +143,6 @@ function Pagination({
 function EmptyState({ hasFilters, query }: { hasFilters: boolean; query: string }) {
   return (
     <div className="flex flex-col items-center py-20 text-center">
-      <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted">
-        <SearchX className="h-8 w-8 text-muted-foreground" aria-hidden="true" />
-      </div>
       <h2 className="text-lg font-semibold">
         該当する問題セットが見つかりませんでした
       </h2>
@@ -162,7 +158,6 @@ function EmptyState({ hasFilters, query }: { hasFilters: boolean; query: string 
       {hasFilters && (
         <Button asChild variant="outline" size="sm" className="mt-4">
           <Link href="/explore">
-            <Sparkles className="mr-1.5 h-3.5 w-3.5" />
             フィルターをクリアして探す
           </Link>
         </Button>

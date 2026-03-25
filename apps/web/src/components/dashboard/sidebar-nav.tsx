@@ -9,7 +9,6 @@ import {
   FolderOpen,
   BarChart3,
   Settings,
-  Sparkles,
   Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -183,9 +182,8 @@ export function SidebarNav({
           {subscriptionTier === "free" && (
             <Link
               href="/settings/subscription"
-              className="flex items-center gap-1 text-[11px] font-medium text-primary transition-colors hover:text-primary/80"
+              className="text-[11px] font-medium text-primary transition-colors hover:text-primary/80"
             >
-              <Sparkles className="h-3 w-3" />
               アップグレード
             </Link>
           )}

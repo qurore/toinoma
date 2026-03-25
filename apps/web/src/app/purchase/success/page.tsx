@@ -2,12 +2,9 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   CheckCircle2,
-  BookOpen,
   PenLine,
   Printer,
   FolderPlus,
-  ArrowRight,
-  Sparkles,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
@@ -167,15 +164,8 @@ export default async function PurchaseSuccessPage({
             <div className="h-2 bg-gradient-to-r from-primary via-green-light to-primary bg-[length:200%_auto] animate-[gradient-slide_3s_linear_infinite]" />
 
             <CardContent className="px-8 pb-8 pt-10 text-center">
-              {/* Success icon with celebration ring */}
-              <div className="relative mx-auto mb-6 h-24 w-24">
-                {/* Outer pulsing ring */}
-                <div className="absolute inset-0 rounded-full bg-success/10 animate-in zoom-in-75 duration-700" />
-                <div className="absolute inset-2 rounded-full bg-success/5" />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <CheckCircle2 className="h-12 w-12 text-success animate-in zoom-in-50 duration-500" />
-                </div>
-              </div>
+              {/* Success indicator */}
+              <CheckCircle2 className="mx-auto mb-4 h-10 w-10 text-success" aria-hidden="true" />
 
               <h1 className="mb-1 text-2xl font-bold tracking-tight">
                 購入が完了しました
@@ -265,40 +255,22 @@ export default async function PurchaseSuccessPage({
               {problemSetId && (
                 <Link
                   href={`/problem/${problemSetId}`}
-                  className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3.5 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
+                  className="block rounded-lg border border-border bg-card px-4 py-3.5 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
                 >
-                  <span className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                    </span>
-                    問題セットの詳細を見る
-                  </span>
-                  <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                  問題セットの詳細を見る
                 </Link>
               )}
               <Link
                 href="/dashboard"
-                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3.5 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
+                className="block rounded-lg border border-border bg-card px-4 py-3.5 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
               >
-                <span className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                    <BookOpen className="h-4 w-4 text-muted-foreground" />
-                  </span>
-                  マイページで学習状況を確認
-                </span>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                マイページで学習状況を確認
               </Link>
               <Link
                 href="/explore"
-                className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3.5 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
+                className="block rounded-lg border border-border bg-card px-4 py-3.5 text-sm transition-colors hover:border-primary/30 hover:bg-primary/5"
               >
-                <span className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted">
-                    <Sparkles className="h-4 w-4 text-muted-foreground" />
-                  </span>
-                  他の問題セットを探す
-                </span>
-                <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                他の問題セットを探す
               </Link>
             </div>
           </div>

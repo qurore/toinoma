@@ -13,11 +13,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  History,
   ArrowUpDown,
   TrendingUp,
   TrendingDown,
-  Search,
   Filter,
   ChevronLeft,
   ChevronRight,
@@ -244,9 +242,6 @@ export function SubmissionHistoryClient({
       {items.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
-              <History className="h-7 w-7 text-muted-foreground" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               最初の一歩を踏み出しましょう
             </h2>
@@ -258,7 +253,6 @@ export function SubmissionHistoryClient({
             </p>
             <Button asChild>
               <Link href="/explore">
-                <Search className="mr-1.5 h-4 w-4" />
                 問題を探す
               </Link>
             </Button>

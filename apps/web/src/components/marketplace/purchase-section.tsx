@@ -11,8 +11,6 @@ import {
   BookOpen,
   ShoppingCart,
   CheckCircle2,
-  Shield,
-  Sparkles,
   LogIn,
 } from "lucide-react";
 import { CouponInput } from "@/components/marketplace/coupon-input";
@@ -91,7 +89,6 @@ export function PurchaseSection({
             </Link>
           </Button>
           <p className="text-center text-xs text-muted-foreground">
-            <Shield className="mr-1 inline h-3 w-3" aria-hidden="true" />
             安全なお支払い（Stripe）
           </p>
         </CardContent>
@@ -183,8 +180,6 @@ export function PurchaseSection({
         >
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-          ) : isFree ? (
-            <Sparkles className="mr-2 h-4 w-4" aria-hidden="true" />
           ) : (
             <ShoppingCart className="mr-2 h-4 w-4" aria-hidden="true" />
           )}
@@ -192,25 +187,15 @@ export function PurchaseSection({
         </Button>
 
         {/* What you get list */}
-        <ul className="space-y-2 border-t border-border pt-3 text-xs text-muted-foreground">
-          <li className="flex items-center gap-2">
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden="true" />
-            AI採点による即時フィードバック
-          </li>
-          <li className="flex items-center gap-2">
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden="true" />
-            何度でも繰り返し解答可能
-          </li>
-          <li className="flex items-center gap-2">
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-success" aria-hidden="true" />
-            得点推移の確認・比較機能
-          </li>
+        <ul className="space-y-1.5 border-t border-border pt-3 text-xs text-muted-foreground">
+          <li>AI採点による即時フィードバック</li>
+          <li>何度でも繰り返し解答可能</li>
+          <li>得点推移の確認・比較機能</li>
         </ul>
 
         {/* Trust signals */}
         {!isFree && (
           <p className="text-center text-xs text-muted-foreground">
-            <Shield className="mr-1 inline h-3 w-3" aria-hidden="true" />
             安全なお支払い（Stripe）
           </p>
         )}

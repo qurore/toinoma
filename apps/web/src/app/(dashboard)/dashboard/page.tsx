@@ -6,11 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
-  BookOpen,
-  History,
-  Target,
-  Flame,
-  Search,
   ArrowRight,
   ChevronRight,
 } from "lucide-react";
@@ -195,9 +190,6 @@ export default async function DashboardPage() {
       {isNewUser ? (
         <Card className="mb-8 border-dashed">
           <CardContent className="flex flex-col items-center py-14 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/5">
-              <Search className="h-7 w-7 text-primary/40" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               問の間へようこそ!
             </h2>
@@ -206,7 +198,6 @@ export default async function DashboardPage() {
             </p>
             <Button asChild size="lg">
               <Link href="/explore">
-                <Search className="mr-2 h-4 w-4" />
                 問題を探す
               </Link>
             </Button>
@@ -218,13 +209,10 @@ export default async function DashboardPage() {
           <div className="stagger-children mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Link href="/dashboard/favorites" className="group">
               <Card className="transition-colors group-hover:border-primary/20">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     購入済みセット
                   </CardTitle>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                    <BookOpen className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold tabular-nums">{purchaseCount ?? 0}</p>
@@ -235,13 +223,10 @@ export default async function DashboardPage() {
 
             <Link href="/dashboard/history" className="group">
               <Card className="transition-colors group-hover:border-primary/20">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     総解答回数
                   </CardTitle>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                    <History className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold tabular-nums">{submissionCount ?? 0}</p>
@@ -252,13 +237,10 @@ export default async function DashboardPage() {
 
             <Link href="/dashboard/analytics" className="group">
               <Card className="transition-colors group-hover:border-primary/20">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     平均正答率
                   </CardTitle>
-                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                    <Target className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                  </div>
                 </CardHeader>
                 <CardContent>
                   <p className="text-3xl font-bold tabular-nums">
@@ -272,13 +254,10 @@ export default async function DashboardPage() {
             </Link>
 
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   連続学習日数
                 </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                  <Flame className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-1">
@@ -391,9 +370,6 @@ export default async function DashboardPage() {
           <CardContent>
             {!recentPurchases?.length ? (
               <div className="flex flex-col items-center py-8 text-center">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/5">
-                  <BookOpen className="h-6 w-6 text-primary/40" aria-hidden="true" />
-                </div>
                 <p className="text-sm text-muted-foreground">
                   まだ購入履歴がありません
                 </p>
@@ -447,9 +423,6 @@ export default async function DashboardPage() {
           <CardContent>
             {!recentSubmissions?.length ? (
               <div className="flex flex-col items-center py-8 text-center">
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/5">
-                  <History className="h-6 w-6 text-primary/40" aria-hidden="true" />
-                </div>
                 <p className="text-sm text-muted-foreground">
                   まだ解答履歴がありません
                 </p>

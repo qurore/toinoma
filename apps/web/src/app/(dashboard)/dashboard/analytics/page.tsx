@@ -17,7 +17,6 @@ import {
 } from "@/components/solving/score-comparison";
 import { Button } from "@/components/ui/button";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
-import { BarChart3, Search, BookOpen, Target, Flame } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -227,9 +226,6 @@ export default async function DashboardAnalyticsPage() {
       {totalAttempts < 3 ? (
         <Card className="border-dashed">
           <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
-              <BarChart3 className="h-7 w-7 text-muted-foreground" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               もっと問題を解いて、分析データを蓄積しましょう
             </h2>
@@ -241,7 +237,6 @@ export default async function DashboardAnalyticsPage() {
             </p>
             <Button asChild>
               <Link href="/explore">
-                <Search className="mr-1.5 h-4 w-4" />
                 問題を探す
               </Link>
             </Button>
@@ -252,52 +247,40 @@ export default async function DashboardAnalyticsPage() {
           {/* Stats cards */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   総回答回数
                 </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                  <BookOpen className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </div>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold tabular-nums">{totalAttempts}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   平均正答率
                 </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                  <Target className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </div>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold tabular-nums">{overallAverage}%</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   学習科目数
                 </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                  <BarChart3 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </div>
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold tabular-nums">{subjectAverages.length}</p>
               </CardContent>
             </Card>
             <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">
                   連続学習日数
                 </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                  <Flame className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </div>
               </CardHeader>
               <CardContent>
                 <div className="flex items-baseline gap-1">

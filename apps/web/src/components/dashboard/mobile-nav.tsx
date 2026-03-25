@@ -67,7 +67,7 @@ export function MobileDashboardNav() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center gap-1.5 border-b-2 px-3 text-xs font-medium",
+                    "flex items-center border-b-2 px-3 text-xs font-medium whitespace-nowrap",
                     "transition-colors duration-150",
                     isActive
                       ? "border-primary text-primary"
@@ -75,7 +75,6 @@ export function MobileDashboardNav() {
                   )}
                   aria-current={isActive ? "page" : undefined}
                 >
-                  <Icon className="h-3.5 w-3.5 shrink-0" />
                   {item.label}
                 </Link>
               </li>

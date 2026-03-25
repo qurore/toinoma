@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Sparkles, Brain } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
@@ -36,8 +36,7 @@ export function HeroSection() {
           <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left">
             {/* Badge */}
             <div className="animate-fade-up opacity-0 [animation-delay:0ms]">
-              <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/15">
-                <Sparkles className="h-3.5 w-3.5 text-green-light" />
+              <div className="mb-6 inline-flex items-center rounded-full border border-white/20 bg-white/10 px-4 py-1.5 backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/15">
                 <span className="text-xs font-medium text-white/80">
                   AI採点で記述式の部分点を即座に判定
                 </span>
@@ -119,18 +118,13 @@ export function HeroSection() {
               <div className="relative rounded-2xl border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur-md">
                 {/* Card header */}
                 <div className="mb-5 flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/20">
-                      <Brain className="h-4 w-4 text-green-light" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-white">
-                        AI採点結果
-                      </p>
-                      <p className="text-[11px] text-white/40">
-                        世界史 — 大問2
-                      </p>
-                    </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">
+                      AI採点結果
+                    </p>
+                    <p className="text-[11px] text-white/40">
+                      世界史 — 大問2
+                    </p>
                   </div>
                   <div className="rounded-full bg-green/20 px-3 py-1 text-xs font-bold text-green-light">
                     82 / 100

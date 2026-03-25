@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Heart, Search, ArrowUpDown, Filter, Loader2 } from "lucide-react";
+import { Heart, ArrowUpDown, Filter, Loader2 } from "lucide-react";
 import { ProblemSetCard } from "@/components/marketplace/problem-set-card";
 import type { ProblemSetCardData } from "@/components/marketplace/problem-set-card";
 import { createClient } from "@/lib/supabase/client";
@@ -153,9 +153,6 @@ export function FavoritesClient({
       {items.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
-              <Heart className="h-7 w-7 text-muted-foreground" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               お気に入りの問題セットがまだありません
             </h2>
@@ -167,7 +164,6 @@ export function FavoritesClient({
             </p>
             <Button asChild>
               <Link href="/explore">
-                <Search className="mr-1.5 h-4 w-4" />
                 問題を探す
               </Link>
             </Button>

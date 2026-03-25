@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FolderOpen, BookOpen, Clock } from "lucide-react";
+import { Clock } from "lucide-react";
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { formatDistanceToNow } from "date-fns";
@@ -63,9 +63,6 @@ export default async function CollectionsPage() {
       {!collections?.length ? (
         <Card className="border-dashed">
           <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
-              <FolderOpen className="h-7 w-7 text-muted-foreground" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               コレクションを作成しましょう
             </h2>
@@ -93,9 +90,6 @@ export default async function CollectionsPage() {
               <Link key={c.id} href={`/dashboard/collections/${c.id}`}>
                 <Card className="h-full transition-all hover:border-primary/20 hover:shadow-sm">
                   <CardContent className="p-5">
-                    <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                      <FolderOpen className="h-5 w-5 text-muted-foreground" />
-                    </div>
                     <h3 className="font-semibold">{c.name}</h3>
                     {c.description && (
                       <p className="mt-1 line-clamp-2 text-sm text-muted-foreground">
@@ -104,7 +98,6 @@ export default async function CollectionsPage() {
                     )}
                     <div className="mt-3 flex items-center gap-3">
                       <Badge variant="secondary" className="text-xs">
-                        <BookOpen className="mr-1 h-3 w-3" />
                         {count}問
                       </Badge>
                       <span className="flex items-center gap-1 text-xs text-muted-foreground">

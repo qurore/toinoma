@@ -10,7 +10,6 @@ import {
   BookOpen,
   ShoppingCart,
   CheckCircle2,
-  Sparkles,
   LogIn,
 } from "lucide-react";
 
@@ -138,8 +137,6 @@ export function MobilePurchaseBar({
         >
           {isLoading ? (
             <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
-          ) : isFree ? (
-            <Sparkles className="mr-1.5 h-4 w-4" aria-hidden="true" />
           ) : (
             <ShoppingCart className="mr-1.5 h-4 w-4" aria-hidden="true" />
           )}

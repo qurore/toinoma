@@ -19,7 +19,6 @@ import {
 import {
   CheckCircle2,
   XCircle,
-  AlertCircle,
   MinusCircle,
   RotateCcw,
   Eye,
@@ -487,8 +486,7 @@ export function GradingResultDisplay({
       {/* Overall feedback */}
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
+          <CardTitle className="text-base">
             総合フィードバック
           </CardTitle>
         </CardHeader>
@@ -569,8 +567,7 @@ export function GradingResultDisplay({
       {showActions && problemSetId && (
         <Card className="border-primary/20">
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-semibold">
-              <AlertCircle className="h-4 w-4 text-primary" aria-hidden="true" />
+            <CardTitle className="text-sm font-semibold">
               次のステップ
             </CardTitle>
           </CardHeader>

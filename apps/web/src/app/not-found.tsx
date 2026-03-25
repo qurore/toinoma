@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Home, Search, BookOpen, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 export default function NotFoundPage() {
   return (
@@ -17,28 +17,22 @@ export default function NotFoundPage() {
 
       {/* Search bar */}
       <form action="/explore" method="GET" className="mb-8 w-full max-w-sm">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            name="q"
-            placeholder="問題セットを検索..."
-            className="pl-9"
-            aria-label="問題セットを検索"
-          />
-        </div>
+        <Input
+          name="q"
+          placeholder="問題セットを検索..."
+          aria-label="問題セットを検索"
+        />
       </form>
 
       {/* Primary CTAs */}
       <div className="mb-8 flex flex-wrap justify-center gap-3">
         <Button asChild>
           <Link href="/">
-            <Home className="mr-1.5 h-4 w-4" />
             ホームに戻る
           </Link>
         </Button>
         <Button variant="outline" asChild>
           <Link href="/explore">
-            <BookOpen className="mr-1.5 h-4 w-4" />
             問題を探す
           </Link>
         </Button>
