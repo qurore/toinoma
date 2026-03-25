@@ -50,6 +50,7 @@ export type AdminActionType =
   | "user_banned"
   | "user_suspended"
   | "user_warned"
+  | "user_unbanned"
   | "content_removed"
   | "report_reviewed"
   | "report_dismissed"
@@ -159,6 +160,9 @@ export interface Database {
           time_limit_minutes: number | null;
           total_points: number;
           preview_question_ids: string[];
+          purchase_count: number;
+          avg_rating: number | null;
+          review_count: number;
           created_at: string;
           updated_at: string;
         };
@@ -179,6 +183,9 @@ export interface Database {
           time_limit_minutes?: number | null;
           total_points?: number;
           preview_question_ids?: string[];
+          purchase_count?: number;
+          avg_rating?: number | null;
+          review_count?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -197,6 +204,9 @@ export interface Database {
           time_limit_minutes?: number | null;
           total_points?: number;
           preview_question_ids?: string[];
+          purchase_count?: number;
+          avg_rating?: number | null;
+          review_count?: number;
           updated_at?: string;
         };
         Relationships: [
@@ -1134,6 +1144,14 @@ export interface Database {
       };
       cleanup_expired_rate_limits: {
         Args: Record<string, never>;
+        Returns: undefined;
+      };
+      increment_coupon_usage: {
+        Args: { coupon_id: string };
+        Returns: undefined;
+      };
+      adjust_helpful_count: {
+        Args: { review_id_param: string; delta: number };
         Returns: undefined;
       };
     };

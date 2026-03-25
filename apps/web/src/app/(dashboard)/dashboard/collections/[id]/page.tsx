@@ -85,7 +85,7 @@ export default async function CollectionDetailPage({
   ];
 
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-8">
+    <div className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
       <Breadcrumbs
         items={[
           { label: "ホーム", href: "/" },

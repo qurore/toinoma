@@ -76,7 +76,7 @@ export default async function ProblemSolvePage({
   const rubricResult = problemSetRubricSchema.safeParse(ps.rubric);
   if (!rubricResult.success) {
     return (
-      <main id="main-content" className="container mx-auto max-w-3xl px-4 py-8">
+      <main id="main-content" className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
         <div className="rounded-lg border border-destructive/20 bg-destructive/5 p-6 text-center">
           <AlertTriangle className="mx-auto mb-3 h-8 w-8 text-destructive" aria-hidden="true" />
           <p className="text-sm font-medium text-destructive">
@@ -99,7 +99,7 @@ export default async function ProblemSolvePage({
 
   if (!subState.canGrade) {
     return (
-      <main id="main-content" className="container mx-auto max-w-lg px-4 py-12">
+      <main id="main-content" className="mx-auto max-w-lg px-4 py-12 sm:px-6">
         <div className="rounded-lg border border-border p-8 text-center">
           <Lock className="mx-auto mb-4 h-10 w-10 text-muted-foreground" aria-hidden="true" />
           <h2 className="text-lg font-semibold">

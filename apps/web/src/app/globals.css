@@ -527,4 +527,12 @@
     opacity: 1 !important;
     animation: none !important;
   }
+
+  /* Catch-all for any element with fade animation classes, ensuring opacity
+     overrides Tailwind's opacity-0 utility that may co-exist on the element */
+  [class*="animate-fade"] {
+    opacity: 1 !important;
+    animation: none !important;
+    transform: none !important;
+  }
 }

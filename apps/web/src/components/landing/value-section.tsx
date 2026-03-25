@@ -56,8 +56,8 @@ export function ValueSection() {
               <div className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
 
               {/* Icon container */}
-              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-muted text-foreground transition-all duration-300 group-hover:scale-105 group-hover:bg-primary/10 group-hover:text-primary group-hover:shadow-md">
-                <item.icon className="h-6 w-6" strokeWidth={1.75} />
+              <div className="mb-5 flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground transition-colors duration-300 group-hover:bg-primary/10 group-hover:text-primary">
+                <item.icon className="h-5 w-5" strokeWidth={1.5} />
               </div>
 
               {/* Title */}

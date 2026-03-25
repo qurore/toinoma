@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function NotificationsLoading() {
   return (
-    <main className="container mx-auto max-w-2xl px-4 py-8 pt-16">
+    <main className="mx-auto max-w-2xl px-4 py-8 pt-16 sm:px-6">
       <Skeleton className="mb-6 h-8 w-24" />
 
       {/* Filter tabs */}

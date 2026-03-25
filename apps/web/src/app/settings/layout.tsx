@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SettingsSidebar } from "@/components/settings/settings-sidebar";
+import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
 
 
 const TIER_LABELS: Record<string, string> = {
@@ -57,9 +58,10 @@ export default async function SettingsLayout({
           </aside>
 
           {/* Content */}
-          <main id="main-content" className="flex-1 py-8 md:pl-8">{children}</main>
+          <main id="main-content" className="flex-1 pb-20 pt-8 md:pb-8 md:pl-8">{children}</main>
         </div>
       </div>
+      <MobileAppTabBar />
     </>
   );
 }

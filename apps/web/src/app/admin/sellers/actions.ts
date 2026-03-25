@@ -83,11 +83,10 @@ export async function verifySeller(
 
   await createAuditLog({
     adminId: authResult.adminId,
-    action: "user_warned" as AdminActionType, // Reuse closest available action type
+    action: "seller_verified",
     targetType: "seller_profile",
     targetId: sellerId,
     details: {
-      action: "seller_verified",
       seller_name: seller.seller_display_name,
     },
   });
@@ -128,11 +127,11 @@ export async function unverifySeller(
 
   await createAuditLog({
     adminId: authResult.adminId,
-    action: "user_warned" as AdminActionType,
+    action: "seller_verified",
     targetType: "seller_profile",
     targetId: sellerId,
     details: {
-      action: "seller_unverified",
+      revoked: true,
       seller_name: seller.seller_display_name,
     },
   });

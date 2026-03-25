@@ -23,42 +23,19 @@ export const metadata: Metadata = {
   },
 };
 
-// Skeleton for featured sections while they load asynchronously
-function SectionSkeleton() {
+// Labeled skeleton for featured sections — shows section title while cards load
+function SectionSkeleton({ title, className }: { title: string; className?: string }) {
   return (
-    <div className="py-16 md:py-20" aria-hidden="true">
+    <section className={`py-12 ${className ?? ""}`}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        {/* Title skeleton */}
-        <div className="mb-8">
-          <div className="mb-2 flex items-center gap-2.5">
-            <div className="h-8 w-8 animate-pulse rounded-lg bg-muted" />
-            <div className="h-6 w-48 animate-pulse rounded bg-muted" />
-          </div>
-          <div className="h-4 w-64 animate-pulse rounded bg-muted" />
-        </div>
-        {/* Card skeletons — 4-column grid matching CardsGrid */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <h2 className="text-lg font-bold">{title}</h2>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="overflow-hidden rounded-xl border border-border bg-card"
-            >
-              <div className="h-40 animate-pulse bg-muted sm:h-44" />
-              <div className="p-4">
-                <div className="mb-2 flex gap-1.5">
-                  <div className="h-5 w-12 animate-pulse rounded-full bg-muted" />
-                  <div className="h-5 w-10 animate-pulse rounded-full bg-muted" />
-                </div>
-                <div className="h-4 w-full animate-pulse rounded bg-muted" />
-                <div className="mt-1 h-4 w-3/4 animate-pulse rounded bg-muted" />
-                <div className="mt-2 h-3 w-28 animate-pulse rounded bg-muted" />
-                <div className="mt-1.5 h-3 w-20 animate-pulse rounded bg-muted" />
-              </div>
-            </div>
+            <div key={i} className="h-64 animate-pulse rounded-lg bg-muted" />
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 }
 
@@ -68,15 +45,15 @@ export default function HomePage() {
       <Navbar />
       <main id="main-content">
         <HeroSection />
-        <Suspense fallback={<SectionSkeleton />}>
+        <Suspense fallback={<SectionSkeleton title="人気の問題セット" />}>
           <TrendingSection />
         </Suspense>
-        <Suspense fallback={<SectionSkeleton />}>
+        <Suspense fallback={<SectionSkeleton title="新着問題セット" className="bg-secondary/30" />}>
           <NewArrivalsSection />
         </Suspense>
         <ValueSection />
         <HowItWorksSection />
-        <Suspense fallback={<SectionSkeleton />}>
+        <Suspense fallback={<SectionSkeleton title="高評価の問題セット" />}>
           <TopRatedSection />
         </Suspense>
         <SubjectsSection />

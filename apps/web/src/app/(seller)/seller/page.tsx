@@ -6,6 +6,10 @@ import {
   TrendingDown,
   Minus,
   Plus,
+  BookOpen,
+  Banknote,
+  ShoppingCart,
+  FileText,
 } from "lucide-react";
 import { getSellerTosStatus } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
@@ -249,7 +253,7 @@ export default async function SellerDashboardPage() {
   const chartMax = Math.max(...chartData.map((d) => d.revenue), 1);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <Breadcrumbs
         items={[
           { label: "ホーム", href: "/" },
@@ -375,13 +379,16 @@ export default async function SellerDashboardPage() {
       {/* Stats overview */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               問題セット
             </CardTitle>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+              <BookOpen className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            </div>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold tabular-nums">
+            <p className="text-3xl font-bold tabular-nums">
               {sets.length}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -390,13 +397,16 @@ export default async function SellerDashboardPage() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-xs font-medium text-muted-foreground">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               累計売上
             </CardTitle>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+              <Banknote className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            </div>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-semibold tabular-nums">
+            <p className="text-3xl font-bold tabular-nums">
               ¥{totalRevenue.toLocaleString()}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
@@ -409,6 +419,7 @@ export default async function SellerDashboardPage() {
           value={`¥${currentRevenueTotal.toLocaleString()}`}
           current={currentRevenueTotal}
           previous={prevRevenueTotal}
+          icon={TrendingUp}
         />
         <StatCardWithTrend
           label="購入数（30日）"
@@ -416,12 +427,14 @@ export default async function SellerDashboardPage() {
           current={currentPurchaseCount ?? 0}
           previous={prevPurchaseCount ?? 0}
           subLabel={`累計 ${uniqueStudents}人`}
+          icon={ShoppingCart}
         />
         <StatCardWithTrend
           label="解答数（30日）"
           value={String(currentSubmissionCount ?? 0)}
           current={currentSubmissionCount ?? 0}
           previous={prevSubmissionCount ?? 0}
+          icon={FileText}
         />
       </div>
 
@@ -446,7 +459,12 @@ export default async function SellerDashboardPage() {
               </p>
             </div>
           ) : (
-            <div className="flex h-40 items-end gap-px overflow-x-auto">
+            <>
+            <div
+              className="flex h-40 items-end gap-px overflow-x-auto"
+              role="img"
+              aria-label={`直近30日間の売上推移グラフ。合計 ¥${currentRevenueTotal.toLocaleString()}`}
+            >
               {chartData.map((d, i) => {
                 const heightPct = (d.revenue / chartMax) * 100;
                 return (
@@ -480,6 +498,25 @@ export default async function SellerDashboardPage() {
                 );
               })}
             </div>
+            {/* Accessible data table for screen readers */}
+            <table className="sr-only">
+              <caption>直近30日間の日別売上データ</caption>
+              <thead>
+                <tr>
+                  <th scope="col">日付</th>
+                  <th scope="col">売上</th>
+                </tr>
+              </thead>
+              <tbody>
+                {chartData.filter((d) => d.revenue > 0).map((d, i) => (
+                  <tr key={i}>
+                    <td>{d.date}</td>
+                    <td>¥{d.revenue.toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            </>
           )}
         </CardContent>
       </Card>
@@ -650,12 +687,14 @@ function StatCardWithTrend({
   current,
   previous,
   subLabel,
+  icon: Icon,
 }: {
   label: string;
   value: string;
   current: number;
   previous: number;
   subLabel?: string;
+  icon: React.ComponentType<{ className?: string }>;
 }) {
   const diff = previous === 0 ? (current > 0 ? 100 : 0) : Math.round(((current - previous) / previous) * 100);
   const isUp = diff > 0;
@@ -663,13 +702,16 @@ function StatCardWithTrend({
 
   return (
     <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-xs font-medium text-muted-foreground">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           {label}
         </CardTitle>
+        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+          <Icon className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+        </div>
       </CardHeader>
       <CardContent>
-        <p className="text-2xl font-semibold tabular-nums">{value}</p>
+        <p className="text-3xl font-bold tabular-nums">{value}</p>
         <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
           {isUp ? (
             <span className="inline-flex items-center gap-0.5 text-foreground">

@@ -1,12 +1,27 @@
 import { NextResponse } from "next/server";
 import { streamText, type UIMessage, convertToModelMessages } from "ai";
 import { google } from "@ai-sdk/google";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { getSubscriptionState } from "@/lib/subscription";
 import { canAffordAiCall, recordTokenUsage } from "@/lib/ai/usage-manager";
 import { rateLimitByUser } from "@/lib/rate-limit";
 
 const DAILY_MESSAGE_LIMIT = 50;
+
+// Zod schema for request body validation
+const aiAssistantSchema = z.object({
+  messages: z
+    .array(
+      z.object({
+        role: z.enum(["user", "assistant", "system"]),
+        content: z.string().min(1).max(10000),
+      })
+    )
+    .min(1)
+    .max(100),
+  problemSetId: z.string().uuid().optional(),
+});
 
 const SYSTEM_PROMPT = `You are a study assistant for Japanese university entrance exam preparation.
 Help the student understand the problem and guide them toward the answer WITHOUT giving the answer directly.
@@ -113,10 +128,10 @@ export async function POST(request: Request) {
     );
   }
 
-  // Parse request body with try/catch for malformed JSON
-  let body: unknown;
+  // Parse and validate request body with Zod
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json(
       { error: "Invalid JSON body" },
@@ -124,20 +139,17 @@ export async function POST(request: Request) {
     );
   }
 
-  const { messages, problemSetId } = body as {
-    messages: UIMessage[];
-    problemSetId?: string;
-  };
-
-  if (!messages || !Array.isArray(messages) || messages.length === 0) {
-    return NextResponse.json(
-      { error: "Messages are required" },
-      { status: 400 }
-    );
+  const parsed = aiAssistantSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Validation failed";
+    return NextResponse.json({ error: firstError }, { status: 400 });
   }
 
-  // Convert UI messages to model messages for streamText
-  const modelMessages = await convertToModelMessages(messages);
+  const { messages, problemSetId } = parsed.data;
+
+  // Convert validated messages to model messages for streamText
+  // Cast is safe: Zod validated the structure; UIMessage shape is a superset accepted by convertToModelMessages
+  const modelMessages = await convertToModelMessages(messages as unknown as UIMessage[]);
 
   // Fetch problem set context if provided
   let problemContext: string | null = null;

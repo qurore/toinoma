@@ -1,5 +1,6 @@
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SellerSidebar, MobileSellerNav } from "@/components/seller/seller-sidebar";
+import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
 
 import { requireAuth } from "@/lib/auth/require-seller";
 
@@ -24,7 +25,7 @@ export default async function SellerLayout({
         - Mobile: pt-28 = navbar (h-16=64px) + mobile seller nav (h-10=40px) + gap = 112px
         - Desktop: pt-16 = navbar (h-16=64px) only, pl-60 = sidebar (w-60=240px)
       */}
-      <div id="main-content" className="min-h-[calc(100vh-4rem)] pt-28 md:pl-60 md:pt-16">
+      <main id="main-content" className="min-h-[calc(100vh-4rem)] pb-20 pt-28 md:pb-0 md:pl-60 md:pt-16">
         {children}
         {/* Compact footer for link discoverability in sidebar layouts */}
         <footer className="mt-12 border-t border-border px-4 py-6">
@@ -36,7 +37,8 @@ export default async function SellerLayout({
             <span className="ml-auto">&copy; {new Date().getFullYear()} Toinoma</span>
           </div>
         </footer>
-      </div>
+      </main>
+      <MobileAppTabBar />
     </>
   );
 }

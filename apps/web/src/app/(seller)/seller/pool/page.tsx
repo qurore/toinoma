@@ -90,7 +90,7 @@ export default async function ProblemPoolPage({
   const hasActiveFilters = !!subjectFilter || !!typeFilter || !!q;
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <Breadcrumbs items={[
         { label: "ホーム", href: "/" },
         { label: "出品者ダッシュボード", href: "/seller" },

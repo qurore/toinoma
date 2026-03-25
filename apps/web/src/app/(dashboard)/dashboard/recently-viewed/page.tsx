@@ -28,7 +28,7 @@ export default async function RecentlyViewedPage() {
   const items = await getRecentlyViewed(user.id, 50);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <Breadcrumbs
         items={[
           { label: "ホーム", href: "/" },

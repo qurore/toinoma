@@ -3,7 +3,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FileText, Download, MessageSquare, HelpCircle, Eye } from "lucide-react";
+import { FileText, Download } from "lucide-react";
 import { SampleQuestionPreview } from "@/components/marketplace/sample-question-preview";
 import type { AnswerType } from "@/types/database";
 
@@ -43,6 +43,7 @@ export function ProblemDetailTabs({
   useEffect(() => {
     const hash = window.location.hash.replace("#", "");
     if (hash === "reviews" || hash === "qa") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from external system (URL hash)
       setActiveTab(hash);
     }
   }, []);
@@ -54,7 +55,6 @@ export function ProblemDetailTabs({
           value="overview"
           className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
         >
-          <Eye className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           概要
         </TabsTrigger>
         {(previewQuestions.length > 0 || problemPdfUrl) && (
@@ -62,15 +62,13 @@ export function ProblemDetailTabs({
             value="sample"
             className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
           >
-            <FileText className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-            問題プレビュー
+              問題プレビュー
           </TabsTrigger>
         )}
         <TabsTrigger
           value="reviews"
           className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
         >
-          <MessageSquare className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           レビュー
           {reviewCount != null && reviewCount > 0 && (
             <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
@@ -82,7 +80,6 @@ export function ProblemDetailTabs({
           value="qa"
           className="rounded-none border-b-2 border-transparent px-4 py-2.5 text-sm data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none"
         >
-          <HelpCircle className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
           Q&A
           {qaCount != null && qaCount > 0 && (
             <span className="ml-1 rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-muted-foreground">
@@ -96,8 +93,7 @@ export function ProblemDetailTabs({
       <TabsContent value="overview" className="mt-6 space-y-6">
         {description ? (
           <div>
-            <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
-              <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
               問題セットについて
             </h3>
             <div className="rounded-lg border border-border bg-card p-5">

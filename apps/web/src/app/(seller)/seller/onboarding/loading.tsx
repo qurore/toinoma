@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function OnboardingLoading() {
   return (
-    <div className="container mx-auto max-w-3xl px-4 py-12">
+    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
       <div className="mb-12 text-center">
         <Skeleton className="mx-auto mb-1 h-8 w-32" />
         <Skeleton className="mx-auto mb-8 h-4 w-64" />

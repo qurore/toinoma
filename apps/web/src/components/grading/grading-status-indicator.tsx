@@ -66,6 +66,7 @@ function useCountUp(target: number, duration: number, enabled: boolean): number 
     // Respect prefers-reduced-motion: skip animation, show final value immediately
     const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from external system (media query)
       setValue(target);
       return;
     }
@@ -107,6 +108,7 @@ export function GradingStatusIndicator({
 
     // Skip animation for reduced motion preference — show static ellipsis
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- syncing from external system (media query)
       setDots("...");
       return;
     }

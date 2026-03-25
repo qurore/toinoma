@@ -2,7 +2,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ResultLoading() {
   return (
-    <main className="container mx-auto max-w-4xl px-4 py-8">
+    <main className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
       {/* Breadcrumbs */}
       <Skeleton className="mb-4 h-4 w-64" />
 

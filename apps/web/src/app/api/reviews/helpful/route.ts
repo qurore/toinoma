@@ -73,21 +73,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Decrement helpful_count
-    const { data: current } = await supabase
-      .from("reviews")
-      .select("helpful_count")
-      .eq("id", reviewId)
-      .single();
-
-    if (current) {
-      await supabase
-        .from("reviews")
-        .update({
-          helpful_count: Math.max(0, (current.helpful_count ?? 0) - 1),
-        })
-        .eq("id", reviewId);
-    }
+    // Atomic decrement of helpful_count (no read-then-write race condition)
+    await supabase.rpc("adjust_helpful_count", {
+      review_id_param: reviewId,
+      delta: -1,
+    });
 
     return NextResponse.json({ voted: false });
   }
@@ -108,21 +98,11 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  // Increment helpful_count
-  const { data: current } = await supabase
-    .from("reviews")
-    .select("helpful_count")
-    .eq("id", reviewId)
-    .single();
-
-  if (current) {
-    await supabase
-      .from("reviews")
-      .update({
-        helpful_count: (current.helpful_count ?? 0) + 1,
-      })
-      .eq("id", reviewId);
-  }
+  // Atomic increment of helpful_count (no read-then-write race condition)
+  await supabase.rpc("adjust_helpful_count", {
+    review_id_param: reviewId,
+    delta: 1,
+  });
 
   return NextResponse.json({ voted: true });
 }

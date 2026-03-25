@@ -191,10 +191,10 @@ export async function unbanUser(
   await Promise.all([
     createAuditLog({
       adminId: authResult.adminId,
-      action: "user_warned", // reuse closest action type
+      action: "user_unbanned",
       targetType: "user",
       targetId: targetUserId,
-      details: { action: "unbanned" },
+      details: {},
     }),
     notifyUserUnbanned(targetUserId),
   ]);

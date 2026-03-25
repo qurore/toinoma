@@ -216,6 +216,9 @@ export default async function SubjectExplorePage({
       countQuery = countQuery.lte("price", priceMax);
     }
   }
+  if (minRating > 0) {
+    countQuery = countQuery.gte("avg_rating", minRating);
+  }
 
   const { count: totalCount } = await countQuery;
   const total = totalCount ?? 0;
@@ -227,7 +230,7 @@ export default async function SubjectExplorePage({
   let dataQuery = supabase
     .from("problem_sets")
     .select(
-      "id, title, subject, university, difficulty, price, cover_image_url, seller_id, created_at"
+      "id, title, subject, university, difficulty, price, cover_image_url, seller_id, created_at, purchase_count, avg_rating, review_count"
     )
     .eq("status", "published")
     .eq("subject", subject);
@@ -252,9 +255,18 @@ export default async function SubjectExplorePage({
       dataQuery = dataQuery.lte("price", priceMax);
     }
   }
+  if (minRating > 0) {
+    dataQuery = dataQuery.gte("avg_rating", minRating);
+  }
 
   // Sort
   switch (sort) {
+    case "popular":
+      dataQuery = dataQuery.order("purchase_count", { ascending: false });
+      break;
+    case "highest_rated":
+      dataQuery = dataQuery.order("avg_rating", { ascending: false, nullsFirst: false });
+      break;
     case "price_asc":
       dataQuery = dataQuery.order("price", { ascending: true });
       break;
@@ -275,14 +287,8 @@ export default async function SubjectExplorePage({
   const setIds = sets.map((s) => s.id);
   const sellerIds = [...new Set(sets.map((s) => s.seller_id))];
 
-  const [reviewsResult, sellersResult, favoritesResult, purchasesResult] =
+  const [sellersResult, favoritesResult] =
     await Promise.all([
-      setIds.length > 0
-        ? supabase
-            .from("reviews")
-            .select("problem_set_id, rating")
-            .in("problem_set_id", setIds)
-        : Promise.resolve({ data: [] }),
       sellerIds.length > 0
         ? supabase
             .from("seller_profiles")
@@ -296,29 +302,9 @@ export default async function SubjectExplorePage({
             .eq("user_id", userId)
             .in("problem_set_id", setIds)
         : Promise.resolve({ data: [] }),
-      sort === "popular" && setIds.length > 0
-        ? supabase
-            .from("purchases")
-            .select("problem_set_id")
-            .in("problem_set_id", setIds)
-        : Promise.resolve({ data: [] }),
     ]);
 
   // Build lookup maps
-  const reviewAggregates: Record<string, { avg: number; count: number }> = {};
-  for (const r of reviewsResult.data ?? []) {
-    const key = r.problem_set_id;
-    if (!reviewAggregates[key]) {
-      reviewAggregates[key] = { avg: 0, count: 0 };
-    }
-    reviewAggregates[key].count++;
-    reviewAggregates[key].avg += r.rating;
-  }
-  for (const key of Object.keys(reviewAggregates)) {
-    const agg = reviewAggregates[key];
-    agg.avg = agg.avg / agg.count;
-  }
-
   const sellerMap: Record<string, string> = {};
   for (const s of sellersResult.data ?? []) {
     sellerMap[s.id] = s.seller_display_name;
@@ -330,46 +316,20 @@ export default async function SubjectExplorePage({
     )
   );
 
-  // Build card data
-  let cardData: (ProblemSetCardData & { _purchaseCount?: number })[] =
-    sets.map((ps) => ({
-      id: ps.id,
-      title: ps.title,
-      subject: ps.subject as Subject,
-      difficulty: ps.difficulty as Difficulty,
-      price: ps.price,
-      cover_image_url: ps.cover_image_url,
-      university: ps.university,
-      seller_display_name: sellerMap[ps.seller_id] ?? null,
-      avg_rating: reviewAggregates[ps.id]?.avg ?? null,
-      review_count: reviewAggregates[ps.id]?.count ?? null,
-    }));
-
-  // Client-side sort for popular/highest_rated
-  if (sort === "popular") {
-    const purchaseCounts: Record<string, number> = {};
-    for (const p of purchasesResult.data ?? []) {
-      const key = (p as { problem_set_id: string }).problem_set_id;
-      purchaseCounts[key] = (purchaseCounts[key] ?? 0) + 1;
-    }
-    cardData = cardData
-      .map((c) => ({
-        ...c,
-        _purchaseCount: purchaseCounts[c.id] ?? 0,
-      }))
-      .sort((a, b) => (b._purchaseCount ?? 0) - (a._purchaseCount ?? 0));
-  }
-  if (sort === "highest_rated") {
-    cardData.sort((a, b) => (b.avg_rating ?? 0) - (a.avg_rating ?? 0));
-  }
-
-  // Filter by min rating
-  const filteredCards =
-    minRating > 0
-      ? cardData.filter(
-          (c) => c.avg_rating != null && c.avg_rating >= minRating
-        )
-      : cardData;
+  // Build card data (aggregates come directly from the DB query)
+  const cardData: ProblemSetCardData[] = sets.map((ps) => ({
+    id: ps.id,
+    title: ps.title,
+    subject: ps.subject as Subject,
+    difficulty: ps.difficulty as Difficulty,
+    price: ps.price,
+    cover_image_url: ps.cover_image_url,
+    university: ps.university,
+    seller_display_name: sellerMap[ps.seller_id] ?? null,
+    avg_rating: ps.avg_rating ?? null,
+    review_count: ps.review_count ?? null,
+    purchase_count: ps.purchase_count ?? 0,
+  }));
 
   // Build href helper for pagination
   function buildPageHref(p: number): string {
@@ -432,7 +392,7 @@ export default async function SubjectExplorePage({
             </div>
 
             {/* Results grid */}
-            {filteredCards.length === 0 ? (
+            {cardData.length === 0 ? (
               <div className="py-20 text-center text-muted-foreground">
                 <p className="text-lg">
                   該当する問題セットが見つかりませんでした
@@ -444,7 +404,7 @@ export default async function SubjectExplorePage({
             ) : (
               <>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {filteredCards.map((ps) => (
+                  {cardData.map((ps) => (
                     <ProblemSetCard
                       key={ps.id}
                       data={ps}

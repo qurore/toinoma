@@ -211,20 +211,11 @@ export async function POST(request: Request) {
       );
     }
 
-    // Increment coupon usage count (read-then-write; acceptable for low-contention coupon usage)
+    // Atomic coupon usage increment (no read-then-write race condition)
     if (couponId) {
-      const { data: couponRow } = await adminSupabase
-        .from("coupons")
-        .select("current_uses")
-        .eq("id", couponId)
-        .single();
-
-      if (couponRow) {
-        await adminSupabase
-          .from("coupons")
-          .update({ current_uses: couponRow.current_uses + 1 })
-          .eq("id", couponId);
-      }
+      await adminSupabase.rpc("increment_coupon_usage", {
+        coupon_id: couponId,
+      });
     }
 
     // Send notifications (fire-and-forget)

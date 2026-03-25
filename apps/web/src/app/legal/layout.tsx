@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
+import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
 import { LegalNav } from "./legal-nav";
 
 export const metadata: Metadata = {
@@ -45,6 +46,7 @@ export default async function LegalLayout({
         </div>
       </div>
       <SiteFooter />
+      <MobileAppTabBar />
     </>
   );
 }

@@ -258,7 +258,7 @@ function CardCover({
           src={coverImageUrl}
           alt=""
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           sizes={sizes}
         />
       ) : (
@@ -346,92 +346,84 @@ export function ProblemSetCard({
   // Horizontal layout (mobile compact)
   if (layout === "horizontal") {
     return (
-      <Link
-        href={`/problem/${data.id}`}
-        className="group block"
-        aria-label={`${data.title} - ${SUBJECT_LABELS[data.subject]} ${DIFFICULTY_LABELS[data.difficulty]}`}
-      >
-        <article className="relative flex h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:border-primary/20 hover:shadow-md">
-          {/* Cover / gradient */}
-          <CardCover
-            subject={data.subject}
-            coverImageUrl={data.cover_image_url}
-            className="w-28 shrink-0 sm:w-36"
-            sizes="(max-width: 640px) 112px, 144px"
-          />
+      <div className="group relative">
+        <Link
+          href={`/problem/${data.id}`}
+          className="block"
+          aria-label={`${data.title} - ${SUBJECT_LABELS[data.subject]} ${DIFFICULTY_LABELS[data.difficulty]}`}
+        >
+          <article className="flex h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:border-primary/20 hover:shadow-md">
+            {/* Cover / gradient */}
+            <CardCover
+              subject={data.subject}
+              coverImageUrl={data.cover_image_url}
+              className="w-28 shrink-0 sm:w-36"
+              sizes="(max-width: 640px) 112px, 144px"
+            />
 
-          {/* Content */}
-          <div className="flex min-w-0 flex-1 flex-col justify-between p-4">
-            <div>
-              <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
-                {data.title}
-              </h3>
-              <div className="mt-1">
-                <MetaLine subject={data.subject} difficulty={data.difficulty} size="sm" />
+            {/* Content */}
+            <div className="flex min-w-0 flex-1 flex-col justify-between p-4">
+              <div>
+                <h3 className="line-clamp-2 text-sm font-semibold leading-snug transition-colors group-hover:text-primary">
+                  {data.title}
+                </h3>
+                <div className="mt-1">
+                  <MetaLine subject={data.subject} difficulty={data.difficulty} size="sm" />
+                </div>
+              </div>
+
+              <div className="mt-2 flex items-end justify-between gap-2">
+                <div className="min-w-0 space-y-0.5">
+                  <RatingMeta
+                    avgRating={data.avg_rating}
+                    reviewCount={data.review_count}
+                    purchaseCount={data.purchase_count}
+                    starSize="xs"
+                  />
+                  {data.seller_display_name && (
+                    <p className="truncate text-xs text-muted-foreground">
+                      {data.seller_display_name}
+                    </p>
+                  )}
+                </div>
+                <PriceTag price={data.price} variant="inline" />
               </div>
             </div>
+          </article>
+        </Link>
 
-            <div className="mt-2 flex items-end justify-between gap-2">
-              <div className="min-w-0 space-y-0.5">
-                <RatingMeta
-                  avgRating={data.avg_rating}
-                  reviewCount={data.review_count}
-                  purchaseCount={data.purchase_count}
-                  starSize="xs"
-                />
-                {data.seller_display_name && (
-                  <p className="truncate text-xs text-muted-foreground">
-                    {data.seller_display_name}
-                  </p>
-                )}
-              </div>
-              <PriceTag price={data.price} variant="inline" />
-            </div>
+        {/* Favorite button — outside Link to avoid nested interactive elements */}
+        {userId && (
+          <div className="absolute right-2 top-2 z-10">
+            <FavoriteButton
+              userId={userId}
+              problemSetId={data.id}
+              initialFavorited={isFavorited}
+            />
           </div>
-
-          {/* Favorite button */}
-          {userId && (
-            <div className="absolute right-2 top-2 z-10">
-              <FavoriteButton
-                userId={userId}
-                problemSetId={data.id}
-                initialFavorited={isFavorited}
-              />
-            </div>
-          )}
-        </article>
-      </Link>
+        )}
+      </div>
     );
   }
 
   // Default: vertical layout (desktop cards)
   return (
-    <Link
-      href={`/problem/${data.id}`}
-      className="group block"
-      aria-label={`${data.title} - ${SUBJECT_LABELS[data.subject]} ${DIFFICULTY_LABELS[data.difficulty]}`}
-    >
-      <article className="relative flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-shadow duration-200 hover:shadow-md">
-        {/* Cover image / gradient placeholder */}
-        <div className="relative">
-          <CardCover
-            subject={data.subject}
-            coverImageUrl={data.cover_image_url}
-            className="h-36 sm:h-40"
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          />
-
-          {/* Favorite button overlay */}
-          {userId && (
-            <div className="absolute right-2.5 top-2.5 z-10">
-              <FavoriteButton
-                userId={userId}
-                problemSetId={data.id}
-                initialFavorited={isFavorited}
-              />
-            </div>
-          )}
-        </div>
+    <div className="group relative">
+      <Link
+        href={`/problem/${data.id}`}
+        className="block"
+        aria-label={`${data.title} - ${SUBJECT_LABELS[data.subject]} ${DIFFICULTY_LABELS[data.difficulty]}`}
+      >
+        <article className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md">
+          {/* Cover image / gradient placeholder */}
+          <div className="relative">
+            <CardCover
+              subject={data.subject}
+              coverImageUrl={data.cover_image_url}
+              className="h-36 sm:h-40"
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            />
+          </div>
 
         {/* Card body */}
         <div className="flex flex-1 flex-col p-3.5">
@@ -476,6 +468,18 @@ export function ProblemSetCard({
         </div>
       </article>
     </Link>
+
+    {/* Favorite button — outside Link to avoid nested interactive elements */}
+    {userId && (
+      <div className="absolute right-2.5 top-2.5 z-10">
+        <FavoriteButton
+          userId={userId}
+          problemSetId={data.id}
+          initialFavorited={isFavorited}
+        />
+      </div>
+    )}
+  </div>
   );
 }
 

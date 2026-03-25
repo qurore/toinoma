@@ -267,20 +267,11 @@ async function handleCheckoutCompleted(
     return;
   }
 
-  // Increment coupon usage if a coupon was applied
+  // Atomic coupon usage increment (no read-then-write race condition)
   if (couponId) {
-    const { data: couponRow } = await supabase
-      .from("coupons")
-      .select("current_uses")
-      .eq("id", couponId)
-      .single();
-
-    if (couponRow) {
-      await supabase
-        .from("coupons")
-        .update({ current_uses: couponRow.current_uses + 1 })
-        .eq("id", couponId);
-    }
+    await supabase.rpc("increment_coupon_usage", {
+      coupon_id: couponId,
+    });
   }
 
   // Send purchase and sale notifications

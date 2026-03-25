@@ -444,9 +444,14 @@ function FilterContent({
             );
           })}
           {state.minRating > 0 && (
-            <span className="ml-2 text-xs text-muted-foreground">
-              {state.minRating}以上
-            </span>
+            <button
+              type="button"
+              onClick={() => onChange({ minRating: 0 })}
+              className="ml-2 text-xs text-muted-foreground underline hover:text-foreground"
+              aria-label="評価フィルターをリセット"
+            >
+              リセット
+            </button>
           )}
         </div>
       </div>

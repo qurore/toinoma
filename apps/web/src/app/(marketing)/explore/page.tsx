@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { SearchX, Sparkles, X } from "lucide-react";
+import { SearchX, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
@@ -78,12 +78,13 @@ function Pagination({
               前へ
             </Link>
           ) : (
-            <span
-              className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground/40"
-              aria-disabled="true"
+            <button
+              disabled
+              className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground/40 cursor-not-allowed"
+              aria-label="前のページ"
             >
               前へ
-            </span>
+            </button>
           )}
         </li>
 
@@ -122,12 +123,13 @@ function Pagination({
               次へ
             </Link>
           ) : (
-            <span
-              className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground/40"
-              aria-disabled="true"
+            <button
+              disabled
+              className="flex h-9 items-center rounded-md px-3 text-sm text-muted-foreground/40 cursor-not-allowed"
+              aria-label="次のページ"
             >
               次へ
-            </span>
+            </button>
           )}
         </li>
       </ul>
@@ -276,6 +278,9 @@ export default async function ExplorePage({
       countQuery = countQuery.lte("price", priceMax);
     }
   }
+  if (minRating > 0) {
+    countQuery = countQuery.gte("avg_rating", minRating);
+  }
 
   const { count: totalCount } = await countQuery;
   const total = totalCount ?? 0;
@@ -287,7 +292,7 @@ export default async function ExplorePage({
   let dataQuery = supabase
     .from("problem_sets")
     .select(
-      "id, title, subject, university, difficulty, price, cover_image_url, seller_id, created_at"
+      "id, title, subject, university, difficulty, price, cover_image_url, seller_id, created_at, purchase_count, avg_rating, review_count"
     )
     .eq("status", "published");
 
@@ -316,9 +321,18 @@ export default async function ExplorePage({
       dataQuery = dataQuery.lte("price", priceMax);
     }
   }
+  if (minRating > 0) {
+    dataQuery = dataQuery.gte("avg_rating", minRating);
+  }
 
   // Sort
   switch (sort) {
+    case "popular":
+      dataQuery = dataQuery.order("purchase_count", { ascending: false });
+      break;
+    case "highest_rated":
+      dataQuery = dataQuery.order("avg_rating", { ascending: false, nullsFirst: false });
+      break;
     case "price_asc":
       dataQuery = dataQuery.order("price", { ascending: true });
       break;
@@ -329,7 +343,6 @@ export default async function ExplorePage({
     default:
       dataQuery = dataQuery.order("created_at", { ascending: false });
       break;
-    // popular and highest_rated will be sorted after join
   }
 
   dataQuery = dataQuery.range(offset, offset + PAGE_SIZE - 1);
@@ -340,14 +353,8 @@ export default async function ExplorePage({
   const setIds = sets.map((s) => s.id);
   const sellerIds = [...new Set(sets.map((s) => s.seller_id))];
 
-  const [reviewsResult, sellersResult, favoritesResult, purchasesResult] =
+  const [sellersResult, favoritesResult] =
     await Promise.all([
-      setIds.length > 0
-        ? supabase
-            .from("reviews")
-            .select("problem_set_id, rating")
-            .in("problem_set_id", setIds)
-        : Promise.resolve({ data: [] }),
       sellerIds.length > 0
         ? supabase
             .from("seller_profiles")
@@ -361,29 +368,9 @@ export default async function ExplorePage({
             .eq("user_id", userId)
             .in("problem_set_id", setIds)
         : Promise.resolve({ data: [] }),
-      setIds.length > 0
-        ? supabase
-            .from("purchases")
-            .select("problem_set_id")
-            .in("problem_set_id", setIds)
-        : Promise.resolve({ data: [] }),
     ]);
 
   // ── Build lookup maps ──
-  const reviewAggregates: Record<string, { avg: number; count: number }> = {};
-  for (const r of reviewsResult.data ?? []) {
-    const key = r.problem_set_id;
-    if (!reviewAggregates[key]) {
-      reviewAggregates[key] = { avg: 0, count: 0 };
-    }
-    reviewAggregates[key].count++;
-    reviewAggregates[key].avg += r.rating;
-  }
-  for (const key of Object.keys(reviewAggregates)) {
-    const agg = reviewAggregates[key];
-    agg.avg = agg.avg / agg.count;
-  }
-
   const sellerMap: Record<string, string> = {};
   for (const s of sellersResult.data ?? []) {
     sellerMap[s.id] = s.seller_display_name;
@@ -395,15 +382,8 @@ export default async function ExplorePage({
     )
   );
 
-  // Purchase counts for all sets (used for display and popular sort)
-  const purchaseCounts: Record<string, number> = {};
-  for (const p of purchasesResult.data ?? []) {
-    const key = (p as { problem_set_id: string }).problem_set_id;
-    purchaseCounts[key] = (purchaseCounts[key] ?? 0) + 1;
-  }
-
-  // ── Build card data ──
-  let cardData: ProblemSetCardData[] = sets.map((ps) => ({
+  // ── Build card data (aggregates come directly from the DB query) ──
+  const cardData: ProblemSetCardData[] = sets.map((ps) => ({
     id: ps.id,
     title: ps.title,
     subject: ps.subject as Subject,
@@ -412,30 +392,10 @@ export default async function ExplorePage({
     cover_image_url: ps.cover_image_url,
     university: ps.university,
     seller_display_name: sellerMap[ps.seller_id] ?? null,
-    avg_rating: reviewAggregates[ps.id]?.avg ?? null,
-    review_count: reviewAggregates[ps.id]?.count ?? null,
-    purchase_count: purchaseCounts[ps.id] ?? 0,
+    avg_rating: ps.avg_rating ?? null,
+    review_count: ps.review_count ?? null,
+    purchase_count: ps.purchase_count ?? 0,
   }));
-
-  // Sort for popular/highest_rated (post-query since these depend on joined data)
-  if (sort === "popular") {
-    cardData = [...cardData].sort(
-      (a, b) => (b.purchase_count ?? 0) - (a.purchase_count ?? 0)
-    );
-  }
-  if (sort === "highest_rated") {
-    cardData = [...cardData].sort(
-      (a, b) => (b.avg_rating ?? 0) - (a.avg_rating ?? 0)
-    );
-  }
-
-  // Filter by min rating (post-query since reviews are a separate table)
-  const filteredCards =
-    minRating > 0
-      ? cardData.filter(
-          (c) => c.avg_rating != null && c.avg_rating >= minRating
-        )
-      : cardData;
 
   // ── Build href helper for pagination ──
   function buildPageHref(p: number): string {
@@ -467,7 +427,7 @@ export default async function ExplorePage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 md:pb-12">
+      <main id="main-content" className="mx-auto max-w-7xl px-4 pb-16 pt-20 sm:px-6 md:pb-12">
         {/* Breadcrumb */}
         <Breadcrumbs
           items={[
@@ -506,14 +466,6 @@ export default async function ExplorePage({
                   </span>
                   <span className="ml-0.5">件の結果</span>
                 </p>
-                {hasFilters && (
-                  <Button asChild variant="ghost" size="sm" className="h-7 gap-1 px-2 text-xs text-muted-foreground">
-                    <Link href="/explore">
-                      <X className="h-3 w-3" aria-hidden="true" />
-                      クリア
-                    </Link>
-                  </Button>
-                )}
               </div>
               <Suspense fallback={null}>
                 <ExploreSortDropdown />
@@ -521,12 +473,12 @@ export default async function ExplorePage({
             </div>
 
             {/* Results grid */}
-            {filteredCards.length === 0 ? (
+            {cardData.length === 0 ? (
               <EmptyState hasFilters={hasFilters} query={rawQ} />
             ) : (
               <>
                 <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {filteredCards.map((ps) => (
+                  {cardData.map((ps) => (
                     <ProblemSetCard
                       key={ps.id}
                       data={ps}

@@ -162,5 +162,5 @@ export async function createProblemSetFromPool(
   }
 
   revalidatePath("/seller");
-  redirect(`/seller/${problemSet.id}/edit`);
+  redirect(`/seller/sets/${problemSet.id}/edit`);
 }

@@ -11,13 +11,10 @@ import {
   GraduationCap,
   Flag,
   Star,
-  Clock,
   BookOpen,
   ChevronRight,
   History,
   TrendingUp,
-  Award,
-  BarChart3,
 } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { PurchaseSection } from "@/components/marketplace/purchase-section";
@@ -25,7 +22,6 @@ import { MobilePurchaseBar } from "@/components/marketplace/mobile-purchase-bar"
 import { AddToCollectionDialog } from "@/components/collections/add-to-collection-dialog";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SiteFooter } from "@/components/navigation/site-footer";
-import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
 import { ShareButton } from "@/components/navigation/share-button";
 import { ReviewsSection } from "@/components/reviews/reviews-section";
 import { QaSection } from "@/components/qa/qa-section";
@@ -324,8 +320,18 @@ export default async function ProblemDetailPage({
                   )}
                 </div>
 
+                {/* Quick stats inline */}
+                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                  {(questionCount ?? 0) > 0 && <span>{questionCount}問</span>}
+                  {ps.total_points > 0 && <span>満点 {ps.total_points}点</span>}
+                  {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
+                    <span>制限時間 {ps.time_limit_minutes}分</span>
+                  )}
+                  <span>{purchaseCount ?? 0}人が購入</span>
+                </div>
+
                 {/* Social proof inline strip */}
-                <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5">
+                <div className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1.5">
                   {/* Rating */}
                   {avgRating != null && totalReviewCount > 0 ? (
                     <div className="flex items-center gap-1.5">
@@ -354,9 +360,6 @@ export default async function ProblemDetailPage({
                       レビューなし
                     </span>
                   )}
-                  <span className="text-sm text-muted-foreground">
-                    {purchaseCount ?? 0}人が購入
-                  </span>
                   <span className="text-sm text-muted-foreground">
                     {createdDate}公開
                   </span>
@@ -398,54 +401,6 @@ export default async function ProblemDetailPage({
           <div className="grid gap-8 lg:grid-cols-[1fr_360px]">
             {/* ── Main content column ── */}
             <div className="min-w-0 space-y-6">
-              {/* Quick stats bar */}
-              <div className="flex flex-wrap items-center gap-4 rounded-lg border border-border bg-card px-5 py-4">
-                {(questionCount ?? 0) > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                      <FileText className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold tabular-nums">{questionCount}問</p>
-                      <p className="text-[11px] text-muted-foreground">問題数</p>
-                    </div>
-                  </div>
-                )}
-                {ps.total_points > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                      <Award className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold tabular-nums">{ps.total_points}点</p>
-                      <p className="text-[11px] text-muted-foreground">満点</p>
-                    </div>
-                  </div>
-                )}
-                {ps.time_limit_minutes != null && ps.time_limit_minutes > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                      <Clock className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold tabular-nums">{ps.time_limit_minutes}分</p>
-                      <p className="text-[11px] text-muted-foreground">制限時間</p>
-                    </div>
-                  </div>
-                )}
-                {(submissionCount ?? 0) > 0 && (
-                  <div className="flex items-center gap-2">
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-muted">
-                      <BarChart3 className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold tabular-nums">{submissionCount}回</p>
-                      <p className="text-[11px] text-muted-foreground">解答数</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* User progress card (for purchased users with submissions) */}
               {hasPurchased && userAttemptCount > 0 && (
                 <Card className="border-primary/20 bg-gradient-to-r from-primary/5 to-transparent">
@@ -689,8 +644,9 @@ export default async function ProblemDetailPage({
         isLoggedIn={!!user}
       />
 
-      <SiteFooter />
-      <MobileAppTabBar />
+      <div className="pb-20 md:pb-0">
+        <SiteFooter />
+      </div>
     </>
   );
 }

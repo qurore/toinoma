@@ -12,7 +12,7 @@ export default async function CreateProblemSetFromPoolPage() {
   const { user } = await requireSellerTos();
 
   return (
-    <div className="container mx-auto flex h-[calc(100vh-3.5rem)] flex-col px-4 py-6">
+    <div className="mx-auto flex h-[calc(100vh-3.5rem)] max-w-7xl flex-col px-4 py-6 sm:px-6">
       <div className="shrink-0">
         <Breadcrumbs
           items={[

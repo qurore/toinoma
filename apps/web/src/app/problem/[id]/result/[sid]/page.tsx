@@ -133,7 +133,7 @@ export default async function GradingResultPage({
     return (
       <>
         <AppNavbar {...navbarData} />
-        <main id="main-content" className="container mx-auto max-w-3xl px-4 pb-12 pt-24">
+        <main id="main-content" className="mx-auto max-w-3xl px-4 pb-12 pt-24 sm:px-6">
           <Breadcrumbs
             items={[
               { label: "ホーム", href: "/" },
@@ -187,7 +187,7 @@ export default async function GradingResultPage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main id="main-content" className="container mx-auto max-w-3xl px-4 pb-12 pt-24">
+      <main id="main-content" className="mx-auto max-w-3xl px-4 pb-12 pt-24 sm:px-6">
         <Breadcrumbs
           items={[
             { label: "ホーム", href: "/" },

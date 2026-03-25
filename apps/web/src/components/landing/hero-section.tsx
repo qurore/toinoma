@@ -1,12 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Sparkles,
-  BookOpen,
-  Brain,
-  CheckCircle2,
-  Shield,
-} from "lucide-react";
+import { ArrowRight, Sparkles, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function HeroSection() {
@@ -80,20 +73,36 @@ export function HeroSection() {
               </Button>
             </div>
 
+            {/* Search — let users jump directly to what they need */}
+            <div className="animate-fade-up mt-6 opacity-0 [animation-delay:450ms]">
+              <form action="/explore" method="get" className="relative mx-auto max-w-md lg:mx-0">
+                <input
+                  type="text"
+                  name="q"
+                  placeholder="教科名や大学名で検索..."
+                  className="h-11 w-full rounded-full border border-white/20 bg-white/10 pl-4 pr-12 text-sm text-white placeholder:text-white/40 backdrop-blur-sm transition-colors focus:border-white/40 focus:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                  aria-label="問題を検索"
+                />
+                <button
+                  type="submit"
+                  className="absolute right-1.5 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white transition-colors hover:bg-white/30"
+                  aria-label="検索"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="m21 21-4.3-4.3" />
+                  </svg>
+                </button>
+              </form>
+            </div>
+
             {/* Trust indicators */}
-            <div className="animate-fade-up mt-8 flex flex-col gap-2.5 opacity-0 [animation-delay:500ms] sm:flex-row sm:gap-5 lg:justify-start">
-              <div className="flex items-center justify-center gap-1.5 text-white/50 lg:justify-start">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span className="text-xs">9科目対応</span>
-              </div>
-              <div className="flex items-center justify-center gap-1.5 text-white/50 lg:justify-start">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span className="text-xs">無料問題あり</span>
-              </div>
-              <div className="flex items-center justify-center gap-1.5 text-white/50 lg:justify-start">
-                <CheckCircle2 className="h-3.5 w-3.5" />
-                <span className="text-xs">登録かんたん</span>
-              </div>
+            <div className="animate-fade-up mt-8 flex flex-col gap-2.5 opacity-0 [animation-delay:500ms] sm:flex-row sm:items-center sm:gap-4 lg:justify-start">
+              <span className="text-xs text-white/70">9科目対応</span>
+              <span className="hidden text-white/30 sm:inline" aria-hidden="true">·</span>
+              <span className="text-xs text-white/70">無料問題あり</span>
+              <span className="hidden text-white/30 sm:inline" aria-hidden="true">·</span>
+              <span className="text-xs text-white/70">登録かんたん</span>
             </div>
           </div>
 
@@ -172,26 +181,6 @@ export function HeroSection() {
                     主権国家体制の形成について、三十年戦争との因果関係をより明確に記述すると得点率が向上します。
                   </p>
                 </div>
-              </div>
-
-              {/* Floating accent badges around the card */}
-              <div
-                className="absolute -left-6 top-8 flex items-center gap-1.5 rounded-full border border-white/10 bg-forest/80 px-3 py-1.5 shadow-lg backdrop-blur-sm animate-float [animation-delay:0.5s]"
-                aria-hidden="true"
-              >
-                <BookOpen className="h-3 w-3 text-green-light" />
-                <span className="text-[11px] font-medium text-white/70">
-                  9科目対応
-                </span>
-              </div>
-              <div
-                className="absolute -right-4 bottom-12 flex items-center gap-1.5 rounded-full border border-white/10 bg-forest/80 px-3 py-1.5 shadow-lg backdrop-blur-sm animate-float [animation-delay:1s]"
-                aria-hidden="true"
-              >
-                <Shield className="h-3 w-3 text-green-light" />
-                <span className="text-[11px] font-medium text-white/70">
-                  部分点対応
-                </span>
               </div>
             </div>
           </div>

@@ -173,7 +173,7 @@ export default async function DashboardPage() {
     .slice(0, 6) as ProblemSetCardData[];
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
       <Breadcrumbs
         items={[
           { label: "ホーム", href: "/" },
@@ -195,8 +195,8 @@ export default async function DashboardPage() {
       {isNewUser ? (
         <Card className="mb-8 border-dashed">
           <CardContent className="flex flex-col items-center py-14 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
-              <Search className="h-7 w-7 text-muted-foreground" />
+            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/5">
+              <Search className="h-7 w-7 text-primary/40" />
             </div>
             <h2 className="mb-2 text-lg font-semibold">
               問の間へようこそ!
@@ -214,56 +214,62 @@ export default async function DashboardPage() {
         </Card>
       ) : (
         <>
-          {/* 4 stat cards — display only, not links */}
+          {/* 4 stat cards — each links to a relevant drill-down view */}
           <div className="stagger-children mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  購入済みセット
-                </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                  <BookOpen className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold tabular-nums">{purchaseCount ?? 0}</p>
-                <p className="mt-1 text-xs text-muted-foreground">購入した問題セット</p>
-              </CardContent>
-            </Card>
+            <Link href="/dashboard/favorites" className="group">
+              <Card className="transition-colors group-hover:border-primary/20">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    購入済みセット
+                  </CardTitle>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                    <BookOpen className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold tabular-nums">{purchaseCount ?? 0}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">購入した問題セット</p>
+                </CardContent>
+              </Card>
+            </Link>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  総解答回数
-                </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                  <History className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold tabular-nums">{submissionCount ?? 0}</p>
-                <p className="mt-1 text-xs text-muted-foreground">これまでの解答数</p>
-              </CardContent>
-            </Card>
+            <Link href="/dashboard/history" className="group">
+              <Card className="transition-colors group-hover:border-primary/20">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    総解答回数
+                  </CardTitle>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                    <History className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold tabular-nums">{submissionCount ?? 0}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">これまでの解答数</p>
+                </CardContent>
+              </Card>
+            </Link>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  平均正答率
-                </CardTitle>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                  <Target className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold tabular-nums">
-                  {averageScore !== null ? `${averageScore}%` : "—"}
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {averageScore !== null ? "全科目の平均" : "解答データなし"}
-                </p>
-              </CardContent>
-            </Card>
+            <Link href="/dashboard/analytics" className="group">
+              <Card className="transition-colors group-hover:border-primary/20">
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    平均正答率
+                  </CardTitle>
+                  <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                    <Target className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold tabular-nums">
+                    {averageScore !== null ? `${averageScore}%` : "—"}
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {averageScore !== null ? "全科目の平均" : "解答データなし"}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
 
             <Card>
               <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -385,8 +391,8 @@ export default async function DashboardPage() {
           <CardContent>
             {!recentPurchases?.length ? (
               <div className="flex flex-col items-center py-8 text-center">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                  <BookOpen className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/5">
+                  <BookOpen className="h-6 w-6 text-primary/40" aria-hidden="true" />
                 </div>
                 <p className="text-sm text-muted-foreground">
                   まだ購入履歴がありません
@@ -441,8 +447,8 @@ export default async function DashboardPage() {
           <CardContent>
             {!recentSubmissions?.length ? (
               <div className="flex flex-col items-center py-8 text-center">
-                <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                  <History className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/5">
+                  <History className="h-6 w-6 text-primary/40" aria-hidden="true" />
                 </div>
                 <p className="text-sm text-muted-foreground">
                   まだ解答履歴がありません

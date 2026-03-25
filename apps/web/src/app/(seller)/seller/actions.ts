@@ -117,7 +117,7 @@ export async function createProblemSet(formData: FormData) {
     return { error: "問題セットの作成に失敗しました" };
   }
 
-  redirect(`/seller/${created.id}/edit`);
+  redirect(`/seller/sets/${created.id}/edit`);
 }
 
 export async function updateProblemSet(
