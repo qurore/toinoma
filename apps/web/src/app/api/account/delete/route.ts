@@ -103,7 +103,7 @@ export async function DELETE() {
 
     if (error) {
       console.error("[account/delete] Auth deletion error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json({ error: "アカウントの削除に失敗しました。" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true }, { status: 200 });

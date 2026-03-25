@@ -139,8 +139,8 @@ export default function HelpPage() {
                 <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
                   <CardContent className="p-5">
                     <div className="mb-3 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-                        <Icon className="h-5 w-5 text-primary" />
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
+                        <Icon className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1">
                         <h2 className="font-semibold group-hover:text-primary">

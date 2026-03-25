@@ -34,7 +34,7 @@ const footerLinks = {
     title: "つながる",
     links: [
       { label: "X (Twitter)", href: "https://x.com/toinoma", external: true },
-      { label: "お問い合わせ", href: "/help" },
+      { label: "ヘルプセンター", href: "/help" },
     ],
   },
 };

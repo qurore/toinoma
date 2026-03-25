@@ -181,7 +181,7 @@ export default async function SellerTransactionsPage(props: {
                       </td>
                       <td className="max-w-[200px] truncate px-4 py-3 font-medium">
                         <Link
-                          href={`/seller/${tx.problem_set_id}/edit`}
+                          href={`/seller/sets/${tx.problem_set_id}/edit`}
                           className="hover:underline"
                         >
                           {tx.problem_set_title}

@@ -326,10 +326,8 @@ async function handleCancel(
     await cancelSubscription(sub.stripe_subscription_id);
     return NextResponse.json({ success: true });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to cancel subscription";
-    console.error("[subscription] Cancel error:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[subscription] Cancel error:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "サブスクリプションの解約に失敗しました。" }, { status: 500 });
   }
 }
 
@@ -364,9 +362,7 @@ async function handleReactivate(
     await resumeSubscription(sub.stripe_subscription_id);
     return NextResponse.json({ success: true });
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : "Failed to reactivate subscription";
-    console.error("[subscription] Reactivate error:", message);
-    return NextResponse.json({ error: message }, { status: 500 });
+    console.error("[subscription] Reactivate error:", err instanceof Error ? err.message : err);
+    return NextResponse.json({ error: "サブスクリプションの再開に失敗しました。" }, { status: 500 });
   }
 }

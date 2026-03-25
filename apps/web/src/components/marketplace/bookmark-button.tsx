@@ -52,10 +52,7 @@ export function BookmarkButton({
       setBookmarked(!prev);
 
       try {
-        // NOTE: bookmarks table is defined in migration 20260323400000
-        // but not yet in generated Supabase types. Using typed casts.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const supabase = createClient() as any;
+        const supabase = createClient();
 
         if (prev) {
           // Remove bookmark

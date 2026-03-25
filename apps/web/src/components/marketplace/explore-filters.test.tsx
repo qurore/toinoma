@@ -141,13 +141,11 @@ describe("F-002: filter state syncs on external searchParams change", () => {
     // State must reflect the new params
     expect(componentState.subjects).toEqual(["math", "physics"]);
     expect(componentState.freeOnly).toBe(true);
-    expect(componentState.sort).toBe("popular");
 
     // Another external navigation — params cleared
     syncStateFromParams(new URLSearchParams(""));
     expect(componentState.subjects).toEqual([]);
     expect(componentState.freeOnly).toBe(false);
-    expect(componentState.sort).toBe("newest");
   });
 
   it("should re-derive state when URL searchParams change (mobile)", () => {
@@ -188,7 +186,6 @@ describe("F-002: filter state syncs on external searchParams change", () => {
     expect(state.priceMin).toBe("100");
     expect(state.priceMax).toBe("5000");
     expect(state.minRating).toBe(4);
-    expect(state.sort).toBe("price_asc");
     expect(state.q).toBe("test");
   });
 

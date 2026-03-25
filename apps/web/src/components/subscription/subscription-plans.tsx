@@ -48,67 +48,67 @@ const TIER_FEATURES: Record<
 > = {
   free: [
     {
-      icon: <BookOpen className="h-4 w-4 text-primary" />,
+      icon: <BookOpen className="h-4 w-4 text-muted-foreground" />,
       label: "問題の閲覧・購入",
     },
     {
-      icon: <Zap className="h-4 w-4 text-primary" />,
+      icon: <Zap className="h-4 w-4 text-muted-foreground" />,
       label: "AI採点 月3回",
     },
     {
-      icon: <FolderOpen className="h-4 w-4 text-primary" />,
+      icon: <FolderOpen className="h-4 w-4 text-muted-foreground" />,
       label: "コレクション 3個",
     },
   ],
   basic: [
     {
-      icon: <BookOpen className="h-4 w-4 text-primary" />,
+      icon: <BookOpen className="h-4 w-4 text-muted-foreground" />,
       label: "問題の閲覧・購入",
     },
     {
-      icon: <Zap className="h-4 w-4 text-primary" />,
+      icon: <Zap className="h-4 w-4 text-muted-foreground" />,
       label: "AI採点 月30回",
     },
     {
-      icon: <Sparkles className="h-4 w-4 text-primary" />,
+      icon: <Sparkles className="h-4 w-4 text-muted-foreground" />,
       label: "優先採点",
     },
     {
-      icon: <FolderOpen className="h-4 w-4 text-primary" />,
+      icon: <FolderOpen className="h-4 w-4 text-muted-foreground" />,
       label: "コレクション 20個",
     },
     {
-      icon: <Headphones className="h-4 w-4 text-primary" />,
+      icon: <Headphones className="h-4 w-4 text-muted-foreground" />,
       label: "優先サポート",
     },
   ],
   pro: [
     {
-      icon: <BookOpen className="h-4 w-4 text-primary" />,
+      icon: <BookOpen className="h-4 w-4 text-muted-foreground" />,
       label: "問題の閲覧・購入",
     },
     {
-      icon: <Infinity className="h-4 w-4 text-primary" />,
+      icon: <Infinity className="h-4 w-4 text-muted-foreground" />,
       label: "AI採点 無制限",
     },
     {
-      icon: <Sparkles className="h-4 w-4 text-primary" />,
+      icon: <Sparkles className="h-4 w-4 text-muted-foreground" />,
       label: "優先採点",
     },
     {
-      icon: <BarChart3 className="h-4 w-4 text-primary" />,
+      icon: <BarChart3 className="h-4 w-4 text-muted-foreground" />,
       label: "AI学習アシスタント",
     },
     {
-      icon: <BarChart3 className="h-4 w-4 text-primary" />,
+      icon: <BarChart3 className="h-4 w-4 text-muted-foreground" />,
       label: "学習分析",
     },
     {
-      icon: <FolderOpen className="h-4 w-4 text-primary" />,
+      icon: <FolderOpen className="h-4 w-4 text-muted-foreground" />,
       label: "コレクション 無制限",
     },
     {
-      icon: <Headphones className="h-4 w-4 text-primary" />,
+      icon: <Headphones className="h-4 w-4 text-muted-foreground" />,
       label: "優先サポート",
     },
   ],

@@ -78,13 +78,24 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  // Redirect to stored PDF if available
+  // Redirect to stored PDF if available (validate URL domain for security)
+  const supabaseHost = new URL(process.env.NEXT_PUBLIC_SUPABASE_URL!).hostname;
   if (exportType === "problems" && ps.problem_pdf_url) {
-    return NextResponse.redirect(ps.problem_pdf_url);
+    try {
+      const pdfUrl = new URL(ps.problem_pdf_url);
+      if (pdfUrl.hostname.endsWith(supabaseHost.replace(/^[^.]+/, ""))) {
+        return NextResponse.redirect(ps.problem_pdf_url);
+      }
+    } catch { /* invalid URL, fall through to HTML generation */ }
   }
 
   if (exportType === "answers" && ps.solution_pdf_url) {
-    return NextResponse.redirect(ps.solution_pdf_url);
+    try {
+      const pdfUrl = new URL(ps.solution_pdf_url);
+      if (pdfUrl.hostname.endsWith(supabaseHost.replace(/^[^.]+/, ""))) {
+        return NextResponse.redirect(ps.solution_pdf_url);
+      }
+    } catch { /* invalid URL, fall through to HTML generation */ }
   }
 
   // Generate HTML-based PDF fallback with all content escaped

@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useState, useEffect, type ReactNode } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { FileText, Download, MessageSquare, HelpCircle, Eye } from "lucide-react";
@@ -38,8 +38,17 @@ export function ProblemDetailTabs({
   reviewCount,
   qaCount,
 }: ProblemDetailTabsProps) {
+  // Activate tab based on URL hash (#reviews, #qa)
+  const [activeTab, setActiveTab] = useState("overview");
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (hash === "reviews" || hash === "qa") {
+      setActiveTab(hash);
+    }
+  }, []);
+
   return (
-    <Tabs defaultValue="overview" className="w-full">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="w-full justify-start gap-0 overflow-x-auto rounded-none border-b bg-transparent p-0">
         <TabsTrigger
           value="overview"

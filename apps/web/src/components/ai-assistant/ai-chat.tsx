@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Send, Bot, User, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { SuggestedPrompts } from "./suggested-prompts";
 import { UsageIndicator } from "./usage-indicator";
@@ -131,10 +132,10 @@ export function AiChat({ problemSetId, isPro, className }: AiChatProps) {
           Proプラン限定
         </Badge>
         <Button asChild>
-          <a href="/settings">
+          <Link href="/settings/subscription">
             <Sparkles className="mr-2 h-4 w-4" />
             プランをアップグレード
-          </a>
+          </Link>
         </Button>
       </div>
     );

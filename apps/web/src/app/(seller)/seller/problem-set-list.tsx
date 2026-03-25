@@ -177,7 +177,7 @@ export function ProblemSetList({ sets }: ProblemSetListProps) {
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">
                   <Link
-                    href={`/seller/${ps.id}/edit`}
+                    href={`/seller/sets/${ps.id}/edit`}
                     className="truncate font-medium hover:underline"
                   >
                     {ps.title}
@@ -201,10 +201,10 @@ export function ProblemSetList({ sets }: ProblemSetListProps) {
 
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/seller/${ps.id}/rubric`}>ルーブリック</Link>
+                  <Link href={`/seller/sets/${ps.id}/rubric`}>ルーブリック</Link>
                 </Button>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href={`/seller/${ps.id}/edit`}>編集</Link>
+                  <Link href={`/seller/sets/${ps.id}/edit`}>編集</Link>
                 </Button>
               </div>
             </CardContent>

@@ -2,10 +2,20 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
+function safeRedirectPath(next: string | null): string {
+  const fallback = "/dashboard";
+  if (!next) return fallback;
+  // Prevent open redirect: must start with single slash, no protocol, no double slash
+  if (!next.startsWith("/") || next.startsWith("//") || next.includes(":")) {
+    return fallback;
+  }
+  return next;
+}
+
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = safeRedirectPath(searchParams.get("next"));
 
   if (code) {
     const cookieStore = await cookies();

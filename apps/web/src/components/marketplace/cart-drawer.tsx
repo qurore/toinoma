@@ -2,10 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
-import { ShoppingCart, Trash2, ExternalLink } from "lucide-react";
+import { Heart, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+
 import {
   Sheet,
   SheetContent,
@@ -107,7 +107,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
           className="relative"
           aria-label="お気に入りを開く"
         >
-          <ShoppingCart className="h-5 w-5" />
+          <Heart className="h-5 w-5" />
           {count > 0 && (
             <Badge
               variant="destructive"
@@ -122,7 +122,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
       <SheetContent side="right" className="flex w-full max-w-sm flex-col p-0">
         <SheetHeader className="border-b border-border px-4 py-3">
           <SheetTitle className="flex items-center gap-2 text-sm font-semibold">
-            <ShoppingCart className="h-4 w-4" aria-hidden="true" />
+            <Heart className="h-4 w-4" aria-hidden="true" />
             お気に入り
             {items.length > 0 && (
               <Badge variant="secondary" className="text-xs">
@@ -143,7 +143,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
             </div>
           ) : items.length === 0 ? (
             <div className="py-12 text-center">
-              <ShoppingCart className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
+              <Heart className="mx-auto mb-3 h-10 w-10 text-muted-foreground/30" />
               <p className="text-sm font-medium text-muted-foreground">
                 お気に入りがまだありません
               </p>
@@ -221,8 +221,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
 
         {/* Footer */}
         {items.length > 0 && (
-          <div className="border-t border-border px-4 py-3">
-            <Separator className="mb-3" />
+          <div className="border-t border-border px-4 pb-3 pt-4">
             <div className="flex items-center justify-between">
               <span className="text-sm text-muted-foreground">
                 合計 ({items.length}件)

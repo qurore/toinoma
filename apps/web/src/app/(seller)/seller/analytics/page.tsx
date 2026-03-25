@@ -450,7 +450,7 @@ export default async function SalesAnalyticsPage() {
                       </td>
                       <td className="py-3 pr-4">
                         <Link
-                          href={`/seller/${ps.id}/edit`}
+                          href={`/seller/sets/${ps.id}/edit`}
                           className="font-medium hover:underline"
                         >
                           {ps.title}
@@ -503,7 +503,7 @@ export default async function SalesAnalyticsPage() {
                     <tr key={ps.id} className="transition-colors hover:bg-muted/50">
                       <td className="py-3 pr-4">
                         <Link
-                          href={`/seller/${ps.id}/edit`}
+                          href={`/seller/sets/${ps.id}/edit`}
                           className="font-medium hover:underline"
                         >
                           {ps.title}

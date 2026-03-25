@@ -57,8 +57,8 @@ export function SubjectsSection() {
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div className="flex flex-col items-center gap-3 rounded-xl border border-border bg-card p-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md sm:p-5">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/8 transition-all duration-300 group-hover:bg-primary/15 group-hover:scale-105">
-                    <IconComponent className="h-5 w-5 text-primary transition-transform duration-300" />
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-muted transition-all duration-300 group-hover:bg-primary/10 group-hover:scale-105">
+                    <IconComponent className="h-5 w-5 text-muted-foreground transition-all duration-300 group-hover:text-primary" />
                   </div>
                   <span className="text-xs font-semibold transition-colors group-hover:text-primary">
                     {SUBJECT_LABELS[subject]}

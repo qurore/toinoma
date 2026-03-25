@@ -59,7 +59,6 @@ export interface FilterState {
   priceMin: string;
   priceMax: string;
   minRating: number;
-  sort: SortOption;
   q: string;
 }
 
@@ -70,7 +69,6 @@ export const EMPTY_FILTER: FilterState = {
   priceMin: "",
   priceMax: "",
   minRating: 0,
-  sort: "newest",
   q: "",
 };
 
@@ -103,7 +101,6 @@ export function parseFilterStateFromParams(params: URLSearchParams): FilterState
     priceMin: params.get("price_min") ?? "",
     priceMax: params.get("price_max") ?? "",
     minRating: parseInt(params.get("min_rating") ?? "0", 10) || 0,
-    sort: (params.get("sort") as SortOption) || "newest",
     q: params.get("q") ?? "",
   };
 }
@@ -119,7 +116,6 @@ export function buildSearchParams(state: FilterState): URLSearchParams {
   if (state.priceMin) params.set("price_min", state.priceMin);
   if (state.priceMax) params.set("price_max", state.priceMax);
   if (state.minRating > 0) params.set("min_rating", String(state.minRating));
-  if (state.sort !== "newest") params.set("sort", state.sort);
   // Always reset to page 1 on filter change
   return params;
 }
@@ -353,9 +349,7 @@ function FilterContent({
         {!state.freeOnly && (
           <div className="flex items-center gap-2">
             <Input
-              type="number"
-              min="0"
-              step="1"
+              type="text"
               inputMode="numeric"
               placeholder="¥ 下限"
               value={state.priceMin}
@@ -373,9 +367,7 @@ function FilterContent({
               〜
             </span>
             <Input
-              type="number"
-              min="0"
-              step="1"
+              type="text"
               inputMode="numeric"
               placeholder="¥ 上限"
               value={state.priceMax}
@@ -520,10 +512,12 @@ export function ExploreFiltersSidebar() {
     (update: Partial<FilterState>) => {
       const next = { ...stateRef.current, ...update };
       setState(next);
-      // Auto-apply filters on desktop — startTransition must be a sibling of setState, not nested
       isInternalNavigation.current = true;
       startTransition(() => {
         const params = buildSearchParams(next);
+        // Preserve sort param since it's managed by ExploreSortDropdown
+        const currentSort = new URLSearchParams(window.location.search).get("sort");
+        if (currentSort) params.set("sort", currentSort);
         router.push(`/explore?${params.toString()}`);
       });
     },
@@ -534,6 +528,8 @@ export function ExploreFiltersSidebar() {
     isInternalNavigation.current = true;
     startTransition(() => {
       const params = buildSearchParams(stateRef.current);
+      const currentSort = new URLSearchParams(window.location.search).get("sort");
+      if (currentSort) params.set("sort", currentSort);
       router.push(`/explore?${params.toString()}`);
     });
   }, [router]);
@@ -541,12 +537,14 @@ export function ExploreFiltersSidebar() {
   const handleClear = useCallback(() => {
     const cleared: FilterState = {
       ...EMPTY_FILTER,
-      q: stateRef.current.q, // preserve search query
+      q: stateRef.current.q,
     };
     setState(cleared);
     isInternalNavigation.current = true;
     startTransition(() => {
       const params = buildSearchParams(cleared);
+      const currentSort = new URLSearchParams(window.location.search).get("sort");
+      if (currentSort) params.set("sort", currentSort);
       router.push(`/explore?${params.toString()}`);
     });
   }, [router]);
@@ -623,6 +621,8 @@ export function ExploreFiltersMobile() {
     isInternalNavigation.current = true;
     startTransition(() => {
       const params = buildSearchParams(stateRef.current);
+      const currentSort = new URLSearchParams(window.location.search).get("sort");
+      if (currentSort) params.set("sort", currentSort);
       router.push(`/explore?${params.toString()}`);
     });
     setIsOpen(false);
@@ -637,6 +637,8 @@ export function ExploreFiltersMobile() {
     isInternalNavigation.current = true;
     startTransition(() => {
       const params = buildSearchParams(cleared);
+      const currentSort = new URLSearchParams(window.location.search).get("sort");
+      if (currentSort) params.set("sort", currentSort);
       router.push(`/explore?${params.toString()}`);
     });
     setIsOpen(false);

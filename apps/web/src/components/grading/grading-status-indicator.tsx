@@ -61,10 +61,15 @@ function useCountUp(target: number, duration: number, enabled: boolean): number 
   const [value, setValue] = useState(0);
 
   useEffect(() => {
-    if (!enabled || target <= 0) {
-      // Reset handled by re-mount or key change, not setState in effect
+    if (!enabled || target <= 0) return;
+
+    // Respect prefers-reduced-motion: skip animation, show final value immediately
+    const prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) {
+      setValue(target);
       return;
     }
+
     const start = performance.now();
     let rafId: number;
     let cancelled = false;
@@ -92,12 +97,18 @@ export function GradingStatusIndicator({
   const dotsRef = useRef("");
   const displayScore = useCountUp(scorePercent ?? 0, 1200, status === "complete");
 
-  // Animated dots for grading state
+  // Animated dots for grading state (respects prefers-reduced-motion)
   useEffect(() => {
     if (status !== "grading") {
       dotsRef.current = "";
       const resetTimer = setTimeout(() => setDots(""), 0);
       return () => clearTimeout(resetTimer);
+    }
+
+    // Skip animation for reduced motion preference — show static ellipsis
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setDots("...");
+      return;
     }
 
     const interval = setInterval(() => {

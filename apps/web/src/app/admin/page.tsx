@@ -479,7 +479,7 @@ export default async function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-4 w-4 text-primary" />
+              <Users className="h-4 w-4 text-muted-foreground" />
               ユーザー登録数（週次・直近12週間）
             </CardTitle>
           </CardHeader>
@@ -495,7 +495,7 @@ export default async function AdminDashboardPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-base">
-              <TrendingUp className="h-4 w-4 text-primary" />
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
               売上推移（週次・直近12週間）
             </CardTitle>
           </CardHeader>
@@ -513,7 +513,7 @@ export default async function AdminDashboardPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-base">
-            <Flag className="h-4 w-4 text-primary" />
+            <Flag className="h-4 w-4 text-muted-foreground" />
             最近の報告
           </CardTitle>
           <Button variant="ghost" size="sm" asChild>

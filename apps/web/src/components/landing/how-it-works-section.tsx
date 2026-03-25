@@ -83,7 +83,7 @@ export function HowItWorksSection() {
 
                   {/* Icon circle */}
                   <div className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-primary/20 bg-card shadow-sm transition-all duration-300 hover:border-primary/40 hover:shadow-md">
-                    <item.icon className="h-6 w-6 text-primary" />
+                    <item.icon className="h-6 w-6 text-foreground" />
                   </div>
 
                   {/* Number badge */}

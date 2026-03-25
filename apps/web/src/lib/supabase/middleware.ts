@@ -113,6 +113,28 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
+  // ── CSRF protection for state-changing API routes ──
+  // Verify Origin header matches our domain for POST/PATCH/DELETE on /api/ routes
+  if (
+    pathname.startsWith("/api/") &&
+    !pathname.startsWith("/api/webhooks/") && // Webhooks use signature verification
+    request.method !== "GET" &&
+    request.method !== "HEAD" &&
+    request.method !== "OPTIONS"
+  ) {
+    const origin = request.headers.get("origin");
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (origin && appUrl) {
+      const allowedOrigin = new URL(appUrl).origin;
+      if (origin !== allowedOrigin && origin !== new URL(request.url).origin) {
+        return NextResponse.json(
+          { error: "Cross-origin request blocked" },
+          { status: 403 }
+        );
+      }
+    }
+  }
+
   // Forward the current URL so server components can read it via headers()
   supabaseResponse.headers.set("x-url", request.url);
 
@@ -130,7 +152,7 @@ export async function updateSession(request: NextRequest) {
     "Content-Security-Policy",
     [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com",
+      "script-src 'self' 'unsafe-inline' https://js.stripe.com",
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "font-src 'self' https://fonts.gstatic.com",
       "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com",

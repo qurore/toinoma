@@ -250,8 +250,8 @@ export default async function RankingsPage({
 
         {/* Header */}
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-            <Trophy className="h-6 w-6 text-amber-600" />
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+            <Trophy className="h-6 w-6 text-foreground" />
           </div>
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             ランキング

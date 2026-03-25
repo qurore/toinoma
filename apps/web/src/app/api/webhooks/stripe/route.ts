@@ -89,7 +89,7 @@ export async function POST(request: Request) {
     const message = err instanceof Error ? err.message : "Unknown error";
     console.error("[webhook] Signature verification failed:", message);
     return NextResponse.json(
-      { error: `Webhook signature verification failed: ${message}` },
+      { error: "Invalid signature" },
       { status: 400 }
     );
   }
@@ -178,7 +178,7 @@ export async function POST(request: Request) {
     );
     // Return 200 to prevent Stripe from retrying (we logged the error)
     // For critical failures, consider returning 500 so Stripe retries
-    return NextResponse.json({ received: true, error: message });
+    return NextResponse.json({ received: true });
   }
 
   return NextResponse.json({ received: true });

@@ -33,8 +33,8 @@ function SectionWrapper({
         <div className="mb-8 flex items-end justify-between">
           <div>
             <div className="mb-2 flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                <Icon className="h-4 w-4 text-primary" />
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
+                <Icon className="h-4 w-4 text-foreground" />
               </div>
               <h2 className="font-display text-xl font-bold tracking-tight sm:text-2xl">
                 {title}
