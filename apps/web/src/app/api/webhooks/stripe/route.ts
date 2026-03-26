@@ -463,8 +463,7 @@ async function handleInvoicePaymentSucceeded(
   if (!subscriptionId) return;
 
   // Clear grace period and set status to active on successful payment
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
+  await supabase
     .from("user_subscriptions")
     .update({
       status: "active",
@@ -491,8 +490,7 @@ async function handleInvoicePaymentFailed(
     Date.now() + 3 * 24 * 60 * 60 * 1000
   ).toISOString();
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  await (supabase as any)
+  await supabase
     .from("user_subscriptions")
     .update({
       status: "past_due",

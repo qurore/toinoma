@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimitByUser } from "@/lib/rate-limit";
 import type { Database } from "@/types/database";
 
 type CouponRow = Database["public"]["Tables"]["coupons"]["Row"];
 
-interface ValidateRequest {
-  code: string;
-  problem_set_id: string;
-  seller_id: string;
-}
+// Zod schema for request body validation
+const validateCouponSchema = z.object({
+  code: z.string().min(1, "Coupon code is required").max(50),
+  problem_set_id: z.string().uuid("Invalid problem set ID format"),
+  seller_id: z.string().uuid("Invalid seller ID format"),
+});
 
 /**
  * POST /api/coupon/validate
@@ -37,9 +40,18 @@ export async function POST(request: Request) {
     );
   }
 
-  let body: ValidateRequest;
+  // Rate limit: 20 coupon validations per minute per user
+  const rl = await rateLimitByUser(user.id, 20, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { valid: false, error: "リクエストが多すぎます。しばらくお待ちください。" },
+      { status: 429 }
+    );
+  }
+
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json(
       { valid: false, error: "Invalid request body" },
@@ -47,14 +59,16 @@ export async function POST(request: Request) {
     );
   }
 
-  const { code, problem_set_id, seller_id } = body;
-
-  if (!code || !problem_set_id || !seller_id) {
+  const parsed = validateCouponSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Validation failed";
     return NextResponse.json(
-      { valid: false, error: "必須パラメータが不足しています" },
+      { valid: false, error: firstError },
       { status: 400 }
     );
   }
+
+  const { code, problem_set_id, seller_id } = parsed.data;
 
   const normalizedCode = code.trim().toUpperCase();
 

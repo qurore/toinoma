@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimitByUser } from "@/lib/rate-limit";
 
 type ExportType = "problems" | "answers" | "combined";
 const VALID_EXPORT_TYPES = new Set<ExportType>(["problems", "answers", "combined"]);
@@ -27,6 +28,15 @@ export async function GET(request: NextRequest) {
 
   if (!user) {
     return NextResponse.json({ error: "認証が必要です" }, { status: 401 });
+  }
+
+  // Rate limit: 20 PDF exports per minute per user
+  const rl = await rateLimitByUser(user.id, 20, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "リクエストが多すぎます。しばらくお待ちください。" },
+      { status: 429 }
+    );
   }
 
   const { searchParams } = new URL(request.url);

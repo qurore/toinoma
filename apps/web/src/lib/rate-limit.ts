@@ -28,8 +28,7 @@ export async function checkRateLimit(
   maxRequests: number,
   windowMs: number
 ): Promise<RateLimitResult> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const supabase = createAdminClient() as any;
+  const supabase = createAdminClient();
   const now = Date.now();
 
   // Attempt to read the current rate limit record

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
+import { rateLimitByUser } from "@/lib/rate-limit";
 
 const APP_URL = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
@@ -12,6 +13,15 @@ export async function POST() {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit: 10 portal sessions per minute per user
+  const rl = await rateLimitByUser(user.id, 10, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "リクエストが多すぎます。しばらくお待ちください。" },
+      { status: 429 }
+    );
   }
 
   // Fetch the user's Stripe customer ID from their subscription record

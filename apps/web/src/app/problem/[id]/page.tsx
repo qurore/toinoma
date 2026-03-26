@@ -129,7 +129,7 @@ export default async function ProblemDetailPage({
   // Fetch purchase count, submission count, question count, Q&A count in parallel
   const [
     { count: purchaseCount },
-    { count: submissionCount },
+    ,
     { count: questionCount },
     { count: qaCount },
   ] = await Promise.all([

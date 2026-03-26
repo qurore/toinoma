@@ -60,10 +60,7 @@ export function QuestionNotes({
     setSaved(false);
 
     try {
-      // NOTE: user_notes table is defined in migration 20260323400000
-      // but not yet in generated Supabase types. Using typed casts.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const supabase = createClient() as any;
+      const supabase = createClient();
 
       if (noteId && trimmed.length === 0) {
         // Delete empty note

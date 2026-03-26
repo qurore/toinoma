@@ -60,8 +60,6 @@ export function MobileDashboardNav() {
             const isActive = item.exact
               ? pathname === item.href
               : pathname.startsWith(item.href);
-            const Icon = item.icon;
-
             return (
               <li key={item.href} className="flex shrink-0 items-stretch">
                 <Link

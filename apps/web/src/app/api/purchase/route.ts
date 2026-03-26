@@ -3,6 +3,7 @@ import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import type Stripe from "stripe";
 import { calculatePlatformFee } from "@toinoma/shared/utils";
 import { rateLimitByUser } from "@/lib/rate-limit";
 import { notifyPurchase, notifySale } from "@/lib/notifications";
@@ -257,9 +258,8 @@ export async function POST(request: Request) {
     const platformFee = calculatePlatformFee(finalPrice);
 
     // Build Stripe Checkout session
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const sessionParams: any = {
-      mode: "payment" as const,
+    const sessionParams: Stripe.Checkout.SessionCreateParams = {
+      mode: "payment",
       line_items: [
         {
           price_data: {
@@ -286,12 +286,10 @@ export async function POST(request: Request) {
         discount_amount: String(discountAmount),
         original_price: String(ps.price),
       },
+      ...(stripeCouponId && {
+        discounts: [{ coupon: stripeCouponId }],
+      }),
     };
-
-    // Apply Stripe-managed coupon if available
-    if (stripeCouponId) {
-      sessionParams.discounts = [{ coupon: stripeCouponId }];
-    }
 
     const session = await stripe.checkout.sessions.create(sessionParams);
 

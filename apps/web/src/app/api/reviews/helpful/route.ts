@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimitByUser } from "@/lib/rate-limit";
+
+// Zod schema for request body validation
+const helpfulVoteSchema = z.object({
+  reviewId: z.string().uuid("Invalid review ID format"),
+});
 
 /**
  * Toggle "helpful" vote on a review.
@@ -19,9 +26,18 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  let body: { reviewId?: string };
+  // Rate limit: 30 votes per minute per user
+  const rl = await rateLimitByUser(user.id, 30, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "リクエストが多すぎます。しばらくお待ちください。" },
+      { status: 429 }
+    );
+  }
+
+  let rawBody: unknown;
   try {
-    body = await request.json();
+    rawBody = await request.json();
   } catch {
     return NextResponse.json(
       { error: "Invalid request body" },
@@ -29,13 +45,16 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const { reviewId } = body;
-  if (!reviewId || typeof reviewId !== "string") {
+  const parsed = helpfulVoteSchema.safeParse(rawBody);
+  if (!parsed.success) {
+    const firstError = parsed.error.issues[0]?.message ?? "Validation failed";
     return NextResponse.json(
-      { error: "reviewId is required" },
+      { error: firstError },
       { status: 400 }
     );
   }
+
+  const { reviewId } = parsed.data;
 
   // Verify the review exists
   const { data: review } = await supabase

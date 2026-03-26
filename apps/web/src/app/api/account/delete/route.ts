@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import { rateLimitByUser } from "@/lib/rate-limit";
 
 /**
  * DELETE /api/account/delete
@@ -21,6 +22,15 @@ export async function DELETE() {
 
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit: 3 deletion attempts per minute per user (destructive operation)
+  const rl = await rateLimitByUser(user.id, 3, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "リクエストが多すぎます。しばらくお待ちください。" },
+      { status: 429 }
+    );
   }
 
   const adminClient = createAdminClient();
