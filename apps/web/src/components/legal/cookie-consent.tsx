@@ -50,7 +50,7 @@ export function CookieConsent() {
     <div
       role="dialog"
       aria-label="Cookie同意バナー"
-      className="fixed inset-x-0 bottom-14 z-50 border-t border-border bg-card p-4 shadow-lg md:bottom-0 sm:p-6"
+      className="fixed inset-x-0 bottom-28 z-50 border-t border-border bg-card p-4 shadow-lg md:bottom-0 sm:p-6"
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
         <div className="flex min-w-0 flex-1 items-start gap-3">

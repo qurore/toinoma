@@ -7,6 +7,7 @@ import { HowItWorksSection } from "@/components/landing/how-it-works-section";
 import { SubjectsSection } from "@/components/landing/subjects-section";
 import { CTASection } from "@/components/landing/cta-section";
 import { Footer } from "@/components/landing/footer";
+import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
 import {
   TrendingSection,
   NewArrivalsSection,
@@ -60,6 +61,7 @@ export default function HomePage() {
         <CTASection />
       </main>
       <Footer />
+      <MobileAppTabBar />
     </>
   );
 }

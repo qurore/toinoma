@@ -374,41 +374,46 @@ export default async function SellerDashboardPage() {
 
       {/* Stats overview */}
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              問題セット
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold tabular-nums">
-              {sets.length}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              公開 {publishedCount} / 下書き {draftCount}
-            </p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              累計売上
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold tabular-nums">
-              ¥{totalRevenue.toLocaleString()}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              手取り ¥{Math.round(totalRevenue * 0.85).toLocaleString()}
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/seller/sets" className="group">
+          <Card className="h-full transition-colors group-hover:border-primary/30">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                問題セット
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold tabular-nums">
+                {sets.length}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                公開 {publishedCount} / 下書き {draftCount}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
+        <Link href="/seller/payouts" className="group">
+          <Card className="h-full transition-colors group-hover:border-primary/30">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                累計売上
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold tabular-nums">
+                ¥{totalRevenue.toLocaleString()}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                手取り ¥{Math.round(totalRevenue * 0.85).toLocaleString()}
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
         <StatCardWithTrend
           label="売上（30日）"
           value={`¥${currentRevenueTotal.toLocaleString()}`}
           current={currentRevenueTotal}
           previous={prevRevenueTotal}
+          href="/seller/analytics"
         />
         <StatCardWithTrend
           label="購入数（30日）"
@@ -416,12 +421,14 @@ export default async function SellerDashboardPage() {
           current={currentPurchaseCount ?? 0}
           previous={prevPurchaseCount ?? 0}
           subLabel={`累計 ${uniqueStudents}人`}
+          href="/seller/analytics"
         />
         <StatCardWithTrend
           label="解答数（30日）"
           value={String(currentSubmissionCount ?? 0)}
           current={currentSubmissionCount ?? 0}
           previous={prevSubmissionCount ?? 0}
+          href="/seller/analytics"
         />
       </div>
 
@@ -458,20 +465,23 @@ export default async function SellerDashboardPage() {
                   <div
                     key={i}
                     className="group relative flex flex-1 flex-col items-center"
+                    tabIndex={d.revenue > 0 ? 0 : undefined}
+                    role={d.revenue > 0 ? "button" : undefined}
+                    aria-label={d.revenue > 0 ? `${d.date}: ¥${d.revenue.toLocaleString()}` : undefined}
                   >
                     <div
                       className={`w-full rounded-sm transition-colors ${
                         d.revenue > 0
-                          ? "bg-foreground/70 group-hover:bg-foreground"
+                          ? "bg-foreground/70 group-hover:bg-foreground group-focus:bg-foreground"
                           : "bg-muted"
                       }`}
                       style={{
                         height: `${d.revenue > 0 ? Math.max(heightPct, 4) : 2}%`,
                       }}
                     />
-                    {/* Tooltip on hover */}
+                    {/* Tooltip on hover and focus */}
                     {d.revenue > 0 && (
-                      <div className="pointer-events-none absolute -top-10 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[10px] text-background shadow group-hover:block">
+                      <div className="pointer-events-none absolute -top-10 left-1/2 z-10 hidden -translate-x-1/2 whitespace-nowrap rounded bg-foreground px-2 py-1 text-[10px] text-background shadow group-hover:block group-focus:block">
                         {d.date}: ¥{d.revenue.toLocaleString()}
                       </div>
                     )}
@@ -674,19 +684,21 @@ function StatCardWithTrend({
   current,
   previous,
   subLabel,
+  href,
 }: {
   label: string;
   value: string;
   current: number;
   previous: number;
   subLabel?: string;
+  href?: string;
 }) {
   const diff = previous === 0 ? (current > 0 ? 100 : 0) : Math.round(((current - previous) / previous) * 100);
   const isUp = diff > 0;
   const isDown = diff < 0;
 
-  return (
-    <Card>
+  const card = (
+    <Card className={href ? "h-full transition-colors group-hover:border-primary/30" : undefined}>
       <CardHeader className="pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {label}
@@ -719,6 +731,11 @@ function StatCardWithTrend({
       </CardContent>
     </Card>
   );
+
+  if (href) {
+    return <Link href={href} className="group">{card}</Link>;
+  }
+  return card;
 }
 
 type ActivityItem = {

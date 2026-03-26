@@ -75,12 +75,13 @@ export function HeroSection() {
             {/* Search — let users jump directly to what they need */}
             <div className="animate-fade-up mt-6 opacity-0 [animation-delay:450ms]">
               <form action="/explore" method="get" className="relative mx-auto max-w-md lg:mx-0">
+                <label htmlFor="hero-search" className="sr-only">問題を検索</label>
                 <input
+                  id="hero-search"
                   type="text"
                   name="q"
                   placeholder="教科名や大学名で検索..."
-                  className="h-11 w-full rounded-full border border-white/20 bg-white/10 pl-4 pr-12 text-sm text-white placeholder:text-white/40 backdrop-blur-sm transition-colors focus:border-white/40 focus:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
-                  aria-label="問題を検索"
+                  className="h-11 w-full rounded-full border border-white/20 bg-white/10 pl-4 pr-12 text-sm text-white placeholder:text-white/40 backdrop-blur-sm transition-colors focus:border-white/40 focus:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 />
                 <button
                   type="submit"

@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import {
   ArrowRight,
   ChevronRight,
@@ -297,12 +296,8 @@ export default async function DashboardPage() {
                             <Badge variant="secondary" className="border border-border text-xs">
                               {SUBJECT_LABELS[ps.subject as Subject]}
                             </Badge>
-                            <Progress
-                              value={0}
-                              className="h-1.5 max-w-[80px]"
-                            />
                             <span className="text-xs text-muted-foreground">
-                              未解答
+                              はじめての挑戦
                             </span>
                           </div>
                         </div>

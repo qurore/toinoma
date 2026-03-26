@@ -26,6 +26,7 @@ export function SubjectsSection() {
               href={`/explore?subject=${subject}`}
               className="group block animate-fade-up opacity-0"
               style={{ animationDelay: `${index * 50}ms` }}
+              aria-label={`${SUBJECT_LABELS[subject]}の問題を探す`}
             >
               <div className="flex items-center justify-center rounded-xl border border-border bg-card px-4 py-4 transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:shadow-md sm:py-5">
                 <span className="text-sm font-semibold transition-colors group-hover:text-primary">

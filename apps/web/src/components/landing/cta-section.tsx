@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Star } from "lucide-react";
+import { ArrowRight, BookOpen, PenLine, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function CTASection() {
@@ -52,27 +52,24 @@ export function CTASection() {
           </Button>
         </div>
 
-        {/* Social proof — testimonial-style line */}
-        <div className="mx-auto mt-12 max-w-md">
-          <div className="rounded-xl border border-white/10 bg-white/[0.04] px-5 py-4 backdrop-blur-sm">
-            {/* Star rating */}
-            <div
-              className="mb-2 flex items-center justify-center gap-0.5"
-              aria-label="5つ星のうち5.0"
-            >
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star
-                  key={i}
-                  className="h-3.5 w-3.5 fill-amber-400 text-amber-400"
-                />
-              ))}
+        {/* Trust signals — factual platform capabilities */}
+        <div className="mx-auto mt-12 max-w-lg">
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center backdrop-blur-sm">
+              <BookOpen className="mx-auto mb-1.5 h-4 w-4 text-white/50" aria-hidden="true" />
+              <p className="text-lg font-bold text-white">9科目</p>
+              <p className="text-xs text-white/50">対応教科</p>
             </div>
-            <p className="text-sm leading-relaxed text-white/60">
-              &ldquo;記述式の部分点がその場でわかるのが画期的。自分では気づけない改善点をAIが指摘してくれるので、効率よく実力が伸びました。&rdquo;
-            </p>
-            <p className="mt-2 text-xs text-white/40">
-              — 早稲田大学志望 高3受験生
-            </p>
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center backdrop-blur-sm">
+              <PenLine className="mx-auto mb-1.5 h-4 w-4 text-white/50" aria-hidden="true" />
+              <p className="text-lg font-bold text-white">3形式</p>
+              <p className="text-xs text-white/50">記述・マーク・穴埋め</p>
+            </div>
+            <div className="rounded-xl border border-white/10 bg-white/[0.04] px-4 py-3 text-center backdrop-blur-sm">
+              <Brain className="mx-auto mb-1.5 h-4 w-4 text-white/50" aria-hidden="true" />
+              <p className="text-lg font-bold text-white">AI採点</p>
+              <p className="text-xs text-white/50">部分点つき即時採点</p>
+            </div>
           </div>
         </div>
       </div>
