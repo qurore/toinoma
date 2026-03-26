@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ProfileEditForm } from "@/components/settings/profile-edit-form";
 import type { Database } from "@/types/database";
@@ -56,9 +55,9 @@ export default async function ProfileSettingsPage() {
             <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               アカウント情報
             </CardTitle>
-            <Badge variant="outline" className="text-xs">
+            <span className="text-xs text-muted-foreground">
               {providerLabel[provider] ?? provider}
-            </Badge>
+            </span>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">

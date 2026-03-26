@@ -3,7 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { LogOut, AlertTriangle, Lock, ChevronRight } from "lucide-react";
+import { AlertTriangle, Lock, ChevronRight } from "lucide-react";
 import { problemSetRubricSchema } from "@toinoma/shared/schemas";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
 import { SolveClient } from "@/components/grading/solve-client";
@@ -177,7 +177,6 @@ export default async function ProblemSolvePage({
           {/* Right: Exit button */}
           <Button variant="outline" size="sm" className="shrink-0" asChild>
             <Link href={`/problem/${id}`}>
-              <LogOut className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
               終了する
             </Link>
           </Button>
@@ -209,19 +208,16 @@ export default async function ProblemSolvePage({
 
       <main id="main-content" className="mx-auto max-w-7xl px-4 pb-8 pt-24 sm:px-6 md:pt-20">
         {/* Instruction banner with keyboard shortcut hints */}
-        <div className="mb-6 flex items-start gap-3 rounded-lg border border-border bg-muted/30 px-4 py-3">
-          <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-            <span className="text-xs font-semibold" aria-hidden="true">i</span>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            <p>各問題に解答を入力し、画面下部の「解答を提出してAI採点」ボタンで提出してください。</p>
-            <p className="mt-1 text-xs">
-              <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">Ctrl+S</kbd>{" "}
-              下書き保存 ・{" "}
-              <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">Ctrl+Enter</kbd>{" "}
-              提出 ・ 30秒ごとに自動保存
-            </p>
-          </div>
+        <div className="mb-6 rounded-lg border border-border bg-muted/30 px-4 py-3">
+          <p className="text-sm text-muted-foreground">
+            各問題に解答を入力し、画面下部の「解答を提出してAI採点」ボタンで提出してください。
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">Ctrl+S</kbd>{" "}
+            下書き保存 ・{" "}
+            <kbd className="rounded border border-border bg-muted px-1 py-0.5 font-mono text-[10px]">Ctrl+Enter</kbd>{" "}
+            提出 ・ 30秒ごとに自動保存
+          </p>
         </div>
 
         <SolveClient

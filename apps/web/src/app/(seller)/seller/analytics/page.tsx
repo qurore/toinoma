@@ -2,8 +2,6 @@ import Link from "next/link";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 import { SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject } from "@/types/database";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
@@ -195,25 +193,16 @@ export default async function SalesAnalyticsPage() {
             <p className="text-3xl font-bold">
               ¥{thisMonthRevenue.toLocaleString()}
             </p>
-            <div className="mt-1 flex items-center gap-1 text-xs">
+            <p className="mt-1 text-xs text-muted-foreground">
               {revenueGrowth > 0 ? (
-                <>
-                  <TrendingUp className="h-3 w-3 text-success" />
-                  <span className="text-success">+{revenueGrowth}%</span>
-                </>
+                <span className="font-medium text-foreground">+{revenueGrowth}%</span>
               ) : revenueGrowth < 0 ? (
-                <>
-                  <TrendingDown className="h-3 w-3 text-destructive" />
-                  <span className="text-destructive">{revenueGrowth}%</span>
-                </>
+                <span>{revenueGrowth}%</span>
               ) : (
-                <>
-                  <Minus className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-muted-foreground">変動なし</span>
-                </>
+                <span>変動なし</span>
               )}
-              <span className="text-muted-foreground">前月比</span>
-            </div>
+              {" "}前月比
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -256,7 +245,6 @@ export default async function SalesAnalyticsPage() {
         <CardContent>
           {totalRevenue === 0 ? (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <BarChart3 className="mb-2 h-8 w-8 text-muted-foreground/30" />
               <p className="text-sm text-muted-foreground">
                 売上データがありません
               </p>
@@ -438,10 +426,8 @@ export default async function SalesAnalyticsPage() {
                 <tbody className="divide-y">
                   {topSelling.map((ps, idx) => (
                     <tr key={ps.id} className="transition-colors hover:bg-muted/50">
-                      <td className="py-3 pr-4">
-                        <Badge variant={idx < 3 ? "default" : "secondary"} className="text-xs">
-                          {idx + 1}
-                        </Badge>
+                      <td className="py-3 pr-4 text-sm tabular-nums text-muted-foreground">
+                        {idx + 1}
                       </td>
                       <td className="py-3 pr-4">
                         <Link

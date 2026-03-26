@@ -8,13 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
 import { SubscriptionPlans } from "@/components/subscription/subscription-plans";
-import {
-  Check,
-  X,
-  CreditCard,
-  AlertTriangle,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -80,39 +74,34 @@ export default async function SubscriptionSettingsPage(props: {
 
       {/* Success / cancel banners */}
       {searchParams.success && (
-        <div className="flex items-center gap-3 rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
-          <Check className="h-5 w-5 shrink-0" />
-          <p>サブスクリプションが正常に開始されました。</p>
+        <div className="rounded-lg border border-green-200 bg-green-50 p-4 text-sm text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-200">
+          サブスクリプションが正常に開始されました。
         </div>
       )}
 
       {searchParams.canceled && (
-        <div className="flex items-center gap-3 rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
-          <AlertTriangle className="h-5 w-5 shrink-0" />
-          <p>サブスクリプションの申し込みがキャンセルされました。</p>
+        <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
+          サブスクリプションの申し込みがキャンセルされました。
         </div>
       )}
 
       {/* Grace period warning */}
       {isInGracePeriod && (
-        <div className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
-          <div>
-            <p className="font-medium text-destructive">
-              お支払いに問題が発生しています
-            </p>
-            <p className="mt-1 text-muted-foreground">
-              {new Date(subState.gracePeriodEnd!).toLocaleDateString("ja-JP")}
-              までにお支払い方法を更新してください。
-            </p>
-            <Link
-              href="/settings/billing"
-              className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
-            >
-              お支払い方法を更新
-              <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
+        <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-4 text-sm">
+          <p className="font-medium text-destructive">
+            お支払いに問題が発生しています
+          </p>
+          <p className="mt-1 text-muted-foreground">
+            {new Date(subState.gracePeriodEnd!).toLocaleDateString("ja-JP")}
+            までにお支払い方法を更新してください。
+          </p>
+          <Link
+            href="/settings/billing"
+            className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            お支払い方法を更新
+            <ArrowRight className="h-3.5 w-3.5" />
+          </Link>
         </div>
       )}
 
@@ -200,9 +189,8 @@ export default async function SubscriptionSettingsPage(props: {
             <div className="border-t border-border pt-4">
               <Link
                 href="/settings/billing"
-                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                className="inline-flex items-center gap-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
               >
-                <CreditCard className="h-3.5 w-3.5" />
                 請求・お支払い情報を管理
                 <ArrowRight className="h-3.5 w-3.5" />
               </Link>
@@ -326,9 +314,9 @@ function FeatureRow({
       return <span className="whitespace-nowrap text-sm font-medium">{value}</span>;
     }
     return value ? (
-      <Check className="mx-auto h-4 w-4 text-primary" />
+      <span className="text-sm text-primary" aria-label="対応">&#10003;</span>
     ) : (
-      <X className="mx-auto h-4 w-4 text-muted-foreground/40" />
+      <span className="text-sm text-muted-foreground/40" aria-label="非対応">&mdash;</span>
     );
   };
 

@@ -3,27 +3,15 @@
 import { useState, useMemo, useCallback } from "react";
 import Link from "next/link";
 import {
-  ArrowLeft,
   Loader2,
-  Save,
-  FileText,
-  CheckSquare,
-  Type,
-  ListChecks,
   Plus,
   Trash2,
-  Eye,
-  EyeOff,
-  ImagePlus,
-  Video,
-  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -46,10 +34,10 @@ import { createQuestion } from "../actions";
 // Question type configuration
 // ========================================================================
 const QUESTION_TYPES = [
-  { value: "essay", label: "記述式", icon: FileText, description: "自由記述型の問題" },
-  { value: "mark_sheet", label: "マーク式", icon: CheckSquare, description: "選択肢から正解を選ぶ" },
-  { value: "fill_in_blank", label: "穴埋め式", icon: Type, description: "正確な解答を求める" },
-  { value: "multiple_choice", label: "選択式", icon: ListChecks, description: "複数の選択肢から選ぶ" },
+  { value: "essay", label: "記述式", description: "自由記述型の問題" },
+  { value: "mark_sheet", label: "マーク式", description: "選択肢から正解を選ぶ" },
+  { value: "fill_in_blank", label: "穴埋め式", description: "正確な解答を求める" },
+  { value: "multiple_choice", label: "選択式", description: "複数の選択肢から選ぶ" },
 ] as const;
 
 // ========================================================================
@@ -297,8 +285,7 @@ export default function CreateQuestionPage() {
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/seller/pool">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            問題プール
+            &larr; 問題プール
           </Link>
         </Button>
       </div>
@@ -311,11 +298,6 @@ export default function CreateQuestionPage() {
           size="sm"
           onClick={() => setShowPreview(!showPreview)}
         >
-          {showPreview ? (
-            <EyeOff className="mr-1.5 h-3.5 w-3.5" />
-          ) : (
-            <Eye className="mr-1.5 h-3.5 w-3.5" />
-          )}
           {showPreview ? "編集に戻る" : "プレビュー"}
         </Button>
       </div>
@@ -343,8 +325,7 @@ export default function CreateQuestionPage() {
           <div className="space-y-6">
             {/* Error display */}
             {error && (
-              <div className="flex items-center gap-2 rounded-md bg-destructive/10 p-3 text-sm text-destructive">
-                <AlertCircle className="h-4 w-4 shrink-0" />
+              <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
               </div>
             )}
@@ -359,7 +340,6 @@ export default function CreateQuestionPage() {
               <CardContent>
                 <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {QUESTION_TYPES.map((t) => {
-                    const TypeIcon = t.icon;
                     const isActive = questionType === t.value;
                     return (
                       <button
@@ -367,20 +347,12 @@ export default function CreateQuestionPage() {
                         type="button"
                         onClick={() => setQuestionType(t.value)}
                         className={cn(
-                          "flex flex-col items-center gap-1.5 rounded-lg border-2 p-3 text-center transition-colors",
+                          "flex flex-col items-start gap-1 rounded-lg border-2 p-3 text-left transition-colors",
                           isActive
                             ? "border-primary bg-primary/5"
                             : "border-border hover:border-primary/30 hover:bg-muted/50"
                         )}
                       >
-                        <TypeIcon
-                          className={cn(
-                            "h-5 w-5",
-                            isActive
-                              ? "text-primary"
-                              : "text-muted-foreground"
-                          )}
-                        />
                         <span
                           className={cn(
                             "text-sm font-medium",
@@ -437,9 +409,8 @@ export default function CreateQuestionPage() {
                   </Label>
                   <button
                     type="button"
-                    className="mt-1 flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-border p-6 text-sm text-muted-foreground transition-colors hover:border-primary/30 hover:bg-muted/30"
+                    className="mt-1 flex w-full items-center justify-center rounded-lg border-2 border-dashed border-border p-6 text-sm text-muted-foreground transition-colors hover:border-primary/30 hover:bg-muted/30"
                   >
-                    <ImagePlus className="h-5 w-5" />
                     クリックまたはドラッグで画像をアップロード
                   </button>
                   <p className="mt-1 text-xs text-muted-foreground">
@@ -544,21 +515,16 @@ export default function CreateQuestionPage() {
                     <CardTitle className="text-base">
                       採点基準（ルーブリック）
                     </CardTitle>
-                    <div className="flex items-center gap-1.5">
-                      {essayPointTotal !== points && (
-                        <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+                    <span
+                      className={cn(
+                        "text-xs font-medium",
+                        essayPointTotal !== points
+                          ? "text-amber-600"
+                          : "text-muted-foreground"
                       )}
-                      <span
-                        className={cn(
-                          "text-xs font-medium",
-                          essayPointTotal !== points
-                            ? "text-amber-600"
-                            : "text-muted-foreground"
-                        )}
-                      >
-                        合計: {essayPointTotal}点 / 配点: {points}点
-                      </span>
-                    </div>
+                    >
+                      合計: {essayPointTotal}点 / 配点: {points}点
+                    </span>
                   </div>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -683,9 +649,9 @@ export default function CreateQuestionPage() {
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
-                          <Badge variant="outline" className="text-xs">
+                          <span className="text-xs font-medium text-muted-foreground">
                             {blank.label}
-                          </Badge>
+                          </span>
                           <Input
                             type="number"
                             value={blank.points}
@@ -900,7 +866,6 @@ export default function CreateQuestionPage() {
               <CardContent className="space-y-3">
                 {videoUrls.map((url, i) => (
                   <div key={i} className="flex items-center gap-2">
-                    <Video className="h-4 w-4 shrink-0 text-muted-foreground" />
                     <Input
                       value={url}
                       onChange={(e) => {
@@ -951,10 +916,8 @@ export default function CreateQuestionPage() {
                 className="flex-1"
                 onClick={() => setIsDraft(true)}
               >
-                {isSubmitting && isDraft ? (
+                {isSubmitting && isDraft && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4" />
                 )}
                 下書き保存
               </Button>
@@ -964,10 +927,8 @@ export default function CreateQuestionPage() {
                 className="flex-1"
                 onClick={() => setIsDraft(false)}
               >
-                {isSubmitting && !isDraft ? (
+                {isSubmitting && !isDraft && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Save className="mr-2 h-4 w-4" />
                 )}
                 問題を保存
               </Button>
@@ -1020,23 +981,23 @@ function QuestionPreview({
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">プレビュー</CardTitle>
-            <div className="flex items-center gap-2">
-              <Badge variant="outline">{typeLabel}</Badge>
+            <div className="flex items-center gap-3 text-xs text-muted-foreground">
+              <span>{typeLabel}</span>
               {subject && (
-                <Badge variant="secondary">
+                <span>
                   {SUBJECT_LABELS[subject as keyof typeof SUBJECT_LABELS] ??
                     subject}
-                </Badge>
+                </span>
               )}
               {difficulty && (
-                <Badge variant="secondary">
+                <span>
                   {DIFFICULTY_LABELS[
                     difficulty as keyof typeof DIFFICULTY_LABELS
                   ] ?? difficulty}
-                </Badge>
+                </span>
               )}
-              <Badge variant="secondary">{points}点</Badge>
-              {verticalText && <Badge variant="outline">縦書き</Badge>}
+              <span>{points}点</span>
+              {verticalText && <span>縦書き</span>}
             </div>
           </div>
         </CardHeader>
@@ -1092,13 +1053,16 @@ function QuestionPreview({
                         .map((a) => a.trim())
                         .includes(trimmed);
                       return (
-                        <Badge
+                        <span
                           key={trimmed}
-                          variant={isCorrect ? "default" : "outline"}
+                          className={cn(
+                            "text-sm",
+                            isCorrect ? "font-medium text-primary" : "text-muted-foreground"
+                          )}
                         >
                           {trimmed}
                           {isCorrect && " (正解)"}
-                        </Badge>
+                        </span>
                       );
                     })}
                 </div>
@@ -1146,18 +1110,15 @@ function QuestionPreview({
                         key={o.id}
                         className={cn(
                           "flex items-center gap-2 text-sm",
-                          isCorrect && "font-medium text-green-700"
+                          isCorrect && "font-medium text-primary"
                         )}
                       >
                         <span>{o.id}.</span>
                         <span>{o.text}</span>
                         {isCorrect && (
-                          <Badge
-                            variant="outline"
-                            className="text-xs text-green-600"
-                          >
+                          <span className="text-xs text-primary">
                             正解
-                          </Badge>
+                          </span>
                         )}
                       </div>
                     );

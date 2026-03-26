@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { BookOpen, Loader2, CheckCircle2 } from "lucide-react";
+import { BookOpen, Loader2 } from "lucide-react";
 import { GoogleIcon, XIcon } from "@/components/auth/oauth-icons";
 
 // ──────────────────────────────────────────────
@@ -101,9 +101,7 @@ export default function SignupPage() {
     return (
       <div className="flex min-h-screen items-center justify-center p-6">
         <div className="w-full max-w-sm text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-success/10">
-            <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
-          </div>
+          <p className="mb-3 text-2xl" aria-hidden="true">&#10003;</p>
           <h1 className="mb-2 text-2xl font-bold tracking-tight">
             確認メールを送信しました
           </h1>
@@ -146,11 +144,10 @@ export default function SignupPage() {
             <br />
             出会う場所
           </h1>
-          <ul className="space-y-3">
+          <ul className="space-y-2.5">
             {benefits.map((b) => (
-              <li key={b} className="flex items-start gap-2 text-white/80">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-light" aria-hidden="true" />
-                <span className="text-sm">{b}</span>
+              <li key={b} className="text-sm text-white/80 pl-3 relative before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-white/50">
+                {b}
               </li>
             ))}
           </ul>
@@ -311,14 +308,13 @@ export default function SignupPage() {
           </p>
 
           {/* Mobile benefits — visible only on small screens */}
-          <ul className="mt-8 space-y-2 lg:hidden">
+          <ul className="mt-8 space-y-1.5 lg:hidden">
             {benefits.map((b) => (
               <li
                 key={b}
-                className="flex items-start gap-2 text-muted-foreground"
+                className="text-xs text-muted-foreground pl-3 relative before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-muted-foreground/40"
               >
-                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
-                <span className="text-xs">{b}</span>
+                {b}
               </li>
             ))}
           </ul>

@@ -5,7 +5,6 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   ChevronLeft,
   ChevronRight,
@@ -59,19 +58,16 @@ interface ReviewModeProps {
 
 function ScoreBadge({ score, maxScore }: { score: number; maxScore: number }) {
   const percentage = maxScore > 0 ? (score / maxScore) * 100 : 0;
+  const color =
+    percentage >= 80
+      ? "text-success"
+      : percentage >= 50
+        ? "text-amber-600"
+        : "text-destructive";
   return (
-    <Badge
-      variant={
-        percentage >= 80
-          ? "default"
-          : percentage >= 50
-            ? "secondary"
-            : "destructive"
-      }
-      className="text-sm"
-    >
+    <span className={`text-sm font-semibold tabular-nums ${color}`}>
       {score} / {maxScore}
-    </Badge>
+    </span>
   );
 }
 
@@ -534,9 +530,9 @@ export function ReviewMode({
               <CardTitle className="text-base">
                 大問{current.sectionNumber} {current.questionNumber}
               </CardTitle>
-              <Badge variant="outline" className="text-xs">
+              <span className="text-xs text-muted-foreground">
                 {ANSWER_TYPE_LABELS[current.questionType]}
-              </Badge>
+              </span>
             </div>
             {current.gradingResult && (
               <ScoreBadge

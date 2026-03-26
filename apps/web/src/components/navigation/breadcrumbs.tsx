@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ChevronRight, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export interface BreadcrumbItem {
@@ -15,7 +14,7 @@ interface BreadcrumbsProps {
 /**
  * Reusable breadcrumb navigation component.
  *
- * The first item renders a Home icon. The last item is the current page (bold, no link).
+ * The last item is the current page (bold, no link).
  * Middle items are truncated on mobile when there are 4+ items.
  */
 export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
@@ -25,7 +24,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
 
   return (
     <nav aria-label="パンくずリスト" className={cn("mb-4", className)}>
-      <ol className="flex flex-wrap items-center gap-1 text-sm text-muted-foreground">
+      <ol className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
         {items.map((item, index) => {
           const isFirst = index === 0;
           const isLast = index === lastIndex;
@@ -40,22 +39,14 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
               className={`flex items-center gap-1${hideOnMobile ? " hidden md:flex" : ""}`}
             >
               {index > 0 && (
-                <ChevronRight
-                  className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50"
-                  aria-hidden="true"
-                />
+                <span className="text-muted-foreground/40" aria-hidden="true">/</span>
               )}
               {item.href && !isLast ? (
                 <Link
                   href={item.href}
-                  className="flex items-center gap-1 truncate transition-colors hover:text-foreground"
+                  className="truncate transition-colors hover:text-foreground"
                 >
-                  {isFirst && (
-                    <Home className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
-                  )}
-                  <span className={isFirst ? "sr-only sm:not-sr-only" : ""}>
-                    {item.label}
-                  </span>
+                  {item.label}
                 </Link>
               ) : (
                 <span

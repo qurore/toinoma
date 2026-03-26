@@ -3,19 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  Menu,
-  X,
-  Search,
-  Trophy,
-  LayoutDashboard,
-  Store,
-  Settings,
-  HelpCircle,
-  LogIn,
-  UserPlus,
-  Bell,
-} from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
@@ -27,42 +15,41 @@ interface MobileNavMenuProps {
 interface NavItem {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
 }
 
 // Primary navigation — matches all desktop-accessible top-level pages
 const PRIMARY_ITEMS: NavItem[] = [
-  { href: "/explore", label: "問題を探す", icon: Search },
-  { href: "/rankings", label: "ランキング", icon: Trophy },
+  { href: "/explore", label: "問題を探す" },
+  { href: "/rankings", label: "ランキング" },
 ];
 
 // Authenticated user navigation
 const AUTH_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "マイページ", icon: LayoutDashboard },
-  { href: "/notifications", label: "通知", icon: Bell },
+  { href: "/dashboard", label: "マイページ" },
+  { href: "/notifications", label: "通知" },
 ];
 
 // Seller items — shown when user is a seller
 const SELLER_ITEMS: NavItem[] = [
-  { href: "/seller", label: "出品者モード", icon: Store },
+  { href: "/seller", label: "出品者モード" },
 ];
 
 // Non-seller items — shown when user is not yet a seller
 const NON_SELLER_ITEMS: NavItem[] = [
-  { href: "/seller/onboarding", label: "出品者になる", icon: UserPlus },
+  { href: "/seller/onboarding", label: "出品者になる" },
 ];
 
 // Utility items — always at the bottom
 const UTILITY_ITEMS: NavItem[] = [
-  { href: "/settings", label: "設定", icon: Settings },
-  { href: "/help", label: "ヘルプ", icon: HelpCircle },
+  { href: "/settings", label: "設定" },
+  { href: "/help", label: "ヘルプ" },
 ];
 
 // Guest items — shown when not logged in
 const GUEST_ITEMS: NavItem[] = [
-  { href: "/login", label: "ログイン", icon: LogIn },
-  { href: "/help", label: "ヘルプ", icon: HelpCircle },
+  { href: "/login", label: "ログイン" },
+  { href: "/help", label: "ヘルプ" },
 ];
 
 function NavSection({
@@ -80,20 +67,18 @@ function NavSection({
         const isActive = item.exact
           ? pathname === item.href
           : pathname.startsWith(item.href);
-        const Icon = item.icon;
         return (
           <Link
             key={item.href}
             href={item.href}
             onClick={onClose}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+              "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
               isActive
                 ? "bg-primary/10 text-primary"
                 : "text-foreground/80 hover:bg-muted hover:text-foreground"
             )}
           >
-            <Icon className="h-4 w-4 shrink-0" />
             {item.label}
           </Link>
         );

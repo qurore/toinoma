@@ -1,11 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  ArrowDownUp,
-  MessageCircleQuestion,
-  Search,
-} from "lucide-react";
+import { Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -131,7 +127,6 @@ export function QaQuestionList({
           onValueChange={(v) => handleSortChange(v as SortOption)}
         >
           <SelectTrigger className="w-[140px] shrink-0" aria-label="並び替え">
-            <ArrowDownUp className="mr-2 h-3.5 w-3.5" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -199,17 +194,14 @@ export function QaQuestionList({
 // ── Empty state ────────────────────────────────────────────────────────
 function EmptyState({ isAuthenticated }: { isAuthenticated: boolean }) {
   return (
-    <div className="flex flex-col items-center py-12 text-center">
-      <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-        <MessageCircleQuestion className="h-7 w-7 text-primary" />
-      </div>
-      <p className="text-base font-semibold text-foreground">
+    <div className="py-8 text-center">
+      <p className="text-sm font-medium text-foreground">
         まだ質問がありません
       </p>
-      <p className="mt-2 max-w-sm text-sm leading-relaxed text-muted-foreground">
+      <p className="mt-1 text-sm text-muted-foreground">
         {isAuthenticated
-          ? "解き方がわからない問題や解説について気になる点があれば、最初の質問を投稿してみましょう。出品者や他の購入者から回答がもらえます。"
-          : "質問の閲覧や投稿にはログインが必要です。ログインすると、この問題セットについて質問や回答ができるようになります。"}
+          ? "解き方がわからない問題や解説について気になる点があれば、質問を投稿してみましょう。"
+          : "質問の閲覧や投稿にはログインが必要です。"}
       </p>
     </div>
   );

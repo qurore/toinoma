@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { getRecentlyViewed } from "@/lib/recently-viewed";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
@@ -97,19 +96,12 @@ export default async function RecentlyViewedPage() {
                         {priceLabel}
                       </span>
                     </div>
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <Badge variant="secondary" className="border border-border text-xs">
-                        {SUBJECT_LABELS[ps.subject as Subject]}
-                      </Badge>
-                      <Badge variant="secondary" className="border border-border text-xs">
-                        {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-                      </Badge>
-                      {ps.university && (
-                        <span className="text-xs text-muted-foreground">
-                          {ps.university}
-                        </span>
-                      )}
-                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {SUBJECT_LABELS[ps.subject as Subject]}
+                      {" / "}
+                      {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
+                      {ps.university && ` / ${ps.university}`}
+                    </p>
                     <p className="mt-2.5 text-xs text-muted-foreground">
                       {viewedAgo}
                     </p>

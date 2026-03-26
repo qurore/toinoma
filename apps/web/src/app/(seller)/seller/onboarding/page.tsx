@@ -7,7 +7,6 @@ import { TosStep } from "@/components/onboarding/tos-step";
 import { ProfileStep } from "@/components/onboarding/profile-step";
 import { StripeStep } from "@/components/onboarding/stripe-step";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -82,10 +81,9 @@ export default async function SellerOnboardingPage({
         className="mb-6"
       />
       <div className="mb-4">
-        <Button variant="ghost" size="sm" asChild className="mb-4 gap-1.5 text-muted-foreground">
+        <Button variant="ghost" size="sm" asChild className="mb-4 text-muted-foreground">
           <Link href="/seller">
-            <ArrowLeft className="h-3.5 w-3.5" />
-            出品者ダッシュボードに戻る
+            &larr; 出品者ダッシュボードに戻る
           </Link>
         </Button>
       </div>

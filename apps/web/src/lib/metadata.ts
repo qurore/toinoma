@@ -159,7 +159,7 @@ export function generateSellerMetadata(seller: SellerMetadataInput): Metadata {
   const desc =
     seller.seller_description ??
     `${seller.seller_display_name}${seller.university ? `（${seller.university}）` : ""}の問題セット一覧（${seller.problem_set_count}セット公開中）`;
-  const url = `${SITE_URL}/seller/${seller.id}`;
+  const url = `${SITE_URL}/sellers/${seller.id}`;
   const ogImage = seller.avatar_url ?? DEFAULT_OG_IMAGE;
 
   // JSON-LD Person structured data

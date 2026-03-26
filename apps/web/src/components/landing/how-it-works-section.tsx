@@ -25,9 +25,6 @@ export function HowItWorksSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section header */}
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">
-            使い方
-          </p>
           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
             3ステップで始める
           </h2>
@@ -38,42 +35,16 @@ export function HowItWorksSection() {
 
         {/* Steps */}
         <div className="mx-auto max-w-4xl">
-          <div className="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-0">
-            {steps.map((item, index) => (
+          <div className="grid grid-cols-1 gap-12 md:grid-cols-3 md:gap-8">
+            {steps.map((item) => (
               <div
                 key={item.step}
-                className="relative flex flex-col items-center text-center animate-fade-up opacity-0"
-                style={{ animationDelay: `${index * 150}ms` }}
+                className="flex flex-col items-center text-center"
               >
-                {/* Connecting line between steps (desktop only) */}
-                {index < steps.length - 1 && (
-                  <div
-                    className="absolute left-[calc(50%+2.5rem)] top-8 hidden h-[2px] w-[calc(100%-5rem)] md:block"
-                    aria-hidden="true"
-                  >
-                    {/* Dashed connecting line with gradient */}
-                    <div className="h-full w-full border-t-2 border-dashed border-primary/25" />
-                    {/* Animated chevron indicator */}
-                    <div className="absolute -right-1.5 -top-[5px] text-primary/40">
-                      <svg width="8" height="12" viewBox="0 0 8 12" fill="none" aria-hidden="true">
-                        <path d="M1 1L6 6L1 11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                      </svg>
-                    </div>
-                  </div>
-                )}
-
-                {/* Vertical connecting line between steps (mobile only) */}
-                {index < steps.length - 1 && (
-                  <div
-                    className="absolute -bottom-8 left-1/2 h-6 w-px border-l-2 border-dashed border-primary/25 md:hidden"
-                    aria-hidden="true"
-                  />
-                )}
-
-                {/* Step number circle */}
-                <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-full border-2 border-primary/20 bg-card text-lg font-bold text-foreground shadow-sm">
+                {/* Step number */}
+                <span className="mb-5 text-4xl font-bold text-foreground/15">
                   {item.step}
-                </div>
+                </span>
 
                 {/* Title */}
                 <h3 className="font-display text-lg font-semibold">

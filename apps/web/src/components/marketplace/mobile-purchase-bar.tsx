@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import {
-  Loader2,
-  BookOpen,
-  ShoppingCart,
-  CheckCircle2,
-  LogIn,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 interface AppliedCoupon {
   couponId: string;
@@ -48,13 +42,9 @@ export function MobilePurchaseBar({
     return (
       <div className="fixed inset-x-0 bottom-14 z-40 border-t border-border bg-background/95 px-4 py-3 backdrop-blur-sm md:bottom-0 lg:hidden">
         <div className="mx-auto flex max-w-lg items-center justify-between gap-3">
-          <div className="flex items-center gap-1.5 text-sm">
-            <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
-            <span className="font-medium text-success">購入済み</span>
-          </div>
+          <span className="text-sm font-medium text-success">購入済み</span>
           <Button size="sm" className="min-w-[120px]" asChild>
             <Link href={`/problem/${problemSetId}/solve`}>
-              <BookOpen className="mr-1.5 h-4 w-4" aria-hidden="true" />
               この問題を解く
             </Link>
           </Button>
@@ -73,7 +63,6 @@ export function MobilePurchaseBar({
           </p>
           <Button size="sm" className="min-w-[120px]" asChild>
             <Link href={`/login?next=/problem/${problemSetId}`}>
-              <LogIn className="mr-1.5 h-4 w-4" aria-hidden="true" />
               ログインして購入
             </Link>
           </Button>
@@ -137,9 +126,7 @@ export function MobilePurchaseBar({
         >
           {isLoading ? (
             <Loader2 className="mr-1.5 h-4 w-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <ShoppingCart className="mr-1.5 h-4 w-4" aria-hidden="true" />
-          )}
+          ) : null}
           この問題を入手する
         </Button>
       </div>

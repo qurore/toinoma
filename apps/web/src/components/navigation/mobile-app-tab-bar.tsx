@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Search, Trophy, LayoutDashboard, User } from "lucide-react";
+import { Home, Search, LayoutDashboard, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TabItem {
@@ -16,7 +16,6 @@ interface TabItem {
 const TABS: TabItem[] = [
   { href: "/", label: "ホーム", icon: Home, exact: true },
   { href: "/explore", label: "探す", icon: Search },
-  { href: "/rankings", label: "ランキング", icon: Trophy },
   { href: "/dashboard", label: "マイページ", icon: LayoutDashboard },
   { href: "/settings", label: "設定", icon: User },
 ];
@@ -29,7 +28,6 @@ const TABS: TabItem[] = [
  * All hrefs verified against app router:
  *   /           -> apps/web/src/app/page.tsx
  *   /explore    -> apps/web/src/app/(marketing)/explore/page.tsx
- *   /rankings   -> apps/web/src/app/rankings/page.tsx
  *   /dashboard  -> apps/web/src/app/(dashboard)/dashboard/page.tsx
  *   /settings   -> apps/web/src/app/settings/page.tsx
  */

@@ -4,9 +4,7 @@ import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -83,8 +81,7 @@ export default async function SubmissionsPage({
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
           <Link href={`/seller/sets/${ps.id}/edit`}>
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            問題セットに戻る
+            &larr; 問題セットに戻る
           </Link>
         </Button>
       </div>
@@ -136,20 +133,9 @@ export default async function SubmissionsPage({
                         </td>
                         <td className="py-3 pr-4">
                           {pct !== null ? (
-                            <Badge
-                              variant={
-                                pct >= 80
-                                  ? "default"
-                                  : pct >= 60
-                                    ? "secondary"
-                                    : "outline"
-                              }
-                              className="text-xs"
-                            >
-                              {pct}%
-                            </Badge>
+                            <span className="text-sm">{pct}%</span>
                           ) : (
-                            "—"
+                            <span className="text-muted-foreground">—</span>
                           )}
                         </td>
                         <td className="py-3 text-muted-foreground">

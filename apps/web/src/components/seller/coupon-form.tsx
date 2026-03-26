@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Sparkles, Save } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { createCoupon } from "@/app/(seller)/seller/coupons/actions";
 import { toast } from "sonner";
 
@@ -90,7 +90,6 @@ export function CouponForm({ sellerSets, onSuccess }: CouponFormProps) {
             size="default"
             onClick={handleAutoGenerate}
           >
-            <Sparkles className="mr-1.5 h-4 w-4" />
             自動生成
           </Button>
         </div>
@@ -236,10 +235,8 @@ export function CouponForm({ sellerSets, onSuccess }: CouponFormProps) {
       </div>
 
       <Button type="submit" disabled={isSubmitting} className="w-full">
-        {isSubmitting ? (
+        {isSubmitting && (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <Save className="mr-2 h-4 w-4" />
         )}
         クーポンを作成
       </Button>

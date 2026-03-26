@@ -15,18 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Loader2,
-  Infinity,
-  AlertTriangle,
-  X,
-  Sparkles,
-  BookOpen,
-  BarChart3,
-  Headphones,
-  Zap,
-  FolderOpen,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
 import { cn } from "@/lib/utils";
 import type { SubscriptionTier } from "@/types/database";
@@ -41,76 +30,28 @@ interface SubscriptionPlansProps {
 // Tier ordering for upgrade/downgrade detection
 const TIER_ORDER: Record<string, number> = { free: 0, basic: 1, pro: 2 };
 
-// Per-tier feature lists with icons
-const TIER_FEATURES: Record<
-  string,
-  Array<{ icon: React.ReactNode; label: string }>
-> = {
+// Per-tier feature lists (plain text)
+const TIER_FEATURES: Record<string, string[]> = {
   free: [
-    {
-      icon: <BookOpen className="h-4 w-4 text-muted-foreground" />,
-      label: "問題の閲覧・購入",
-    },
-    {
-      icon: <Zap className="h-4 w-4 text-muted-foreground" />,
-      label: "AI採点 月3回",
-    },
-    {
-      icon: <FolderOpen className="h-4 w-4 text-muted-foreground" />,
-      label: "コレクション 3個",
-    },
+    "問題の閲覧・購入",
+    "AI採点 月3回",
+    "コレクション 3個",
   ],
   basic: [
-    {
-      icon: <BookOpen className="h-4 w-4 text-muted-foreground" />,
-      label: "問題の閲覧・購入",
-    },
-    {
-      icon: <Zap className="h-4 w-4 text-muted-foreground" />,
-      label: "AI採点 月30回",
-    },
-    {
-      icon: <Sparkles className="h-4 w-4 text-muted-foreground" />,
-      label: "優先採点",
-    },
-    {
-      icon: <FolderOpen className="h-4 w-4 text-muted-foreground" />,
-      label: "コレクション 20個",
-    },
-    {
-      icon: <Headphones className="h-4 w-4 text-muted-foreground" />,
-      label: "優先サポート",
-    },
+    "問題の閲覧・購入",
+    "AI採点 月30回",
+    "優先採点",
+    "コレクション 20個",
+    "優先サポート",
   ],
   pro: [
-    {
-      icon: <BookOpen className="h-4 w-4 text-muted-foreground" />,
-      label: "問題の閲覧・購入",
-    },
-    {
-      icon: <Infinity className="h-4 w-4 text-muted-foreground" />,
-      label: "AI採点 無制限",
-    },
-    {
-      icon: <Sparkles className="h-4 w-4 text-muted-foreground" />,
-      label: "優先採点",
-    },
-    {
-      icon: <BarChart3 className="h-4 w-4 text-muted-foreground" />,
-      label: "AI学習アシスタント",
-    },
-    {
-      icon: <BarChart3 className="h-4 w-4 text-muted-foreground" />,
-      label: "学習分析",
-    },
-    {
-      icon: <FolderOpen className="h-4 w-4 text-muted-foreground" />,
-      label: "コレクション 無制限",
-    },
-    {
-      icon: <Headphones className="h-4 w-4 text-muted-foreground" />,
-      label: "優先サポート",
-    },
+    "問題の閲覧・購入",
+    "AI採点 無制限",
+    "優先採点",
+    "AI学習アシスタント",
+    "学習分析",
+    "コレクション 無制限",
+    "優先サポート",
   ],
 };
 
@@ -348,7 +289,7 @@ export function SubscriptionPlans({
               {/* "Most popular" badge */}
               {key === "basic" && !isCurrent && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-primary text-primary-foreground shadow-sm">
+                  <Badge variant="secondary" className="text-xs font-medium">
                     一番人気
                   </Badge>
                 </div>
@@ -389,11 +330,10 @@ export function SubscriptionPlans({
                 </p>
 
                 {/* Feature list */}
-                <ul className="flex-1 space-y-2.5 text-sm">
+                <ul className="flex-1 space-y-2 text-sm text-muted-foreground">
                   {features.map((feature, i) => (
-                    <li key={i} className="flex items-center gap-2">
-                      {feature.icon}
-                      {feature.label}
+                    <li key={i} className="pl-4 relative before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-muted-foreground/40">
+                      {feature}
                     </li>
                   ))}
                 </ul>
@@ -458,8 +398,7 @@ export function SubscriptionPlans({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
+            <DialogTitle>
               サブスクリプションのキャンセル
             </DialogTitle>
             <DialogDescription>
@@ -473,48 +412,26 @@ export function SubscriptionPlans({
               <p className="mb-2 text-sm font-medium">
                 キャンセルにより失われる機能:
               </p>
-              <ul className="space-y-1.5">
+              <ul className="space-y-1.5 text-sm text-muted-foreground">
                 {currentTier !== "free" &&
                   getLostFeatures("free" as "basic" | "pro").length === 0 ? (
-                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
+                    <li>
                       現在のプランの全機能が利用できなくなります
                     </li>
                   ) : null}
                 {currentTier === "basic" && (
                   <>
-                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
-                      AI採点が月30回から月3回に制限されます
-                    </li>
-                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
-                      コレクションが20個から3個に制限されます
-                    </li>
-                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
-                      優先サポートが利用できなくなります
-                    </li>
+                    <li>AI採点が月30回から月3回に制限されます</li>
+                    <li>コレクションが20個から3個に制限されます</li>
+                    <li>優先サポートが利用できなくなります</li>
                   </>
                 )}
                 {currentTier === "pro" && (
                   <>
-                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
-                      AI採点が無制限から月3回に制限されます
-                    </li>
-                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
-                      AI学習アシスタントが利用できなくなります
-                    </li>
-                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
-                      学習分析が利用できなくなります
-                    </li>
-                    <li className="flex items-start gap-2 text-sm text-muted-foreground">
-                      <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
-                      コレクションが無制限から3個に制限されます
-                    </li>
+                    <li>AI採点が無制限から月3回に制限されます</li>
+                    <li>AI学習アシスタントが利用できなくなります</li>
+                    <li>学習分析が利用できなくなります</li>
+                    <li>コレクションが無制限から3個に制限されます</li>
                   </>
                 )}
               </ul>
@@ -579,8 +496,7 @@ export function SubscriptionPlans({
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
+            <DialogTitle>
               プランのダウングレード
             </DialogTitle>
             <DialogDescription>
@@ -595,13 +511,9 @@ export function SubscriptionPlans({
                 <p className="mb-2 text-sm font-medium">
                   以下の機能が制限されます:
                 </p>
-                <ul className="space-y-1.5">
+                <ul className="space-y-1.5 text-sm text-muted-foreground">
                   {getLostFeatures(downgradeTarget).map((feature, i) => (
-                    <li
-                      key={i}
-                      className="flex items-start gap-2 text-sm text-muted-foreground"
-                    >
-                      <X className="mt-0.5 h-3.5 w-3.5 shrink-0 text-destructive" />
+                    <li key={i}>
                       {feature}
                     </li>
                   ))}

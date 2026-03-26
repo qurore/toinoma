@@ -3,7 +3,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -16,10 +15,6 @@ import {
 import {
   Plus,
   Search,
-  FileText,
-  CheckSquare,
-  Type,
-  ListChecks,
   Filter,
   X,
 } from "lucide-react";
@@ -43,13 +38,6 @@ export interface PoolQuestion {
   difficulty: string;
   points: number;
 }
-
-const TYPE_ICONS: Record<string, typeof FileText> = {
-  essay: FileText,
-  mark_sheet: CheckSquare,
-  fill_in_blank: Type,
-  multiple_choice: ListChecks,
-};
 
 const ALL_ANSWER_TYPES = Object.keys(ANSWER_TYPE_LABELS) as AnswerType[];
 
@@ -232,7 +220,6 @@ export function QuestionPoolBrowser({
       <div className="flex-1 space-y-1.5 overflow-y-auto">
         {questions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <FileText className="mb-3 h-10 w-10 text-muted-foreground/40" />
             <p className="text-sm font-medium">
               まだ問題がありません
             </p>
@@ -242,7 +229,6 @@ export function QuestionPoolBrowser({
           </div>
         ) : filteredQuestions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <Search className="mb-3 h-10 w-10 text-muted-foreground/40" />
             <p className="text-sm font-medium">
               条件に一致する問題がありません
             </p>
@@ -253,7 +239,6 @@ export function QuestionPoolBrowser({
         ) : (
           filteredQuestions.map((q) => {
             const isAdded = addedQuestionIds.has(q.id);
-            const Icon = TYPE_ICONS[q.question_type] ?? FileText;
             const typeLabel =
               ANSWER_TYPE_LABELS[q.question_type as AnswerType] ??
               q.question_type;
@@ -267,28 +252,13 @@ export function QuestionPoolBrowser({
                 )}
               >
                 <CardContent className="flex items-start gap-3 p-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
-                    <Icon className="h-3.5 w-3.5 text-foreground/60" />
-                  </div>
-
                   <div className="min-w-0 flex-1">
                     <p className="line-clamp-2 text-sm leading-snug">
                       {q.question_text}
                     </p>
-                    <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-                      <Badge variant="outline" className="text-[10px]">
-                        {typeLabel}
-                      </Badge>
-                      <Badge variant="secondary" className="text-[10px]">
-                        {SUBJECT_LABELS[q.subject as Subject]}
-                      </Badge>
-                      <Badge variant="secondary" className="text-[10px]">
-                        {DIFFICULTY_LABELS[q.difficulty as Difficulty]}
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground">
-                        {q.points}点
-                      </span>
-                    </div>
+                    <p className="mt-1 text-[10px] text-muted-foreground">
+                      {typeLabel} · {SUBJECT_LABELS[q.subject as Subject]} · {DIFFICULTY_LABELS[q.difficulty as Difficulty]} · {q.points}点
+                    </p>
                   </div>
 
                   <Button
@@ -329,14 +299,9 @@ function QuestionPoolSkeleton() {
       <Skeleton className="h-4 w-20" />
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="flex items-start gap-3 rounded-lg border border-border p-3">
-          <Skeleton className="h-8 w-8 shrink-0 rounded-md" />
           <div className="flex-1 space-y-2">
             <Skeleton className="h-4 w-full" />
-            <div className="flex gap-1.5">
-              <Skeleton className="h-4 w-12 rounded-full" />
-              <Skeleton className="h-4 w-10 rounded-full" />
-              <Skeleton className="h-4 w-10 rounded-full" />
-            </div>
+            <Skeleton className="h-3 w-40" />
           </div>
           <Skeleton className="h-8 w-14 shrink-0" />
         </div>

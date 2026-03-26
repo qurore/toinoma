@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
   AlertDialog,
@@ -16,15 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Loader2,
-  Globe,
-  EyeOff,
-  Trash2,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   publishProblemSet,
   unpublishProblemSet,
@@ -225,9 +216,9 @@ export function PublishControls({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-base">公開設定</CardTitle>
-          <Badge variant={isPublished ? "default" : "secondary"}>
+          <span className={`text-sm font-medium ${isPublished ? "text-primary" : "text-muted-foreground"}`}>
             {isPublished ? "公開中" : "下書き"}
-          </Badge>
+          </span>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -241,12 +232,9 @@ export function PublishControls({
         {!isPublished && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  公開前チェック
-                </span>
-              </div>
+              <span className="text-sm font-medium text-muted-foreground">
+                公開前チェック
+              </span>
               {!allRequiredPassed && !isValidating && (
                 <Button
                   variant="ghost"
@@ -271,11 +259,13 @@ export function PublishControls({
                     key={check.label}
                     className="flex items-center gap-2.5 rounded-md px-2 py-1.5 text-sm"
                   >
-                    {check.passed ? (
-                      <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
-                    ) : (
-                      <XCircle className="h-4 w-4 shrink-0 text-destructive" />
-                    )}
+                    <span
+                      className={`shrink-0 text-sm ${
+                        check.passed ? "text-success" : "text-destructive"
+                      }`}
+                    >
+                      {check.passed ? "\u2713" : "\u2717"}
+                    </span>
                     <span
                       className={
                         check.passed
@@ -321,10 +311,8 @@ export function PublishControls({
               disabled={isLoading}
               className="flex-1"
             >
-              {isLoading ? (
+              {isLoading && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <EyeOff className="mr-2 h-4 w-4" />
               )}
               非公開にする
             </Button>
@@ -335,10 +323,8 @@ export function PublishControls({
                 disabled={isLoading || !canPublish}
                 className="flex-1"
               >
-                {isLoading ? (
+                {isLoading && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Globe className="mr-2 h-4 w-4" />
                 )}
                 公開する
               </Button>
@@ -347,10 +333,8 @@ export function PublishControls({
                 onClick={handleDelete}
                 disabled={isLoading}
               >
-                {isLoading ? (
+                {isLoading && (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="mr-2 h-4 w-4" />
                 )}
                 削除
               </Button>

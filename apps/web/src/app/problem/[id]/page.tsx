@@ -2,20 +2,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  FileText,
-  GraduationCap,
-  Flag,
-  Star,
-  BookOpen,
-  ChevronRight,
-  History,
-  TrendingUp,
-} from "lucide-react";
+import { Star } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { PurchaseSection } from "@/components/marketplace/purchase-section";
 import { MobilePurchaseBar } from "@/components/marketplace/mobile-purchase-bar";
@@ -298,25 +288,16 @@ export default async function ProblemDetailPage({
                   </p>
                 )}
 
-                {/* Badge row: subject + difficulty + university */}
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <Badge className="border border-border bg-secondary text-secondary-foreground">
-                    {SUBJECT_LABELS[ps.subject as Subject]}
-                  </Badge>
-                  <Badge
-                    className={cn(
-                      "border font-medium",
-                      ps.difficulty === "easy"
-                        ? "border-primary-200 bg-primary-50 text-primary-700"
-                        : ps.difficulty === "medium"
-                          ? "border-amber-200 bg-amber-50 text-amber-700"
-                          : "border-red-200 bg-red-50 text-red-700"
-                    )}
-                  >
-                    {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-                  </Badge>
+                {/* Subject / difficulty / university text labels */}
+                <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted-foreground">
+                  <span>{SUBJECT_LABELS[ps.subject as Subject]}</span>
+                  <span aria-hidden="true" className="text-border">|</span>
+                  <span>{DIFFICULTY_LABELS[ps.difficulty as Difficulty]}</span>
                   {ps.university && (
-                    <Badge variant="secondary">{ps.university}</Badge>
+                    <>
+                      <span aria-hidden="true" className="text-border">|</span>
+                      <span>{ps.university}</span>
+                    </>
                   )}
                 </div>
 
@@ -375,14 +356,14 @@ export default async function ProblemDetailPage({
                           alt={seller.seller_display_name ?? ""}
                         />
                       )}
-                      <AvatarFallback className="bg-muted text-xs">
-                        <GraduationCap className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                      <AvatarFallback className="bg-muted text-xs font-medium text-muted-foreground">
+                        {(seller.seller_display_name ?? "?").charAt(0)}
                       </AvatarFallback>
                     </Avatar>
                     <span className="text-sm text-muted-foreground">
                       作成者:{" "}
                       <Link
-                        href={`/seller/${ps.seller_id}`}
+                        href={`/sellers/${ps.seller_id}`}
                         className="font-medium text-foreground underline-offset-2 hover:underline"
                       >
                         {seller.seller_display_name}
@@ -442,13 +423,11 @@ export default async function ProblemDetailPage({
                     <div className="flex shrink-0 items-center gap-2">
                       <Button variant="outline" size="sm" asChild>
                         <Link href={`/problem/${id}/history`}>
-                          <History className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                           履歴
                         </Link>
                       </Button>
                       <Button size="sm" asChild>
                         <Link href={`/problem/${id}/solve`}>
-                          <BookOpen className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                           解く
                         </Link>
                       </Button>
@@ -518,13 +497,13 @@ export default async function ProblemDetailPage({
                             alt={seller.seller_display_name ?? ""}
                           />
                         )}
-                        <AvatarFallback className="bg-muted">
-                          <GraduationCap className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                        <AvatarFallback className="bg-muted text-sm font-medium text-muted-foreground">
+                          {(seller.seller_display_name ?? "?").charAt(0)}
                         </AvatarFallback>
                       </Avatar>
                       <div className="min-w-0">
                         <Link
-                          href={`/seller/${ps.seller_id}`}
+                          href={`/sellers/${ps.seller_id}`}
                           className="font-semibold text-foreground hover:text-primary hover:underline"
                         >
                           {seller.seller_display_name}
@@ -545,14 +524,11 @@ export default async function ProblemDetailPage({
                         {seller.seller_description}
                       </p>
                     )}
-                    <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
-                      {(sellerProblemCount ?? 0) > 0 && (
-                        <span className="flex items-center gap-1">
-                          <FileText className="h-3 w-3" aria-hidden="true" />
-                          {sellerProblemCount}セット公開中
-                        </span>
-                      )}
-                    </div>
+                    {(sellerProblemCount ?? 0) > 0 && (
+                      <p className="mt-3 text-xs text-muted-foreground">
+                        {sellerProblemCount}セット公開中
+                      </p>
+                    )}
                     <Separator className="my-3" />
                     <Button
                       variant="outline"
@@ -560,8 +536,7 @@ export default async function ProblemDetailPage({
                       className="w-full"
                       asChild
                     >
-                      <Link href={`/seller/${ps.seller_id}`}>
-                        <GraduationCap className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
+                      <Link href={`/sellers/${ps.seller_id}`}>
                         プロフィールを見る
                       </Link>
                     </Button>
@@ -576,7 +551,6 @@ export default async function ProblemDetailPage({
                   targetId={id}
                   trigger={
                     <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-                      <Flag className="mr-1 h-3 w-3" aria-hidden="true" />
                       この問題セットを報告
                     </Button>
                   }
@@ -592,17 +566,16 @@ export default async function ProblemDetailPage({
               <div className="mb-6 flex items-center justify-between">
                 <h2
                   id="related-heading"
-                  className="flex items-center gap-2 text-lg font-semibold"
+                  className="text-lg font-semibold"
                 >
-                  <TrendingUp className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                   関連する問題セット
                 </h2>
-                <Button variant="ghost" size="sm" asChild>
-                  <Link href={`/explore?subject=${ps.subject}`}>
-                    もっと見る
-                    <ChevronRight className="ml-1 h-3.5 w-3.5" aria-hidden="true" />
-                  </Link>
-                </Button>
+                <Link
+                  href={`/explore?subject=${ps.subject}`}
+                  className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  もっと見る
+                </Link>
               </div>
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 {relatedWithSellers.map((related) => (

@@ -3,7 +3,7 @@ import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, CreditCard } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Metadata } from "next";
 
@@ -100,8 +100,7 @@ export default async function PayoutsPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle className="text-base">振込設定</CardTitle>
-              <span className="flex items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+              <span className="text-xs font-medium text-primary">
                 接続済み
               </span>
             </div>
@@ -126,9 +125,6 @@ export default async function PayoutsPage() {
       ) : (
         <Card className="border-dashed">
           <CardContent className="py-12 text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-muted">
-              <CreditCard className="h-7 w-7 text-muted-foreground/60" />
-            </div>
             <h3 className="mb-1 text-base font-semibold">
               Stripe Connectの設定が必要です
             </h3>

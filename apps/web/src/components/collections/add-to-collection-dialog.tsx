@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Loader2, FolderPlus, Check, Plus } from "lucide-react";
+import { Loader2, Check, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
@@ -177,7 +177,6 @@ export function AddToCollectionDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <FolderPlus className="mr-1 h-3.5 w-3.5" />
           コレクションに追加
         </Button>
       </DialogTrigger>
@@ -285,10 +284,8 @@ export function AddToCollectionDialog({
                     disabled={!newName.trim() || isCreating}
                     onClick={handleCreateAndAdd}
                   >
-                    {isCreating ? (
+                    {isCreating && (
                       <Loader2 className="mr-1 h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Plus className="mr-1 h-3.5 w-3.5" />
                     )}
                     作成して追加
                   </Button>
@@ -302,7 +299,6 @@ export function AddToCollectionDialog({
                 className="w-full"
                 onClick={() => setShowCreateForm(true)}
               >
-                <FolderPlus className="mr-1.5 h-3.5 w-3.5" />
                 新しいコレクションを作成
               </Button>
             )}

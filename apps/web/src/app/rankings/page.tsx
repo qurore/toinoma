@@ -5,8 +5,7 @@ import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { SiteFooter } from "@/components/navigation/site-footer";
 import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Flame, Star, TrendingUp, Trophy } from "lucide-react";
+import { Star } from "lucide-react";
 import {
   SUBJECT_LABELS,
   DIFFICULTY_LABELS,
@@ -21,18 +20,12 @@ export const metadata: Metadata = {
     "人気の問題セットランキング。科目別・総合ランキングをチェック。",
 };
 
-// ── Rank badge styling ──────────────────────────────────────────────────
+// ── Rank number styling ──────────────────────────────────────────────────
 
 const RANK_STYLES: Record<number, string> = {
-  1: "bg-amber-100 text-amber-700 border-amber-300 font-bold",
-  2: "bg-gray-100 text-gray-600 border-gray-300 font-bold",
-  3: "bg-orange-100 text-orange-600 border-orange-300 font-bold",
-};
-
-const DIFFICULTY_COLORS: Record<string, string> = {
-  easy: "bg-primary-50 text-primary-700 border-primary-200",
-  medium: "bg-amber-50 text-amber-700 border-amber-200",
-  hard: "bg-red-50 text-red-700 border-red-200",
+  1: "text-foreground font-bold",
+  2: "text-foreground font-semibold",
+  3: "text-foreground font-medium",
 };
 
 // ── Enriched problem set type ───────────────────────────────────────────
@@ -54,7 +47,7 @@ interface RankedSet {
 
 function RankingCard({ ps, rank }: { ps: RankedSet; rank: number }) {
   const rankStyle =
-    RANK_STYLES[rank] ?? "bg-muted text-muted-foreground";
+    RANK_STYLES[rank] ?? "text-muted-foreground font-normal";
 
   return (
     <Link href={`/problem/${ps.id}`}>
@@ -62,7 +55,7 @@ function RankingCard({ ps, rank }: { ps: RankedSet; rank: number }) {
         <CardContent className="flex items-center gap-3 p-3 sm:gap-4 sm:p-4">
           {/* Rank number */}
           <span
-            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-sm tabular-nums sm:h-9 sm:w-9 ${rankStyle}`}
+            className={`flex h-8 w-8 shrink-0 items-center justify-center text-sm tabular-nums sm:h-9 sm:w-9 ${rankStyle}`}
           >
             {rank}
           </span>
@@ -72,31 +65,17 @@ function RankingCard({ ps, rank }: { ps: RankedSet; rank: number }) {
             <p className="truncate text-sm font-semibold sm:text-base">
               {ps.title}
             </p>
-            <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
-              <Badge
-                className="border border-border bg-secondary text-[10px] font-medium text-secondary-foreground sm:text-[11px]"
-              >
-                {SUBJECT_LABELS[ps.subject as Subject]}
-              </Badge>
-              <Badge
-                className={`border text-[10px] font-medium sm:text-[11px] ${
-                  DIFFICULTY_COLORS[ps.difficulty] ?? ""
-                }`}
-              >
-                {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-              </Badge>
-              <span className="hidden text-xs text-muted-foreground sm:inline">
-                {ps.sellerName}
-              </span>
+            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+              <span>{SUBJECT_LABELS[ps.subject as Subject]}</span>
+              <span>{DIFFICULTY_LABELS[ps.difficulty as Difficulty]}</span>
+              <span className="hidden sm:inline">{ps.sellerName}</span>
               {ps.avgRating !== null && (
-                <span className="flex items-center gap-0.5 text-xs">
+                <span className="flex items-center gap-0.5">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="font-medium">
+                  <span className="font-medium text-foreground">
                     {ps.avgRating.toFixed(1)}
                   </span>
-                  <span className="text-muted-foreground/60">
-                    ({ps.reviewCount})
-                  </span>
+                  <span>({ps.reviewCount})</span>
                 </span>
               )}
             </div>
@@ -249,14 +228,11 @@ export default async function RankingsPage({
         />
 
         {/* Header */}
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-            <Trophy className="h-6 w-6 text-foreground" />
-          </div>
+        <div className="mb-8">
           <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
             ランキング
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-muted-foreground">
             人気の問題セット Top 50
           </p>
         </div>
@@ -265,24 +241,22 @@ export default async function RankingsPage({
         <div className="mb-4 flex items-center gap-2">
           <Link
             href={`/rankings${subjectFilter ? `?subject=${subjectFilter}` : ""}`}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               !isRatingTab
                 ? "bg-foreground text-background shadow-sm"
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Flame className="h-4 w-4" />
             購入数ランキング
           </Link>
           <Link
             href={`/rankings?tab=rating${subjectFilter ? `&subject=${subjectFilter}` : ""}`}
-            className={`inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+            className={`inline-flex items-center rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
               isRatingTab
                 ? "bg-foreground text-background shadow-sm"
                 : "bg-muted text-muted-foreground hover:text-foreground"
             }`}
           >
-            <Star className="h-4 w-4" />
             高評価ランキング
           </Link>
         </div>
@@ -318,7 +292,6 @@ export default async function RankingsPage({
         {ranked.length === 0 ? (
           <Card>
             <CardContent className="py-16 text-center">
-              <TrendingUp className="mx-auto mb-3 h-10 w-10 text-muted-foreground/50" />
               <p className="font-medium text-muted-foreground">
                 {isRatingTab
                   ? "まだレビューのある問題セットがありません"

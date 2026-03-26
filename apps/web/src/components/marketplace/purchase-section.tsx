@@ -6,13 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  Loader2,
-  BookOpen,
-  ShoppingCart,
-  CheckCircle2,
-  LogIn,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { CouponInput } from "@/components/marketplace/coupon-input";
 
 interface AppliedCoupon {
@@ -44,15 +38,11 @@ export function PurchaseSection({
   // ── Purchased state: solve CTA + history link ──
   if (hasPurchased) {
     return (
-      <Card className="border-primary/20 bg-gradient-to-b from-primary/5 to-transparent">
+      <Card className="border-primary/20">
         <CardContent className="space-y-3 p-5">
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="h-4 w-4 text-success" aria-hidden="true" />
-            <span className="text-sm font-medium text-success">購入済み</span>
-          </div>
+          <p className="text-sm font-medium text-success">購入済み</p>
           <Button size="lg" className="w-full" asChild>
             <Link href={`/problem/${problemSetId}/solve`}>
-              <BookOpen className="mr-2 h-4 w-4" aria-hidden="true" />
               この問題を解く
             </Link>
           </Button>
@@ -84,7 +74,6 @@ export function PurchaseSection({
           </div>
           <Button size="lg" className="w-full" asChild>
             <Link href={`/login?next=/problem/${problemSetId}`}>
-              <LogIn className="mr-2 h-4 w-4" aria-hidden="true" />
               ログインして購入
             </Link>
           </Button>
@@ -180,9 +169,7 @@ export function PurchaseSection({
         >
           {isLoading ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
-          ) : (
-            <ShoppingCart className="mr-2 h-4 w-4" aria-hidden="true" />
-          )}
+          ) : null}
           この問題を入手する
         </Button>
 

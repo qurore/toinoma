@@ -3,7 +3,6 @@ import { createClient } from "@/lib/supabase/server";
 import { WelcomeWizard } from "@/components/onboarding/welcome-wizard";
 import type { Subject } from "@/types/database";
 import type { Metadata } from "next";
-import { BookOpen } from "lucide-react";
 import Link from "next/link";
 
 export const metadata: Metadata = {
@@ -37,22 +36,14 @@ export default async function WelcomePage() {
   if (hasCompletedOnboarding) redirect("/dashboard");
 
   return (
-    <main className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-background px-4 py-12">
-      {/* Decorative gradient background */}
-      <div className="pointer-events-none absolute inset-0 overflow-hidden">
-        <div className="absolute -left-1/4 -top-1/4 h-[600px] w-[600px] rounded-full bg-primary/5 blur-3xl" />
-        <div className="absolute -bottom-1/4 -right-1/4 h-[400px] w-[400px] rounded-full bg-accent/5 blur-3xl" />
-      </div>
-
-      {/* Content */}
-      <div className="relative z-10 w-full max-w-lg">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background px-4 py-12">
+      <div className="w-full max-w-lg">
         {/* Brand header */}
-        <div className="mb-8 text-center animate-fade-up">
+        <div className="mb-8 text-center">
           <Link
             href="/"
             className="mb-4 inline-flex items-center gap-2 transition-opacity hover:opacity-80"
           >
-            <BookOpen className="h-7 w-7 text-primary" aria-hidden="true" />
             <div className="flex flex-col leading-none">
               <span className="font-display text-xl font-bold text-foreground">
                 問の間
@@ -71,13 +62,11 @@ export default async function WelcomePage() {
         </div>
 
         {/* Wizard card */}
-        <div className="animate-fade-up [animation-delay:150ms] [animation-fill-mode:backwards]">
-          <WelcomeWizard
-            initialDisplayName={profile?.display_name ?? ""}
-            initialAvatarUrl={profile?.avatar_url ?? null}
-            initialSubjects={(profile?.preferred_subjects ?? []) as Subject[]}
-          />
-        </div>
+        <WelcomeWizard
+          initialDisplayName={profile?.display_name ?? ""}
+          initialAvatarUrl={profile?.avatar_url ?? null}
+          initialSubjects={(profile?.preferred_subjects ?? []) as Subject[]}
+        />
       </div>
     </main>
   );

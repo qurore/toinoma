@@ -4,15 +4,12 @@ import { useState, useCallback } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 import {
-  CheckCircle2,
   ChevronUp,
   Loader2,
   MoreVertical,
-  Store,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -207,22 +204,17 @@ function AnswerItem({
           <span className="text-sm font-medium">
             {answer.user.display_name ?? "匿名ユーザー"}
           </span>
-          {/* Seller badge */}
+          {/* Seller indicator */}
           {answer.is_seller && (
-            <Badge
-              variant="outline"
-              className="gap-1 border-primary/40 text-primary"
-            >
-              <Store className="h-3 w-3" />
+            <span className="text-xs font-medium text-primary">
               出品者
-            </Badge>
+            </span>
           )}
           <span className="text-xs text-muted-foreground">{timeAgo}</span>
           {answer.is_accepted && (
-            <Badge className="gap-1 border-emerald-300 bg-emerald-100 text-emerald-700 shadow-sm hover:bg-emerald-100 dark:border-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-              <CheckCircle2 className="h-3.5 w-3.5 fill-emerald-200 dark:fill-emerald-800" />
+            <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400">
               ベストアンサー
-            </Badge>
+            </span>
           )}
         </div>
 
@@ -250,7 +242,6 @@ function AnswerItem({
                   onClick={handleAccept}
                   disabled={isAccepting}
                 >
-                  <CheckCircle2 className="mr-2 h-4 w-4" />
                   {answer.is_accepted
                     ? "ベストアンサーを取り消す"
                     : "ベストアンサーに選ぶ"}

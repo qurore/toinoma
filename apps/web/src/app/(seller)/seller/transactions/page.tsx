@@ -1,13 +1,10 @@
 import Link from "next/link";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   ChevronLeft,
   ChevronRight,
-  Receipt,
-  Ticket,
 } from "lucide-react";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { getTransactions } from "./actions";
@@ -132,9 +129,6 @@ export default async function SellerTransactionsPage(props: {
       {transactions.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <Receipt className="h-6 w-6 text-foreground/60" />
-            </div>
             <p className="mb-2 text-lg font-medium">
               取引がありません
             </p>
@@ -198,15 +192,14 @@ export default async function SellerTransactionsPage(props: {
                       </td>
                       <td className="px-4 py-3 text-center">
                         {tx.coupon_code ? (
-                          <Badge variant="secondary" className="gap-1">
-                            <Ticket className="h-3 w-3" />
-                            {tx.coupon_code}
+                          <span className="text-xs">
+                            <span className="font-mono">{tx.coupon_code}</span>
                             {tx.discount_amount > 0 && (
-                              <span className="text-xs">
+                              <span className="ml-1 text-muted-foreground">
                                 (-¥{tx.discount_amount.toLocaleString()})
                               </span>
                             )}
-                          </Badge>
+                          </span>
                         ) : (
                           <span className="text-muted-foreground">—</span>
                         )}

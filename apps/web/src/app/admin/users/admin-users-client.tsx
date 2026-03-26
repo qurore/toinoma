@@ -363,7 +363,7 @@ export function AdminUsersClient({
                               <DropdownMenuItem
                                 onClick={() =>
                                   window.open(
-                                    `/seller/${u.id}`,
+                                    `/sellers/${u.id}`,
                                     "_blank"
                                   )
                                 }

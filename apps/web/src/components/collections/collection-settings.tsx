@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Separator } from "@/components/ui/separator";
-import { Settings, Loader2, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   updateCollection,
   deleteCollection,
@@ -71,7 +71,6 @@ export function CollectionSettings({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
-          <Settings className="mr-1 h-3.5 w-3.5" />
           設定
         </Button>
       </DialogTrigger>
@@ -128,10 +127,8 @@ export function CollectionSettings({
                 disabled={isDeleting}
                 className="w-full"
               >
-                {isDeleting ? (
+                {isDeleting && (
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                ) : (
-                  <Trash2 className="mr-1.5 h-4 w-4" />
                 )}
                 コレクションを削除
               </Button>
@@ -152,10 +149,8 @@ export function CollectionSettings({
                   disabled={isDeleting}
                   className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  {isDeleting ? (
+                  {isDeleting && (
                     <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-                  ) : (
-                    <Trash2 className="mr-1.5 h-4 w-4" />
                   )}
                   削除する
                 </AlertDialogAction>

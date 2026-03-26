@@ -95,7 +95,6 @@ export function PoolFilterBar({
       </Select>
 
       <Button type="submit" size="sm">
-        <Search className="mr-1.5 h-3.5 w-3.5" />
         検索
       </Button>
 

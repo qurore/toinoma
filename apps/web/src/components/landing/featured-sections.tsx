@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowRight, TrendingUp, Clock, Star } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import {
   ProblemSetCard,
@@ -8,18 +7,16 @@ import {
 import type { Subject, Difficulty } from "@/types/database";
 
 // ──────────────────────────────────────────────
-// Shared section wrapper
+// Shared section wrapper — text-only headers
 // ──────────────────────────────────────────────
 
 function SectionWrapper({
-  icon: Icon,
   title,
   subtitle,
   href,
   children,
   className,
 }: {
-  icon: React.ComponentType<{ className?: string }>;
   title: string;
   subtitle: string;
   href: string;
@@ -32,22 +29,16 @@ function SectionWrapper({
         {/* Header */}
         <div className="mb-8 flex items-end justify-between">
           <div>
-            <div className="mb-2 flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted">
-                <Icon className="h-4 w-4 text-foreground" />
-              </div>
-              <h2 className="font-display text-xl font-bold tracking-tight sm:text-2xl">
-                {title}
-              </h2>
-            </div>
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <h2 className="font-display text-xl font-bold tracking-tight sm:text-2xl">
+              {title}
+            </h2>
+            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
           </div>
           <Link
             href={href}
-            className="group hidden items-center gap-1 rounded-md px-3 py-1.5 text-sm font-medium text-primary transition-colors hover:bg-primary/5 hover:text-primary/80 sm:flex"
+            className="hidden text-sm font-medium text-muted-foreground transition-colors hover:text-foreground sm:block"
           >
-            すべて見る
-            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            もっと見る
           </Link>
         </div>
 
@@ -58,10 +49,9 @@ function SectionWrapper({
         <div className="mt-6 text-center sm:hidden">
           <Link
             href={href}
-            className="inline-flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/5 px-5 py-2 text-sm font-medium text-primary transition-colors hover:bg-primary/10"
+            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
-            すべて見る
-            <ArrowRight className="h-3.5 w-3.5" />
+            もっと見る
           </Link>
         </div>
       </div>
@@ -207,7 +197,6 @@ export async function TrendingSection() {
 
   return (
     <SectionWrapper
-      icon={TrendingUp}
       title="人気の問題セット"
       subtitle="直近30日間で最も購入されている問題セット"
       href="/explore?sort=popular"
@@ -241,7 +230,6 @@ export async function NewArrivalsSection() {
 
   return (
     <SectionWrapper
-      icon={Clock}
       title="新着問題セット"
       subtitle="最近公開された問題セット"
       href="/explore?sort=newest"
@@ -309,7 +297,6 @@ export async function TopRatedSection() {
 
   return (
     <SectionWrapper
-      icon={Star}
       title="高評価の問題セット"
       subtitle="3件以上のレビューで高い評価を得ている問題セット"
       href="/explore?sort=highest_rated"

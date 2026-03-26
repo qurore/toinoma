@@ -2,67 +2,23 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  History,
-  Heart,
-  FolderOpen,
-  BarChart3,
-  Settings,
-  Clock,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import type { SubscriptionTier } from "@/types/database";
 
 // Primary dashboard nav items — all under /dashboard
 export const NAV_ITEMS = [
-  {
-    href: "/dashboard",
-    label: "ダッシュボード",
-    icon: LayoutDashboard,
-    exact: true,
-  },
-  {
-    href: "/dashboard/history",
-    label: "解答履歴",
-    icon: History,
-    exact: false,
-  },
-  {
-    href: "/dashboard/favorites",
-    label: "お気に入り",
-    icon: Heart,
-    exact: false,
-  },
-  {
-    href: "/dashboard/collections",
-    label: "コレクション",
-    icon: FolderOpen,
-    exact: false,
-  },
-  {
-    href: "/dashboard/recently-viewed",
-    label: "最近の閲覧",
-    icon: Clock,
-    exact: false,
-  },
-  {
-    href: "/dashboard/analytics",
-    label: "学習分析",
-    icon: BarChart3,
-    exact: false,
-  },
+  { href: "/dashboard", label: "ダッシュボード", exact: true },
+  { href: "/dashboard/history", label: "解答履歴", exact: false },
+  { href: "/dashboard/favorites", label: "お気に入り", exact: false },
+  { href: "/dashboard/collections", label: "コレクション", exact: false },
+  { href: "/dashboard/recently-viewed", label: "最近の閲覧", exact: false },
+  { href: "/dashboard/analytics", label: "学習分析", exact: false },
 ] as const;
 
 // Secondary items displayed in a separate section at the bottom of the nav
 export const SECONDARY_NAV_ITEMS = [
-  {
-    href: "/settings",
-    label: "設定",
-    icon: Settings,
-    exact: false,
-  },
+  { href: "/settings", label: "設定", exact: false },
 ] as const;
 
 // Subscription tier display config
@@ -114,15 +70,15 @@ export function SidebarNav({
             const isActive = item.exact
               ? pathname === item.href
               : pathname.startsWith(item.href);
-            const Icon = item.icon;
 
             return (
               <li key={item.href}>
                 <Link
                   href={item.href}
                   className={cn(
-                    "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                    "relative flex items-center rounded-md px-3 py-2 text-sm font-medium",
                     "transition-colors duration-150",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                     isActive
                       ? "bg-primary/10 text-primary"
                       : "text-muted-foreground hover:bg-muted hover:text-foreground"
@@ -132,7 +88,6 @@ export function SidebarNav({
                   {isActive && (
                     <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
                   )}
-                  <Icon className="h-4 w-4 shrink-0" />
                   {item.label}
                 </Link>
               </li>
@@ -147,7 +102,6 @@ export function SidebarNav({
               const isActive = item.exact
                 ? pathname === item.href
                 : pathname.startsWith(item.href);
-              const Icon = item.icon;
 
               return (
                 <li key={item.href}>
@@ -155,14 +109,14 @@ export function SidebarNav({
                     href={item.href}
                     aria-current={isActive ? "page" : undefined}
                     className={cn(
-                      "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                      "relative flex items-center rounded-md px-3 py-2 text-sm font-medium",
                       "transition-colors duration-150",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                       isActive
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     )}
                   >
-                    <Icon className="h-4 w-4 shrink-0" />
                     {item.label}
                   </Link>
                 </li>

@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Select,
@@ -18,15 +17,7 @@ import {
 import {
   Plus,
   Trash2,
-  Save,
   Loader2,
-  GripVertical,
-  AlertCircle,
-  CheckCircle2,
-  FileText,
-  CheckSquare,
-  Type,
-  ListChecks,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 // Constants imported for type labels in the type tab configuration
@@ -35,16 +26,15 @@ import { saveRubric } from "@/app/(seller)/seller/actions";
 
 type AnswerType = "essay" | "mark_sheet" | "fill_in_blank" | "multiple_choice";
 
-// Type tab configuration with icons
+// Type tab configuration
 const TYPE_TABS: Array<{
   value: AnswerType;
   label: string;
-  icon: typeof FileText;
 }> = [
-  { value: "essay", label: "記述式", icon: FileText },
-  { value: "mark_sheet", label: "マークシート", icon: CheckSquare },
-  { value: "fill_in_blank", label: "穴埋め", icon: Type },
-  { value: "multiple_choice", label: "選択式", icon: ListChecks },
+  { value: "essay", label: "記述式" },
+  { value: "mark_sheet", label: "マークシート" },
+  { value: "fill_in_blank", label: "穴埋め" },
+  { value: "multiple_choice", label: "選択式" },
 ];
 
 interface EditableQuestion {
@@ -228,9 +218,6 @@ function EssayFields({
         <div className="flex items-center justify-between">
           <Label className="text-xs text-muted-foreground">採点要素</Label>
           <div className="flex items-center gap-1.5">
-            {pointsMismatch && (
-              <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
-            )}
             <span
               className={cn(
                 "text-xs font-medium",
@@ -654,8 +641,7 @@ function MultipleChoiceFields({
         <div className="flex items-center justify-between">
           <Label className="text-xs text-muted-foreground">正解</Label>
           {hasNoCorrect && (
-            <span className="flex items-center gap-1 text-xs text-destructive">
-              <AlertCircle className="h-3 w-3" />
+            <span className="text-xs text-destructive">
               正解を選択してください
             </span>
           )}
@@ -875,17 +861,12 @@ export function RubricEditor({
       {message && (
         <div
           className={cn(
-            "flex items-center gap-2 rounded-md p-3 text-sm",
+            "rounded-md p-3 text-sm",
             message.type === "success"
               ? "bg-success/10 text-success"
               : "bg-destructive/10 text-destructive"
           )}
         >
-          {message.type === "success" ? (
-            <CheckCircle2 className="h-4 w-4 shrink-0" />
-          ) : (
-            <AlertCircle className="h-4 w-4 shrink-0" />
-          )}
           {message.text}
         </div>
       )}
@@ -932,9 +913,9 @@ export function RubricEditor({
                 大問{section.number}
               </CardTitle>
               <div className="flex items-center gap-2">
-                <Badge variant="secondary" className="text-xs">
+                <span className="text-xs text-muted-foreground">
                   小問合計: {sectionPointTotals[sectionIdx]}点
-                </Badge>
+                </span>
                 <Label className="text-xs text-muted-foreground">
                   配点
                 </Label>
@@ -990,19 +971,15 @@ export function RubricEditor({
               >
                 {/* Validation warnings */}
                 {hasIssues && (
-                  <div className="flex items-start gap-2 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
-                    <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-                    <div className="space-y-0.5">
-                      {validationIssues.map((issue) => (
-                        <p key={issue}>{issue}</p>
-                      ))}
-                    </div>
+                  <div className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:bg-amber-950/30 dark:text-amber-200">
+                    {validationIssues.map((issue) => (
+                      <p key={issue}>{issue}</p>
+                    ))}
                   </div>
                 )}
 
                 {/* Question header row */}
                 <div className="flex items-center gap-3">
-                  <GripVertical className="h-4 w-4 text-muted-foreground" />
                   <Input
                     value={question.number}
                     onChange={(e) =>
@@ -1018,7 +995,6 @@ export function RubricEditor({
                   {/* Tab-based type selector */}
                   <div className="flex rounded-md border border-input">
                     {TYPE_TABS.map((tab) => {
-                      const TabIcon = tab.icon;
                       const isActive = question.type === tab.value;
                       return (
                         <button
@@ -1032,16 +1008,13 @@ export function RubricEditor({
                             )
                           }
                           className={cn(
-                            "flex items-center gap-1 px-2.5 py-1 text-xs font-medium transition-colors first:rounded-l-md last:rounded-r-md",
+                            "px-2.5 py-1 text-xs font-medium transition-colors first:rounded-l-md last:rounded-r-md",
                             isActive
                               ? "bg-primary text-primary-foreground"
                               : "hover:bg-muted"
                           )}
                         >
-                          <TabIcon className="h-3 w-3" />
-                          <span className="hidden sm:inline">
-                            {tab.label}
-                          </span>
+                          {tab.label}
                         </button>
                       );
                     })}
@@ -1148,11 +1121,8 @@ export function RubricEditor({
 
       {/* Validation summary */}
       {totalValidationIssues > 0 && (
-        <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50/50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950/20 dark:text-amber-200">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>
-            {totalValidationIssues}件の入力不備があります。保存はできますが、公開前に修正してください。
-          </span>
+        <div className="rounded-md border border-amber-300 bg-amber-50/50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700 dark:bg-amber-950/20 dark:text-amber-200">
+          {totalValidationIssues}件の入力不備があります。保存はできますが、公開前に修正してください。
         </div>
       )}
 
@@ -1181,10 +1151,8 @@ export function RubricEditor({
           disabled={isSaving}
           className="flex-1"
         >
-          {isSaving ? (
+          {isSaving && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="mr-2 h-4 w-4" />
           )}
           ルーブリックを保存
         </Button>

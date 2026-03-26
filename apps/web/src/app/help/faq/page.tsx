@@ -3,16 +3,7 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
-import {
-  ChevronDown,
-  Search,
-  HelpCircle,
-  ShoppingCart,
-  Store,
-  CreditCard,
-  Brain,
-  UserCog,
-} from "lucide-react";
+import { ChevronDown, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -29,8 +20,6 @@ interface FaqItem {
 interface FaqCategory {
   id: string;
   title: string;
-  icon: typeof ShoppingCart;
-  color: string;
   items: FaqItem[];
 }
 
@@ -38,8 +27,6 @@ const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "buyer",
     title: "購入者向け",
-    icon: ShoppingCart,
-    color: "text-primary",
     items: [
       {
         id: "b1",
@@ -70,8 +57,6 @@ const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "seller",
     title: "出品者向け",
-    icon: Store,
-    color: "text-primary",
     items: [
       {
         id: "s1",
@@ -102,8 +87,6 @@ const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "subscription",
     title: "サブスクリプション",
-    icon: CreditCard,
-    color: "text-primary",
     items: [
       {
         id: "sub1",
@@ -134,8 +117,6 @@ const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "grading",
     title: "AI採点",
-    icon: Brain,
-    color: "text-primary",
     items: [
       {
         id: "g1",
@@ -160,8 +141,6 @@ const FAQ_CATEGORIES: FaqCategory[] = [
   {
     id: "account",
     title: "アカウント",
-    icon: UserCog,
-    color: "text-primary",
     items: [
       {
         id: "a1",
@@ -293,10 +272,7 @@ export default function FaqPage() {
       />
 
       {/* Header */}
-      <div className="mb-8 text-center">
-        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
-          <HelpCircle className="h-6 w-6 text-primary" />
-        </div>
+      <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight sm:text-3xl">
           よくある質問
         </h1>
@@ -326,9 +302,6 @@ export default function FaqPage() {
       {/* FAQ categories */}
       {filteredCategories.length === 0 ? (
         <div className="flex flex-col items-center py-16 text-center">
-          <div className="mb-3 rounded-full bg-muted p-4">
-            <HelpCircle className="h-8 w-8 text-muted-foreground" />
-          </div>
           <p className="font-medium">該当するFAQが見つかりませんでした</p>
           <p className="mt-1 text-sm text-muted-foreground">
             キーワードを変えるか、
@@ -347,30 +320,26 @@ export default function FaqPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          {filteredCategories.map((category) => {
-            const Icon = category.icon;
-            return (
-              <section key={category.id} id={category.id}>
-                <div className="mb-3 flex items-center gap-2">
-                  <Icon className={cn("h-5 w-5", category.color)} />
-                  <h2 className="text-lg font-semibold">{category.title}</h2>
-                  <span className="text-sm text-muted-foreground">
-                    ({category.items.length})
-                  </span>
-                </div>
-                <div className="overflow-hidden rounded-lg border border-border bg-card">
-                  {category.items.map((item) => (
-                    <FaqAccordionItem
-                      key={item.id}
-                      item={item}
-                      isOpen={openItems.has(item.id)}
-                      onToggle={() => toggleItem(item.id)}
-                    />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+          {filteredCategories.map((category) => (
+            <section key={category.id} id={category.id}>
+              <div className="mb-3 flex items-center gap-2">
+                <h2 className="text-lg font-semibold">{category.title}</h2>
+                <span className="text-sm text-muted-foreground">
+                  ({category.items.length})
+                </span>
+              </div>
+              <div className="overflow-hidden rounded-lg border border-border bg-card">
+                {category.items.map((item) => (
+                  <FaqAccordionItem
+                    key={item.id}
+                    item={item}
+                    isOpen={openItems.has(item.id)}
+                    onToggle={() => toggleItem(item.id)}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       )}
     </main>

@@ -29,11 +29,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Save,
   AlertTriangle,
   Clock,
-  FileText,
-  Edit3,
   CheckCircle2,
   Loader2,
   Send,
@@ -1016,7 +1013,6 @@ export function SolveClient({
         <div className="flex items-center gap-2">
           <AutoSaveIndicator lastSaved={lastSavedAt} />
           <Button variant="outline" size="sm" onClick={handleSaveDraft}>
-            <Save className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
             保存
           </Button>
         </div>
@@ -1040,7 +1036,6 @@ export function SolveClient({
               style={{ width: `${dividerPosition}%` }}
             >
               <div className="flex h-10 items-center border-b border-border bg-muted/50 px-3">
-                <FileText className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <span className="text-xs font-medium text-muted-foreground">
                   問題用紙
                 </span>
@@ -1064,7 +1059,6 @@ export function SolveClient({
               style={{ width: `${100 - dividerPosition}%` }}
             >
               <div className="mb-3 flex h-10 items-center rounded-t-lg border border-b-0 border-border bg-muted/50 px-3">
-                <Edit3 className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
                 <span className="text-xs font-medium text-muted-foreground">
                   解答用紙
                 </span>
@@ -1089,11 +1083,9 @@ export function SolveClient({
             >
               <TabsList className="mb-4 w-full">
                 <TabsTrigger value="problem" className="flex-1">
-                  <FileText className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                   問題文
                 </TabsTrigger>
                 <TabsTrigger value="answers" className="flex-1">
-                  <Edit3 className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                   解答
                   {progress.totalAnswered > 0 && (
                     <span className="ml-1.5 rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-primary">

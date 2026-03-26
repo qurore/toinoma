@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, Home, MessageCircle, AlertTriangle } from "lucide-react";
 
 export default function ErrorPage({
   error,
@@ -27,9 +26,6 @@ export default function ErrorPage({
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center px-4 text-center">
-      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10">
-        <AlertTriangle className="h-8 w-8 text-destructive" />
-      </div>
       <p className="mb-2 text-sm font-medium text-destructive">
         エラーが発生しました
       </p>
@@ -51,14 +47,12 @@ export default function ErrorPage({
       {/* Primary actions */}
       <div className="mb-6 flex flex-wrap justify-center gap-3">
         <Button onClick={reset}>
-          <RefreshCw className="mr-1.5 h-4 w-4" />
           再読み込み
         </Button>
         <Button
           variant="outline"
           onClick={() => (window.location.href = "/")}
         >
-          <Home className="mr-1.5 h-4 w-4" />
           ホームに戻る
         </Button>
       </div>
@@ -68,9 +62,8 @@ export default function ErrorPage({
         <button
           type="button"
           onClick={() => setShowReport(true)}
-          className="flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          className="text-sm text-muted-foreground transition-colors hover:text-foreground"
         >
-          <MessageCircle className="h-3.5 w-3.5" />
           このエラーを報告する
         </button>
       ) : (

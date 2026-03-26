@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import { FileText, Edit3, GripVertical } from "lucide-react";
+import { GripVertical } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ──────────────────────────────────────────────
@@ -159,7 +159,6 @@ export function SplitSolveLayout({
               : "border-transparent text-muted-foreground hover:text-foreground"
           )}
         >
-          <FileText className="h-4 w-4" />
           問題文
         </button>
         <button
@@ -172,7 +171,6 @@ export function SplitSolveLayout({
               : "border-transparent text-muted-foreground hover:text-foreground"
           )}
         >
-          <Edit3 className="h-4 w-4" />
           解答
           {answerBadge && (
             <span className="rounded-full bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold tabular-nums text-primary">
@@ -210,8 +208,7 @@ export function SplitSolveLayout({
           style={{ width: `${dividerPct}%` }}
         >
           {/* Pane label */}
-          <div className="flex h-9 shrink-0 items-center gap-1.5 border-b border-border bg-muted/40 px-3">
-            <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="flex h-9 shrink-0 items-center border-b border-border bg-muted/40 px-3">
             <span className="text-xs font-medium text-muted-foreground">
               問題用紙
             </span>
@@ -230,7 +227,6 @@ export function SplitSolveLayout({
         >
           {/* Pane label */}
           <div className="flex h-9 shrink-0 items-center gap-1.5 border-b border-border bg-muted/40 px-3">
-            <Edit3 className="h-3.5 w-3.5 text-muted-foreground" />
             <span className="text-xs font-medium text-muted-foreground">
               解答用紙
             </span>

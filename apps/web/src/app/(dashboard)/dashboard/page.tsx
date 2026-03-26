@@ -2,12 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  ArrowRight,
-  ChevronRight,
-} from "lucide-react";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import {
   ProblemSetCard,
@@ -206,20 +201,22 @@ export default async function DashboardPage() {
         <>
           {/* 4 stat cards — each links to a relevant drill-down view */}
           <div className="stagger-children mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  購入済みセット
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-3xl font-bold tabular-nums">{purchaseCount ?? 0}</p>
-                <p className="mt-1 text-xs text-muted-foreground">購入した問題セット</p>
-              </CardContent>
-            </Card>
+            <Link href="/dashboard/history" className="group">
+              <Card className="transition-shadow group-hover:shadow-md cursor-pointer">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    購入済みセット
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-3xl font-bold tabular-nums">{purchaseCount ?? 0}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">購入した問題セット</p>
+                </CardContent>
+              </Card>
+            </Link>
 
             <Link href="/dashboard/history" className="group">
-              <Card className="transition-colors group-hover:border-primary/20">
+              <Card className="transition-shadow group-hover:shadow-md cursor-pointer">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     総解答回数
@@ -233,7 +230,7 @@ export default async function DashboardPage() {
             </Link>
 
             <Link href="/dashboard/analytics" className="group">
-              <Card className="transition-colors group-hover:border-primary/20">
+              <Card className="transition-shadow group-hover:shadow-md cursor-pointer">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground">
                     平均正答率
@@ -250,22 +247,24 @@ export default async function DashboardPage() {
               </Card>
             </Link>
 
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
-                  連続学習日数
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-baseline gap-1">
-                  <p className="text-3xl font-bold tabular-nums">{currentStreak}</p>
-                  <span className="text-sm text-muted-foreground">日</span>
-                </div>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  {currentStreak > 0 ? "継続中!" : "今日から始めましょう"}
-                </p>
-              </CardContent>
-            </Card>
+            <Link href="/dashboard/analytics" className="group">
+              <Card className="transition-shadow group-hover:shadow-md cursor-pointer">
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
+                    連続学習日数
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-baseline gap-1">
+                    <p className="text-3xl font-bold tabular-nums">{currentStreak}</p>
+                    <span className="text-sm text-muted-foreground">日</span>
+                  </div>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {currentStreak > 0 ? "継続中!" : "今日から始めましょう"}
+                  </p>
+                </CardContent>
+              </Card>
+            </Link>
           </div>
 
           {/* Continue studying section */}
@@ -293,9 +292,9 @@ export default async function DashboardPage() {
                             {ps.title}
                           </p>
                           <div className="mt-1.5 flex items-center gap-2">
-                            <Badge variant="secondary" className="border border-border text-xs">
+                            <span className="text-xs text-muted-foreground">
                               {SUBJECT_LABELS[ps.subject as Subject]}
-                            </Badge>
+                            </span>
                             <span className="text-xs text-muted-foreground">
                               はじめての挑戦
                             </span>
@@ -305,7 +304,6 @@ export default async function DashboardPage() {
                           <Link
                             href={`/problem/${item.problem_set_id}/solve`}
                           >
-                            <ArrowRight className="mr-1.5 h-4 w-4" />
                             解答する
                           </Link>
                         </Button>
@@ -331,7 +329,6 @@ export default async function DashboardPage() {
                 href={`/explore?subject=${preferredSubjects.join(",")}`}
               >
                 もっと見る
-                <ChevronRight className="ml-1 h-3.5 w-3.5" />
               </Link>
             </Button>
           </div>
@@ -356,7 +353,6 @@ export default async function DashboardPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/explore">
                 もっと探す
-                <ChevronRight className="ml-1 h-3.5 w-3.5" />
               </Link>
             </Button>
           </CardHeader>
@@ -389,9 +385,9 @@ export default async function DashboardPage() {
                       </span>
                       <div className="ml-2 flex shrink-0 items-center gap-1.5">
                         {ps?.subject && (
-                          <Badge variant="secondary" className="border border-border text-xs">
+                          <span className="text-xs text-muted-foreground">
                             {SUBJECT_LABELS[ps.subject as Subject]}
-                          </Badge>
+                          </span>
                         )}
                       </div>
                     </Link>
@@ -409,7 +405,6 @@ export default async function DashboardPage() {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/dashboard/history">
                 すべて表示
-                <ChevronRight className="ml-1 h-3.5 w-3.5" />
               </Link>
             </Button>
           </CardHeader>
@@ -459,18 +454,9 @@ export default async function DashboardPage() {
                           </span>
                         )}
                         {percentage !== null && (
-                          <Badge
-                            variant={
-                              percentage >= 80
-                                ? "default"
-                                : percentage >= 50
-                                  ? "secondary"
-                                  : "destructive"
-                            }
-                            className="min-w-[3rem] justify-center tabular-nums"
-                          >
+                          <span className="min-w-[3rem] text-right text-xs font-medium tabular-nums text-foreground">
                             {percentage}%
-                          </Badge>
+                          </span>
                         )}
                       </div>
                     </Link>

@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+// Badge removed — using plain text
 import { ANSWER_TYPE_LABELS } from "@toinoma/shared/constants";
 import type { ProblemSetRubric, SectionRubric, QuestionRubric } from "@toinoma/shared/schemas";
 
@@ -107,9 +107,9 @@ function SectionPreview({
         <h3 className="text-base font-semibold">
           大問 {section.number}
         </h3>
-        <Badge variant="secondary" className="text-xs">
+        <span className="text-xs text-muted-foreground">
           {section.points}点
-        </Badge>
+        </span>
       </div>
 
       <div className="space-y-3 pl-4">
@@ -148,9 +148,9 @@ function QuestionPreviewItem({
           <span className="font-medium">
             {sectionNumber}-{question.number}
           </span>
-          <Badge variant="outline" className="text-[10px]">
+          <span className="text-[10px] text-muted-foreground">
             {typeLabel}
-          </Badge>
+          </span>
           <span className="ml-auto text-xs text-muted-foreground">
             {question.points}点
           </span>
@@ -190,9 +190,9 @@ function QuestionPreviewItem({
         <span className="font-medium">
           {sectionNumber}-{question.number}
         </span>
-        <Badge variant="outline" className="text-[10px]">
+        <span className="text-[10px] text-muted-foreground">
           {typeLabel}
-        </Badge>
+        </span>
         <span className="ml-auto text-xs text-muted-foreground">
           {question.points}点
         </span>

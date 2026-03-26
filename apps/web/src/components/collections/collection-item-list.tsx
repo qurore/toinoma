@@ -4,15 +4,11 @@ import { useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import {
   ArrowUp,
   ArrowDown,
-  Shuffle,
-  RotateCcw,
-  Trash2,
   Loader2,
-  Play,
+  Trash2,
 } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { shuffleArray } from "@toinoma/shared/utils";
@@ -91,7 +87,6 @@ export function CollectionItemList({
             size="sm"
             onClick={handleShuffle}
           >
-            <Shuffle className="mr-1.5 h-3.5 w-3.5" />
             シャッフル
           </Button>
           {isShuffled && (
@@ -100,7 +95,6 @@ export function CollectionItemList({
               size="sm"
               onClick={handleResetOrder}
             >
-              <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
               元に戻す
             </Button>
           )}
@@ -108,7 +102,6 @@ export function CollectionItemList({
             <Link
               href={`/dashboard/collections/${collectionId}/solve${isShuffled ? "?shuffle=true" : ""}`}
             >
-              <Play className="mr-1.5 h-3.5 w-3.5" />
               解き始める
             </Link>
           </Button>
@@ -156,14 +149,17 @@ export function CollectionItemList({
                   </p>
                   <div className="mt-1 flex items-center gap-2">
                     {ps?.subject && (
-                      <Badge variant="secondary" className="border border-border text-xs">
+                      <span className="text-xs text-muted-foreground">
                         {SUBJECT_LABELS[ps.subject as Subject]}
-                      </Badge>
+                      </span>
+                    )}
+                    {ps?.subject && ps?.difficulty && (
+                      <span className="text-xs text-muted-foreground/50">/</span>
                     )}
                     {ps?.difficulty && (
-                      <Badge variant="secondary" className="border border-border text-xs">
+                      <span className="text-xs text-muted-foreground">
                         {DIFFICULTY_LABELS[ps.difficulty as Difficulty]}
-                      </Badge>
+                      </span>
                     )}
                   </div>
                 </Link>

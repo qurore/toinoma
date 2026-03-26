@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { Button } from "@/components/ui/button";
 import { PdfImportWizard } from "@/components/seller/pdf-import-wizard";
@@ -19,8 +18,7 @@ export default async function PdfImportPage() {
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
           <Link href="/seller/pool">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            問題プール
+            &larr; 問題プール
           </Link>
         </Button>
       </div>

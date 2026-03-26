@@ -20,7 +20,7 @@ import {
 } from "@toinoma/shared/constants";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
-import { Upload, X, Loader2, ImageIcon } from "lucide-react";
+import { Upload, X, Loader2 } from "lucide-react";
 import type { Subject, Difficulty } from "@/types/database";
 
 const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -287,10 +287,8 @@ export function SetMetadataForm({
               isUploading && "pointer-events-none opacity-50"
             )}
           >
-            {isUploading ? (
+            {isUploading && (
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            ) : (
-              <ImageIcon className="h-8 w-8 text-muted-foreground" />
             )}
             <div className="text-center">
               <p className="text-sm font-medium">

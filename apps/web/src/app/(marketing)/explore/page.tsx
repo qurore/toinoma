@@ -432,13 +432,21 @@ export default async function ExplorePage({
         />
 
         {/* Page header */}
-        <div className="mb-5">
-          <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
-            {pageTitle}
-          </h1>
-          <p className="mt-0.5 text-sm text-muted-foreground">
-            {pageSubtitle}
-          </p>
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+              {pageTitle}
+            </h1>
+            <p className="mt-0.5 text-sm text-muted-foreground">
+              {pageSubtitle}
+            </p>
+          </div>
+          <Link
+            href="/rankings"
+            className="shrink-0 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            ランキングを見る &rarr;
+          </Link>
         </div>
 
         <div className="flex gap-8">
@@ -459,7 +467,7 @@ export default async function ExplorePage({
                   <span className="font-semibold text-foreground">
                     {total.toLocaleString()}
                   </span>
-                  <span className="ml-0.5">件の結果</span>
+                  <span className="ml-0.5">件</span>
                 </p>
               </div>
               <Suspense fallback={null}>

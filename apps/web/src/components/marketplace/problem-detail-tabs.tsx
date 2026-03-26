@@ -3,7 +3,7 @@
 import { useState, useEffect, type ReactNode } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { FileText, Download } from "lucide-react";
+import { Download } from "lucide-react";
 import { SampleQuestionPreview } from "@/components/marketplace/sample-question-preview";
 import type { AnswerType } from "@/types/database";
 
@@ -123,8 +123,7 @@ export function ProblemDetailTabs({
           {problemPdfUrl && (
             <Card>
               <CardHeader>
-                <h2 className="flex items-center gap-2 font-display text-base font-semibold leading-none tracking-tight">
-                  <FileText className="h-4 w-4" aria-hidden="true" />
+                <h2 className="font-display text-base font-semibold leading-none tracking-tight">
                   問題PDF
                 </h2>
               </CardHeader>
@@ -151,7 +150,6 @@ export function ProblemDetailTabs({
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/50 py-16">
-                    <FileText className="mb-3 h-8 w-8 text-muted-foreground/50" aria-hidden="true" />
                     <p className="text-sm text-muted-foreground">
                       購入後に問題PDFを閲覧できます
                     </p>

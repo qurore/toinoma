@@ -1,14 +1,4 @@
 import Link from "next/link";
-import {
-  ShoppingCart,
-  Store,
-  CreditCard,
-  Brain,
-  UserCog,
-  HelpCircle,
-  BookOpen,
-  ChevronRight,
-} from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { generatePageMetadata } from "@/lib/metadata";
@@ -27,7 +17,6 @@ export const metadata: Metadata = generatePageMetadata(
 const HELP_CATEGORIES = [
   {
     id: "buyer",
-    icon: ShoppingCart,
     title: "購入者向け",
     description: "問題セットの探し方・購入・解答方法について",
     href: "/help/faq#buyer",
@@ -39,7 +28,6 @@ const HELP_CATEGORIES = [
   },
   {
     id: "seller",
-    icon: Store,
     title: "出品者向け",
     description: "出品方法・ルブリック作成・収益について",
     href: "/help/faq#seller",
@@ -51,7 +39,6 @@ const HELP_CATEGORIES = [
   },
   {
     id: "subscription",
-    icon: CreditCard,
     title: "サブスクリプション",
     description: "プランの選び方・変更・解約について",
     href: "/help/faq#subscription",
@@ -63,7 +50,6 @@ const HELP_CATEGORIES = [
   },
   {
     id: "grading",
-    icon: Brain,
     title: "AI採点",
     description: "AI採点の仕組み・精度・対象科目について",
     href: "/help/faq#grading",
@@ -75,7 +61,6 @@ const HELP_CATEGORIES = [
   },
   {
     id: "account",
-    icon: UserCog,
     title: "アカウント",
     description: "アカウント設定・プロフィール・退会について",
     href: "/help/faq#account",
@@ -101,9 +86,6 @@ export default function HelpPage() {
 
         {/* Hero */}
         <div className="mb-10 text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-            <HelpCircle className="h-7 w-7 text-primary" />
-          </div>
           <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">
             ヘルプセンター
           </h1>
@@ -116,58 +98,45 @@ export default function HelpPage() {
         <div className="mb-10 flex flex-wrap justify-center gap-3">
           <Link
             href="/help/faq"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+            className="inline-flex items-center rounded-full border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
           >
-            <BookOpen className="h-4 w-4" />
             よくある質問（FAQ）
           </Link>
           <Link
             href="/help/seller-guide"
-            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+            className="inline-flex items-center rounded-full border border-border bg-card px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
           >
-            <Store className="h-4 w-4" />
             出品者ガイド
           </Link>
         </div>
 
         {/* Category cards */}
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {HELP_CATEGORIES.map((category) => {
-            const Icon = category.icon;
-            return (
-              <Link key={category.id} href={category.href} className="group">
-                <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
-                  <CardContent className="p-5">
-                    <div className="mb-3 flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-muted">
-                        <Icon className="h-5 w-5 text-muted-foreground" />
-                      </div>
-                      <div className="flex-1">
-                        <h2 className="font-semibold group-hover:text-primary">
-                          {category.title}
-                        </h2>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
-                    </div>
-                    <p className="mb-3 text-sm text-muted-foreground">
-                      {category.description}
-                    </p>
-                    <ul className="space-y-1">
-                      {category.items.map((item) => (
-                        <li
-                          key={item}
-                          className="flex items-center gap-2 text-xs text-muted-foreground"
-                        >
-                          <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              </Link>
-            );
-          })}
+          {HELP_CATEGORIES.map((category) => (
+            <Link key={category.id} href={category.href} className="group">
+              <Card className="h-full transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md">
+                <CardContent className="p-5">
+                  <h2 className="font-semibold group-hover:text-primary">
+                    {category.title}
+                  </h2>
+                  <p className="mt-1.5 text-sm text-muted-foreground">
+                    {category.description}
+                  </p>
+                  <ul className="mt-3 space-y-1">
+                    {category.items.map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-center gap-2 text-xs text-muted-foreground"
+                      >
+                        <span className="h-1 w-1 rounded-full bg-muted-foreground/50" />
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
         </div>
 
         {/* Contact section */}
@@ -180,7 +149,7 @@ export default function HelpPage() {
           </p>
           <Link
             href="mailto:support@toinoma.jp"
-            className="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="mt-4 inline-flex items-center rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
           >
             お問い合わせ
           </Link>

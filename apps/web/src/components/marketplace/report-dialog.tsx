@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback, type ReactElement } from "react";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -154,8 +154,7 @@ export function ReportDialog({
 
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <AlertTriangle className="h-5 w-5 text-destructive" />
+          <DialogTitle>
             {TARGET_LABELS[targetType]}を報告
           </DialogTitle>
           <DialogDescription>
@@ -220,10 +219,8 @@ export function ReportDialog({
             onClick={handleSubmit}
             disabled={isSubmitting || !reason}
           >
-            {isSubmitting ? (
+            {isSubmitting && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <AlertTriangle className="mr-2 h-4 w-4" />
             )}
             報告する
           </Button>

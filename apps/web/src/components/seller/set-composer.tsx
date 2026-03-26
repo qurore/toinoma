@@ -10,7 +10,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -22,16 +21,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import {
-  Loader2,
-  Save,
-  Library,
-  LayoutList,
-  Settings2,
-  AlertCircle,
-  CheckCircle2,
-  Eye,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import {
   QuestionPoolBrowser,
   type PoolQuestion,
@@ -240,7 +230,6 @@ export function SetComposer({ sellerId }: SetComposerProps) {
           <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm" disabled={totalQuestions === 0}>
-                <Eye className="mr-1.5 h-3.5 w-3.5" />
                 プレビュー
               </Button>
             </DialogTrigger>
@@ -272,7 +261,6 @@ export function SetComposer({ sellerId }: SetComposerProps) {
           <Dialog open={metadataOpen} onOpenChange={setMetadataOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" size="sm">
-                <Settings2 className="mr-1.5 h-3.5 w-3.5" />
                 セット情報
               </Button>
             </DialogTrigger>
@@ -304,10 +292,8 @@ export function SetComposer({ sellerId }: SetComposerProps) {
             disabled={isPending || !canSave}
             size="sm"
           >
-            {isPending ? (
+            {isPending && (
               <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-            ) : (
-              <Save className="mr-1.5 h-3.5 w-3.5" />
             )}
             作成して保存
           </Button>
@@ -316,21 +302,17 @@ export function SetComposer({ sellerId }: SetComposerProps) {
 
       {/* Validation warnings */}
       {validationErrors.length > 0 && totalQuestions > 0 && (
-        <div className="mt-3 flex items-start gap-2 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
-          <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          <div>
-            {validationErrors.map((err) => (
-              <p key={err}>{err}</p>
-            ))}
-          </div>
+        <div className="mt-3 rounded-md bg-destructive/10 px-3 py-2 text-xs text-destructive">
+          {validationErrors.map((err) => (
+            <p key={err}>{err}</p>
+          ))}
         </div>
       )}
 
       {/* Publish readiness indicator */}
       {canSave && totalQuestions > 0 && (
-        <div className="mt-3 flex items-center gap-2 rounded-md bg-green-50 px-3 py-2 text-xs text-green-700">
-          <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-          <span>公開準備完了 — 保存後に公開できます</span>
+        <div className="mt-3 rounded-md bg-green-50 px-3 py-2 text-xs text-green-700">
+          公開準備完了 — 保存後に公開できます
         </div>
       )}
 
@@ -339,8 +321,7 @@ export function SetComposer({ sellerId }: SetComposerProps) {
         {/* Left panel: question pool */}
         <Card className="flex w-[45%] flex-col overflow-hidden">
           <CardHeader className="shrink-0 py-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <Library className="h-4 w-4" />
+            <CardTitle className="text-sm">
               問題プール
             </CardTitle>
             <CardDescription className="text-xs">
@@ -358,8 +339,7 @@ export function SetComposer({ sellerId }: SetComposerProps) {
         {/* Right panel: set structure */}
         <Card className="flex flex-1 flex-col overflow-hidden">
           <CardHeader className="shrink-0 py-3">
-            <CardTitle className="flex items-center gap-2 text-sm">
-              <LayoutList className="h-4 w-4" />
+            <CardTitle className="text-sm">
               セット構成
             </CardTitle>
             <CardDescription className="text-xs">
@@ -384,11 +364,9 @@ export function SetComposer({ sellerId }: SetComposerProps) {
         >
           <TabsList className="w-full">
             <TabsTrigger value="pool" className="flex-1">
-              <Library className="mr-1.5 h-3.5 w-3.5" />
               問題プール
             </TabsTrigger>
             <TabsTrigger value="structure" className="flex-1">
-              <LayoutList className="mr-1.5 h-3.5 w-3.5" />
               セット構成
               {totalQuestions > 0 && (
                 <span className="ml-1.5 inline-flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground">
@@ -449,32 +427,16 @@ function SetPreview({
             {metadata.description}
           </p>
         )}
-        <div className="mt-3 flex flex-wrap gap-2">
-          {metadata.subject && (
-            <Badge variant="secondary">
-              {SUBJECT_LABELS[metadata.subject as Subject] ??
-                metadata.subject}
-            </Badge>
-          )}
-          {metadata.difficulty && (
-            <Badge variant="secondary">
-              {DIFFICULTY_LABELS[metadata.difficulty as Difficulty] ??
-                metadata.difficulty}
-            </Badge>
-          )}
-          <Badge variant="outline">{totalQuestions}問</Badge>
-          <Badge variant="outline">{totalPoints}点</Badge>
-          {metadata.timeLimitMinutes && (
-            <Badge variant="outline">
-              {metadata.timeLimitMinutes}分
-            </Badge>
-          )}
-          {metadata.price > 0 ? (
-            <Badge>¥{metadata.price.toLocaleString("ja-JP")}</Badge>
-          ) : (
-            <Badge variant="secondary">無料</Badge>
-          )}
-        </div>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {[
+            metadata.subject && (SUBJECT_LABELS[metadata.subject as Subject] ?? metadata.subject),
+            metadata.difficulty && (DIFFICULTY_LABELS[metadata.difficulty as Difficulty] ?? metadata.difficulty),
+            `${totalQuestions}問`,
+            `${totalPoints}点`,
+            metadata.timeLimitMinutes && `${metadata.timeLimitMinutes}分`,
+            metadata.price > 0 ? `¥${metadata.price.toLocaleString("ja-JP")}` : "無料",
+          ].filter(Boolean).join(" · ")}
+        </p>
       </div>
 
       {/* Section previews */}

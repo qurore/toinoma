@@ -3,7 +3,6 @@ import { notFound } from "next/navigation";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { AnnouncementForm } from "./announcement-form";
 
 export default async function AnnouncePage({
@@ -36,8 +35,7 @@ export default async function AnnouncePage({
       <div className="mb-6">
         <Button variant="ghost" size="sm" asChild>
           <Link href={`/seller/sets/${id}/edit`}>
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            戻る
+            &larr; 戻る
           </Link>
         </Button>
       </div>

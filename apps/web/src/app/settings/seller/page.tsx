@@ -3,10 +3,8 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { ExternalLink, Store } from "lucide-react";
 import type { Database } from "@/types/database";
 import type { Metadata } from "next";
 
@@ -48,7 +46,6 @@ export default async function SellerSettingsPage() {
         </div>
         <Card>
           <CardContent className="py-10 text-center">
-            <Store className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
             <p className="mb-1 font-medium">出品者登録が必要です</p>
             <p className="mb-5 text-sm text-muted-foreground">
               問題集を出品・販売するには出品者登録（利用規約同意・Stripe Connect設定）が必要です
@@ -80,7 +77,7 @@ export default async function SellerSettingsPage() {
             <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               出品者プロフィール
             </CardTitle>
-            <Badge>有効</Badge>
+            <span className="text-xs font-medium text-success">有効</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -129,14 +126,12 @@ export default async function SellerSettingsPage() {
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <Button asChild>
-          <Link href="/seller" className="flex items-center gap-2">
-            <Store className="h-4 w-4" />
+          <Link href="/seller">
             出品者ダッシュボード
           </Link>
         </Button>
         <Button variant="outline" asChild>
-          <Link href="/seller/analytics" className="flex items-center gap-2">
-            <ExternalLink className="h-4 w-4" />
+          <Link href="/seller/analytics">
             売上アナリティクス
           </Link>
         </Button>

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, SendHorizonal } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -106,10 +106,8 @@ export function QaAnswerForm({
           size="sm"
           disabled={isPending || !isValid}
         >
-          {isPending ? (
+          {isPending && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <SendHorizonal className="mr-2 h-4 w-4" />
           )}
           回答を投稿
         </Button>

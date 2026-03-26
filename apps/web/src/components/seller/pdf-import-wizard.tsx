@@ -2,22 +2,10 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Upload,
-  Loader2,
-  FileText,
-  Check,
-  ArrowRight,
-  ArrowLeft,
-  CheckCircle2,
-  XCircle,
-  Sparkles,
-  AlertTriangle,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { ExtractedQuestionCard } from "@/components/seller/extracted-question-card";
@@ -27,10 +15,10 @@ import type { ExtractedQuestion } from "@/app/api/pdf-import/route";
 type QuestionWithAccepted = ExtractedQuestion & { accepted: boolean };
 
 const STEPS = [
-  { label: "PDFアップロード", icon: Upload },
-  { label: "AI解析中", icon: Sparkles },
-  { label: "問題の確認", icon: FileText },
-  { label: "インポート完了", icon: Check },
+  { label: "PDFアップロード" },
+  { label: "AI解析中" },
+  { label: "問題の確認" },
+  { label: "インポート完了" },
 ] as const;
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50 MB
@@ -252,7 +240,6 @@ export function PdfImportWizard() {
       <nav aria-label="インポートの進捗">
         <ol className="flex items-center gap-2">
           {STEPS.map((step, i) => {
-            const StepIcon = step.icon;
             const isActive = i === currentStep;
             const isComplete = i < currentStep;
 
@@ -276,11 +263,9 @@ export function PdfImportWizard() {
                       "bg-muted text-muted-foreground"
                   )}
                 >
-                  {isComplete ? (
-                    <CheckCircle2 className="h-3.5 w-3.5" />
-                  ) : (
-                    <StepIcon className="h-3.5 w-3.5" />
-                  )}
+                  <span className="flex h-4 w-4 items-center justify-center text-[10px]">
+                    {isComplete ? "✓" : i + 1}
+                  </span>
                   <span className="hidden sm:inline">{step.label}</span>
                 </div>
               </li>
@@ -291,9 +276,8 @@ export function PdfImportWizard() {
 
       {/* Error display */}
       {error && (
-        <div className="flex items-start gap-2 rounded-md bg-destructive/10 p-4 text-sm text-destructive">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          <span>{error}</span>
+        <div className="rounded-md bg-destructive/10 p-4 text-sm text-destructive">
+          {error}
         </div>
       )}
 
@@ -322,26 +306,13 @@ export function PdfImportWizard() {
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               className={cn(
-                "flex w-full flex-col items-center justify-center gap-4 rounded-lg border-2 border-dashed p-12",
+                "flex w-full flex-col items-center justify-center gap-3 rounded-lg border-2 border-dashed p-12",
                 "transition-colors",
                 isDragOver
                   ? "border-primary bg-primary/5"
                   : "border-border hover:border-primary/50 hover:bg-muted/50"
               )}
             >
-              <div
-                className={cn(
-                  "flex h-16 w-16 items-center justify-center rounded-full",
-                  isDragOver ? "bg-primary/10" : "bg-muted"
-                )}
-              >
-                <Upload
-                  className={cn(
-                    "h-8 w-8",
-                    isDragOver ? "text-primary" : "text-muted-foreground"
-                  )}
-                />
-              </div>
               <div className="text-center">
                 <p className="text-sm font-medium">
                   クリックまたはドラッグ&ドロップでPDFをアップロード
@@ -355,14 +326,11 @@ export function PdfImportWizard() {
             {/* Selected file preview */}
             {file && (
               <div className="mt-4 flex items-center justify-between rounded-lg border border-border p-3">
-                <div className="flex items-center gap-3">
-                  <FileText className="h-5 w-5 text-primary" />
-                  <div>
-                    <p className="text-sm font-medium">{file.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {(file.size / (1024 * 1024)).toFixed(1)} MB
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium">{file.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {(file.size / (1024 * 1024)).toFixed(1)} MB
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Button
@@ -375,11 +343,9 @@ export function PdfImportWizard() {
                       }
                     }}
                   >
-                    <XCircle className="mr-1.5 h-3.5 w-3.5" />
                     削除
                   </Button>
                   <Button size="sm" onClick={handleStartExtraction}>
-                    <Sparkles className="mr-1.5 h-3.5 w-3.5" />
                     AI解析を開始
                   </Button>
                 </div>
@@ -395,14 +361,7 @@ export function PdfImportWizard() {
       {currentStep === 1 && (
         <Card>
           <CardContent className="flex flex-col items-center gap-6 py-16">
-            <div className="relative">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-                <Sparkles className="h-10 w-10 animate-pulse text-primary" />
-              </div>
-              <div className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-background shadow-sm ring-1 ring-border">
-                <Loader2 className="h-4 w-4 animate-spin text-primary" />
-              </div>
-            </div>
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <div className="text-center">
               <p className="text-lg font-semibold">
                 AIが問題を解析しています
@@ -469,21 +428,15 @@ export function PdfImportWizard() {
           {/* Summary bar */}
           <Card>
             <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
-              <div className="flex items-center gap-3">
-                <Badge variant="default" className="text-sm">
-                  {totalCount}問を抽出
-                </Badge>
-                <span className="text-sm text-muted-foreground">
-                  {acceptedCount}問を選択中
-                </span>
-              </div>
+              <p className="text-sm text-muted-foreground">
+                {totalCount}問を抽出 · {acceptedCount}問を選択中
+              </p>
               <div className="flex items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => handleToggleAll(true)}
                 >
-                  <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
                   すべて選択
                 </Button>
                 <Button
@@ -491,7 +444,6 @@ export function PdfImportWizard() {
                   size="sm"
                   onClick={() => handleToggleAll(false)}
                 >
-                  <XCircle className="mr-1.5 h-3.5 w-3.5" />
                   すべて解除
                 </Button>
               </div>
@@ -514,17 +466,14 @@ export function PdfImportWizard() {
           <Separator />
           <div className="flex items-center justify-between">
             <Button variant="outline" onClick={resetWizard}>
-              <ArrowLeft className="mr-1.5 h-4 w-4" />
               やり直す
             </Button>
             <Button
               onClick={handleConfirmImport}
               disabled={acceptedCount === 0 || isConfirming}
             >
-              {isConfirming ? (
+              {isConfirming && (
                 <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-              ) : (
-                <Check className="mr-1.5 h-4 w-4" />
               )}
               {acceptedCount}問をインポート
             </Button>
@@ -538,9 +487,6 @@ export function PdfImportWizard() {
       {currentStep === 3 && importResult && (
         <Card>
           <CardContent className="flex flex-col items-center gap-6 py-16">
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-50">
-              <CheckCircle2 className="h-10 w-10 text-green-600" />
-            </div>
             <div className="text-center">
               <p className="text-lg font-semibold">
                 インポートが完了しました
@@ -551,11 +497,9 @@ export function PdfImportWizard() {
             </div>
             <div className="flex items-center gap-3">
               <Button variant="outline" onClick={resetWizard}>
-                <Upload className="mr-1.5 h-4 w-4" />
                 別のPDFをインポート
               </Button>
               <Button onClick={() => router.push("/seller/pool")}>
-                <ArrowRight className="mr-1.5 h-4 w-4" />
                 問題プールを表示
               </Button>
             </div>
@@ -582,7 +526,7 @@ function ProcessingPhaseRow({
     <div className="flex items-center gap-3">
       <div className="flex h-6 w-6 shrink-0 items-center justify-center">
         {done ? (
-          <CheckCircle2 className="h-4 w-4 text-green-600" />
+          <span className="text-xs text-green-600">✓</span>
         ) : active ? (
           <Loader2 className="h-4 w-4 animate-spin text-primary" />
         ) : (

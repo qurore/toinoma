@@ -3,7 +3,7 @@
 import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Upload, FileText, Loader2, ExternalLink } from "lucide-react";
+import { Upload, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { updateProblemPdfUrl } from "@/app/(seller)/seller/actions";
@@ -103,14 +103,10 @@ export function PdfUploader({
 
         {url ? (
           <div className="flex items-center justify-between rounded-lg border border-border p-3">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5 text-primary" />
-              <span className="text-sm font-medium">アップロード済み</span>
-            </div>
+            <span className="text-sm font-medium">アップロード済み</span>
             <div className="flex items-center gap-2">
               <Button variant="outline" size="sm" asChild>
                 <a href={url} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="mr-1 h-3.5 w-3.5" />
                   表示
                 </a>
               </Button>

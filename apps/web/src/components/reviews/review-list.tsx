@@ -3,10 +3,9 @@
 import { useState, useCallback } from "react";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
-import { Flag, Loader2, Star, ThumbsUp } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { StarRating } from "./star-rating";
 import { ReportDialog } from "@/components/marketplace/report-dialog";
@@ -35,17 +34,9 @@ interface ReviewListProps {
 export function ReviewList({ reviews, problemSetId, userId }: ReviewListProps) {
   if (reviews.length === 0) {
     return (
-      <div className="flex flex-col items-center py-12 text-center">
-        <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-          <Star className="h-5 w-5 text-muted-foreground/50" />
-        </div>
-        <p className="text-sm font-medium text-muted-foreground">
-          まだレビューがありません
-        </p>
-        <p className="mt-1 text-xs text-muted-foreground/70">
-          この問題セットの最初のレビューを投稿しましょう
-        </p>
-      </div>
+      <p className="py-8 text-center text-sm text-muted-foreground">
+        まだレビューがありません
+      </p>
     );
   }
 
@@ -174,10 +165,8 @@ function ReviewItem({
           aria-pressed={optimisticVoted}
           aria-label={`参考になった (${optimisticCount})`}
         >
-          {isVoting ? (
+          {isVoting && (
             <Loader2 className="h-3 w-3 animate-spin" />
-          ) : (
-            <ThumbsUp className="h-3 w-3" />
           )}
           参考になった
           {optimisticCount > 0 && (
@@ -194,9 +183,8 @@ function ReviewItem({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-7 gap-1 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground"
+                className="h-7 rounded-full px-3 text-xs text-muted-foreground hover:text-foreground"
               >
-                <Flag className="h-3 w-3" />
                 報告
               </Button>
             }
@@ -206,14 +194,11 @@ function ReviewItem({
 
       {/* Seller response */}
       {review.seller_response && (
-        <div className="ml-6 mt-4 rounded-lg border border-primary/10 bg-primary/[0.02] p-4 sm:ml-12">
+        <div className="ml-6 mt-4 rounded-lg border border-border/60 bg-muted/30 p-4 sm:ml-12">
           <div className="flex items-center gap-2">
-            <Badge
-              variant="outline"
-              className="border-primary/20 bg-primary/5 text-xs font-medium text-primary"
-            >
+            <span className="text-xs font-medium text-foreground">
               出品者からの返信
-            </Badge>
+            </span>
             {review.seller_responded_at && (
               <span className="text-xs text-muted-foreground">
                 {formatDistanceToNow(

@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { FileText, Shield, Store, Scale, BookOpen, RefreshCw } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 
@@ -12,37 +11,31 @@ export const metadata: Metadata = {
 const LEGAL_PAGES = [
   {
     href: "/legal/terms",
-    icon: FileText,
     title: "利用規約",
     description: "本サービスの利用に関する規約です",
   },
   {
     href: "/legal/privacy",
-    icon: Shield,
     title: "プライバシーポリシー",
     description: "個人情報の取扱いについてご確認ください",
   },
   {
     href: "/legal/tokushoho",
-    icon: Scale,
     title: "特定商取引法に基づく表記",
     description: "事業者情報および取引条件の表示です",
   },
   {
     href: "/legal/seller-tos",
-    icon: Store,
     title: "出品者利用規約",
     description: "問題セットを出品される方向けの規約です",
   },
   {
     href: "/legal/content-policy",
-    icon: BookOpen,
     title: "コンテンツポリシー",
     description: "出品および利用に関するルールです",
   },
   {
     href: "/legal/refund",
-    icon: RefreshCw,
     title: "返金ポリシー",
     description: "返金条件と手続きについてご確認ください",
   },
@@ -63,18 +56,13 @@ export default function LegalIndexPage() {
         {LEGAL_PAGES.map((page) => (
           <Link key={page.href} href={page.href} className="group">
             <Card className="transition-colors group-hover:border-primary/30">
-              <CardContent className="flex items-start gap-3 p-4">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
-                  <page.icon className="h-4 w-4 text-foreground/60" />
-                </div>
-                <div>
-                  <p className="font-medium group-hover:text-primary">
-                    {page.title}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {page.description}
-                  </p>
-                </div>
+              <CardContent className="p-4">
+                <p className="font-medium group-hover:text-primary">
+                  {page.title}
+                </p>
+                <p className="mt-0.5 text-sm text-muted-foreground">
+                  {page.description}
+                </p>
               </CardContent>
             </Card>
           </Link>

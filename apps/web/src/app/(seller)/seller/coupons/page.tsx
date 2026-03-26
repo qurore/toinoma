@@ -1,9 +1,7 @@
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Ticket } from "lucide-react";
 import { CouponListActions } from "@/components/seller/coupon-list-actions";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Database } from "@/types/database";
@@ -37,11 +35,11 @@ function deriveCouponStatus(coupon: CouponRow): {
   return { key: "active", label: "有効" };
 }
 
-const STATUS_VARIANT: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
-  active: "default",
-  inactive: "outline",
-  expired: "secondary",
-  exhausted: "destructive",
+const STATUS_COLOR: Record<string, string> = {
+  active: "text-primary",
+  inactive: "text-muted-foreground",
+  expired: "text-muted-foreground",
+  exhausted: "text-muted-foreground",
 };
 
 export default async function CouponsPage() {
@@ -95,7 +93,6 @@ export default async function CouponsPage() {
           sellerSets={sellerSets}
           trigger={
             <Button>
-              <Plus className="mr-1.5 h-4 w-4" />
               クーポンを作成
             </Button>
           }
@@ -123,9 +120,6 @@ export default async function CouponsPage() {
       {allCoupons.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <Ticket className="h-6 w-6 text-foreground/60" />
-            </div>
             <p className="mb-2 text-lg font-medium">
               クーポンがまだありません
             </p>
@@ -137,7 +131,6 @@ export default async function CouponsPage() {
               sellerSets={sellerSets}
               trigger={
                 <Button>
-                  <Plus className="mr-1.5 h-4 w-4" />
                   最初のクーポンを作成
                 </Button>
               }
@@ -168,9 +161,9 @@ export default async function CouponsPage() {
                       <span className="font-mono text-sm font-semibold tracking-wider">
                         {coupon.code}
                       </span>
-                      <Badge variant={STATUS_VARIANT[status.key]}>
+                      <span className={`text-xs font-medium ${STATUS_COLOR[status.key] ?? "text-muted-foreground"}`}>
                         {status.label}
-                      </Badge>
+                      </span>
                     </div>
                     <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       <span>

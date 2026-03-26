@@ -11,7 +11,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { CreditCard, Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export function StripeStep({
@@ -26,12 +26,8 @@ export function StripeStep({
   // Handle Stripe return with error (user abandoned or Stripe failed)
   if (stripeReturn && !stripeAccountId) {
     return (
-      <Card className="mx-auto max-w-2xl overflow-hidden">
-        <div className="h-2 bg-gradient-to-r from-warning via-amber-400 to-warning" />
-        <CardHeader className="pb-2 pt-8 text-center">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-warning/10">
-            <CreditCard className="h-10 w-10 text-warning" />
-          </div>
+      <Card className="mx-auto max-w-2xl">
+        <CardHeader className="text-center">
           <CardTitle className="text-xl">Stripe連携が完了していません</CardTitle>
           <CardDescription className="text-base">
             Stripeのセットアップが中断されました。もう一度お試しください。
@@ -40,10 +36,8 @@ export function StripeStep({
         <CardFooter className="flex-col gap-2 pt-4">
           <form action={action} className="w-full">
             <Button type="submit" className="w-full" size="lg" disabled={isPending}>
-              {isPending ? (
+              {isPending && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <CreditCard className="mr-2 h-4 w-4" />
               )}
               もう一度試す
             </Button>
@@ -58,35 +52,19 @@ export function StripeStep({
 
   if (stripeReturn && stripeAccountId) {
     return (
-      <Card className="mx-auto max-w-2xl overflow-hidden">
-        {/* Success gradient banner */}
-        <div className="h-2 bg-gradient-to-r from-primary via-green-light to-primary" />
-        <CardHeader className="pb-2 pt-8 text-center">
-          <div className="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-success/10 shadow-[0_0_0_8px_hsl(142_71%_45%/0.06)]">
-            <CheckCircle2 className="h-10 w-10 text-success" />
-          </div>
-          <CardTitle className="text-xl">セットアップ完了！</CardTitle>
+      <Card className="mx-auto max-w-2xl">
+        <CardHeader className="text-center">
+          <CardTitle className="text-xl">セットアップ完了</CardTitle>
           <CardDescription className="text-base">
             すべての準備が整いました。問題セットの販売を始めましょう。
           </CardDescription>
         </CardHeader>
         <CardContent className="pb-2">
-          <div className="rounded-lg bg-muted/50 p-4">
-            <ul className="space-y-2 text-sm text-muted-foreground">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
-                利用規約に同意済み
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
-                販売者プロフィールを設定済み
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 shrink-0 text-success" />
-                Stripe決済を連携済み
-              </li>
-            </ul>
-          </div>
+          <ul className="space-y-1.5 rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
+            <li>利用規約に同意済み</li>
+            <li>販売者プロフィールを設定済み</li>
+            <li>Stripe決済を連携済み</li>
+          </ul>
         </CardContent>
         <CardFooter className="flex-col gap-2 pt-4">
           <Button className="w-full" size="lg" asChild>
@@ -109,15 +87,9 @@ export function StripeStep({
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="rounded-lg border border-border bg-muted/50 p-6 text-center">
-          <CreditCard className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-          <p className="mb-1 text-sm font-medium">
-            Stripeの安全な画面で本人確認を行います
-          </p>
-          <p className="text-xs text-muted-foreground">
-            完了後、自動的にこのページに戻ります
-          </p>
-        </div>
+        <p className="rounded-lg border border-border bg-muted/50 p-4 text-center text-sm text-muted-foreground">
+          Stripeの安全な画面で本人確認を行います。完了後、自動的にこのページに戻ります。
+        </p>
 
         {/* Key information bullets */}
         <div className="space-y-2 text-sm text-muted-foreground">
@@ -138,10 +110,8 @@ export function StripeStep({
       <CardFooter className="flex-col gap-2">
         <form action={action} className="w-full">
           <Button type="submit" className="w-full" size="lg" disabled={isPending}>
-            {isPending ? (
+            {isPending && (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <CreditCard className="mr-2 h-4 w-4" />
             )}
             Stripe連携を開始
           </Button>

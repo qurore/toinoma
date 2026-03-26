@@ -27,9 +27,6 @@ export function ValueSection() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Section header */}
         <div className="mx-auto mb-16 max-w-2xl text-center">
-          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary">
-            特徴
-          </p>
           <h2 className="font-display text-3xl font-bold tracking-tight md:text-4xl">
             学習を加速する4つの強み
           </h2>
@@ -43,13 +40,9 @@ export function ValueSection() {
           {values.map((item, index) => (
             <div
               key={item.title}
-              className="group relative rounded-2xl border border-border bg-card p-6 transition-all duration-300 hover:-translate-y-1.5 hover:border-primary/20 hover:shadow-[0_8px_30px_hsl(152_40%_14%/0.08)] animate-fade-up opacity-0"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="rounded-2xl border border-border bg-card p-6"
             >
-              {/* Subtle top accent bar */}
-              <div className="absolute inset-x-4 top-0 h-0.5 rounded-full bg-gradient-to-r from-transparent via-primary/30 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
-              {/* Ordinal number — minimal visual anchor */}
+              {/* Ordinal number */}
               <span className="mb-4 block text-sm font-medium text-muted-foreground">
                 {String(index + 1).padStart(2, "0")}
               </span>

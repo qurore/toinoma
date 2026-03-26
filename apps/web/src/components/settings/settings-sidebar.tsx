@@ -2,15 +2,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  User,
-  Bell,
-  CreditCard,
-  Receipt,
-  Monitor,
-  Store,
-  Trash2,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 
@@ -21,7 +12,6 @@ import { Separator } from "@/components/ui/separator";
 interface NavItem {
   href: string;
   label: string;
-  icon: React.ComponentType<{ className?: string }>;
   exact?: boolean;
   variant?: "default" | "destructive";
 }
@@ -31,44 +21,22 @@ interface NavItem {
 // ──────────────────────────────────────────────
 
 const BASE_NAV_ITEMS: NavItem[] = [
-  { href: "/settings/profile", label: "プロフィール", icon: User, exact: false },
-  {
-    href: "/settings/notifications",
-    label: "通知設定",
-    icon: Bell,
-    exact: false,
-  },
-  {
-    href: "/settings/subscription",
-    label: "サブスクリプション",
-    icon: CreditCard,
-    exact: false,
-  },
-  {
-    href: "/settings/billing",
-    label: "請求情報",
-    icon: Receipt,
-    exact: false,
-  },
-  {
-    href: "/settings/sessions",
-    label: "セッション",
-    icon: Monitor,
-    exact: false,
-  },
+  { href: "/settings/profile", label: "プロフィール", exact: false },
+  { href: "/settings/notifications", label: "通知設定", exact: false },
+  { href: "/settings/subscription", label: "サブスクリプション", exact: false },
+  { href: "/settings/billing", label: "請求情報", exact: false },
+  { href: "/settings/sessions", label: "セッション", exact: false },
 ];
 
 const SELLER_NAV_ITEM: NavItem = {
   href: "/settings/seller",
   label: "出品者設定",
-  icon: Store,
   exact: false,
 };
 
 const DELETE_NAV_ITEM: NavItem = {
   href: "/settings/delete-account",
   label: "アカウント削除",
-  icon: Trash2,
   exact: false,
   variant: "destructive",
 };
@@ -110,17 +78,20 @@ export function SettingsSidebar({
             const isDestructive = item.variant === "destructive";
 
             return (
-              <li key={`${item.href}-${item.label}`} className="shrink-0">
+              <li key={`${item.href}-${item.label}`} className="flex shrink-0 items-stretch">
                 <Link
                   href={item.href}
                   className={cn(
-                    "inline-flex min-h-[44px] items-center gap-1.5 whitespace-nowrap rounded-md px-3 py-2 text-xs font-medium transition-colors",
+                    "flex items-center border-b-2 px-3 text-xs font-medium whitespace-nowrap",
+                    "transition-colors duration-150",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isActive
-                      ? "bg-primary/10 text-primary"
+                      ? "border-primary text-primary"
                       : isDestructive
-                        ? "text-destructive hover:bg-destructive/10"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "border-transparent text-destructive hover:text-destructive"
+                        : "border-transparent text-muted-foreground hover:text-foreground"
                   )}
+                  aria-current={isActive ? "page" : undefined}
                 >
                   {item.label}
                 </Link>
@@ -140,7 +111,6 @@ export function SettingsSidebar({
           const isActive = item.exact
             ? pathname === item.href
             : pathname.startsWith(item.href);
-          const Icon = item.icon;
           const isDestructive = item.variant === "destructive";
 
           return (
@@ -149,7 +119,8 @@ export function SettingsSidebar({
               <Link
                 href={item.href}
                 className={cn(
-                  "relative flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "relative flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                   isActive
                     ? "bg-primary/10 text-primary"
                     : isDestructive
@@ -161,7 +132,6 @@ export function SettingsSidebar({
                 {isActive && (
                   <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
                 )}
-                <Icon className={cn("h-4 w-4 shrink-0", isActive && !isDestructive && "text-primary")} />
                 {item.label}
               </Link>
             </li>

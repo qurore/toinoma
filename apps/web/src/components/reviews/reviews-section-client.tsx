@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ArrowDownUp, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -126,7 +126,6 @@ export function ReviewsSectionClient({
           onValueChange={(v) => setSortBy(v as SortOption)}
         >
           <SelectTrigger className="w-[160px]" aria-label="並び替え">
-            <ArrowDownUp className="mr-2 h-3.5 w-3.5" />
             <SelectValue />
           </SelectTrigger>
           <SelectContent>

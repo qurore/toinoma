@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, LayoutDashboard, Settings, Store } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -104,14 +103,12 @@ export function UserDropdown({
 
         {/* Primary navigation */}
         <DropdownMenuItem asChild>
-          <Link href="/dashboard" className="flex cursor-pointer items-center gap-2">
-            <LayoutDashboard className="h-4 w-4" />
+          <Link href="/dashboard" className="cursor-pointer">
             マイページ
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/settings" className="flex cursor-pointer items-center gap-2">
-            <Settings className="h-4 w-4" />
+          <Link href="/settings" className="cursor-pointer">
             設定
           </Link>
         </DropdownMenuItem>
@@ -122,10 +119,9 @@ export function UserDropdown({
         <DropdownMenuItem asChild>
           <Link
             href={isSeller ? "/seller" : "/seller/onboarding"}
-            className="flex cursor-pointer items-center gap-2"
+            className="cursor-pointer font-medium"
             data-testid="seller-link"
           >
-            <Store className="h-4 w-4" />
             {isSeller ? "出品者モード" : "出品者になる"}
           </Link>
         </DropdownMenuItem>
@@ -135,9 +131,8 @@ export function UserDropdown({
         {/* Logout */}
         <DropdownMenuItem
           onClick={handleLogout}
-          className="flex cursor-pointer items-center gap-2 text-destructive focus:text-destructive"
+          className="cursor-pointer text-destructive focus:text-destructive"
         >
-          <LogOut className="h-4 w-4" />
           ログアウト
         </DropdownMenuItem>
       </DropdownMenuContent>

@@ -3,12 +3,7 @@
 import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Eye,
-  EyeOff,
-  ImagePlus,
   Loader2,
-  MessageCirclePlus,
-  SendHorizonal,
   X,
 } from "lucide-react";
 import { toast } from "sonner";
@@ -175,10 +170,9 @@ export function QaQuestionForm({ problemSetId }: QaQuestionFormProps) {
     return (
       <Button
         variant="outline"
-        className="w-full justify-start gap-2 text-muted-foreground"
+        className="w-full justify-start text-muted-foreground"
         onClick={() => setIsOpen(true)}
       >
-        <MessageCirclePlus className="h-4 w-4" />
         質問を投稿する
       </Button>
     );
@@ -219,14 +213,9 @@ export function QaQuestionForm({ problemSetId }: QaQuestionFormProps) {
             type="button"
             variant="ghost"
             size="sm"
-            className="h-7 gap-1 px-2 text-xs"
+            className="h-7 px-2 text-xs"
             onClick={() => setIsPreview(!isPreview)}
           >
-            {isPreview ? (
-              <EyeOff className="h-3 w-3" />
-            ) : (
-              <Eye className="h-3 w-3" />
-            )}
             {isPreview ? "編集に戻る" : "プレビュー"}
           </Button>
         </div>
@@ -280,7 +269,6 @@ export function QaQuestionForm({ problemSetId }: QaQuestionFormProps) {
             htmlFor="qa-image-upload"
             className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
           >
-            <ImagePlus className="h-4 w-4" />
             画像を添付（任意、5MB以下）
             <input
               id="qa-image-upload"
@@ -308,10 +296,8 @@ export function QaQuestionForm({ problemSetId }: QaQuestionFormProps) {
           size="sm"
           disabled={isPending || isUploading}
         >
-          {isPending || isUploading ? (
+          {(isPending || isUploading) && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <SendHorizonal className="mr-2 h-4 w-4" />
           )}
           質問を投稿
         </Button>

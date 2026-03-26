@@ -8,7 +8,6 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
-  Film,
   X,
   Pencil,
   Check,
@@ -198,10 +197,9 @@ export function VideoUploader({ questionId, initialVideos }: VideoUploaderProps)
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Film className="h-4 w-4" />
+        <CardTitle className="flex items-center justify-between text-base">
           解説動画
-          <span className="ml-auto text-sm font-normal text-muted-foreground">
+          <span className="text-sm font-normal text-muted-foreground">
             {videos.length}/{MAX_VIDEOS}
           </span>
         </CardTitle>

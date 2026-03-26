@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useTransition, useMemo, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { SlidersHorizontal, Star, RotateCcw, X } from "lucide-react";
+import { Star, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
@@ -472,7 +472,6 @@ function FilterContent({
             size={showApplyButton ? "sm" : "default"}
             className={showApplyButton ? "" : "w-full"}
           >
-            <RotateCcw className="mr-1.5 h-3 w-3" />
             すべてクリア
           </Button>
         )}
@@ -659,14 +658,13 @@ export function ExploreFiltersMobile() {
           className="lg:hidden"
           aria-label={`フィルター${activeFilterCount > 0 ? ` (${activeFilterCount}件適用中: ${activeFilterDescription})` : ""}`}
         >
-          <SlidersHorizontal className="h-4 w-4" />
           <span>フィルター</span>
           {activeFilterCount > 0 && (
             <span
-              className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground"
+              className="ml-1 text-xs text-muted-foreground"
               aria-hidden="true"
             >
-              {activeFilterCount}
+              ({activeFilterCount})
             </span>
           )}
         </Button>
@@ -681,13 +679,12 @@ export function ExploreFiltersMobile() {
         )}
       >
         <SheetHeader className="mb-4">
-          <SheetTitle className="flex items-center gap-2 text-sm font-bold">
-            <SlidersHorizontal className="h-4 w-4" aria-hidden="true" />
+          <SheetTitle className="text-sm font-bold">
             フィルター
             {activeFilterCount > 0 && (
-              <Badge variant="secondary" className="ml-1 text-[10px]">
-                {activeFilterCount}件
-              </Badge>
+              <span className="ml-1.5 text-xs font-normal text-muted-foreground">
+                ({activeFilterCount}件適用中)
+              </span>
             )}
           </SheetTitle>
           <SheetDescription className="sr-only">

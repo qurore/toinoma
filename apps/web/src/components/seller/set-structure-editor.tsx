@@ -3,19 +3,12 @@
 import { useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
   Plus,
   Trash2,
   ChevronUp,
   ChevronDown,
-  GripVertical,
-  FileText,
-  CheckSquare,
-  Type,
-  ListChecks,
-  FolderPlus,
 } from "lucide-react";
 import {
   SUBJECT_LABELS,
@@ -43,13 +36,6 @@ export interface ComposedSectionItem {
   sectionTitle: string;
   questions: ComposedQuestionItem[];
 }
-
-const TYPE_ICONS: Record<string, typeof FileText> = {
-  essay: FileText,
-  mark_sheet: CheckSquare,
-  fill_in_blank: Type,
-  multiple_choice: ListChecks,
-};
 
 interface SetStructureEditorProps {
   sections: ComposedSectionItem[];
@@ -212,7 +198,7 @@ export function SetStructureEditor({
           </span>
         </div>
         <Button variant="outline" size="sm" onClick={addSection}>
-          <FolderPlus className="mr-1.5 h-3.5 w-3.5" />
+          <Plus className="mr-1.5 h-3.5 w-3.5" />
           セクション追加
         </Button>
       </div>
@@ -221,7 +207,6 @@ export function SetStructureEditor({
       <div className="flex-1 space-y-4 overflow-y-auto">
         {sections.length === 0 ? (
           <div className="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-border py-16 text-center">
-            <FolderPlus className="mb-3 h-10 w-10 text-muted-foreground/40" />
             <p className="text-sm font-medium">セクションがありません</p>
             <p className="mt-1 text-xs text-muted-foreground">
               「セクション追加」をクリックして、問題を整理しましょう
@@ -283,8 +268,6 @@ export function SetStructureEditor({
                     </div>
                   ) : (
                     section.questions.map((q, qIdx) => {
-                      const Icon =
-                        TYPE_ICONS[q.questionType] ?? FileText;
                       const typeLabel =
                         ANSWER_TYPE_LABELS[q.questionType as AnswerType] ??
                         q.questionType;
@@ -294,44 +277,19 @@ export function SetStructureEditor({
                           key={q.questionId}
                           className="group flex items-start gap-2 px-3 py-2"
                         >
-                          {/* Drag handle placeholder + position */}
-                          <div className="flex shrink-0 flex-col items-center gap-0.5 pt-0.5">
-                            <GripVertical className="h-3.5 w-3.5 text-muted-foreground/40" />
-                            <span className="text-[10px] text-muted-foreground">
-                              {qIdx + 1}
-                            </span>
-                          </div>
-
-                          {/* Type icon */}
-                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded bg-muted">
-                            <Icon className="h-3 w-3 text-foreground/60" />
-                          </div>
+                          {/* Position number */}
+                          <span className="shrink-0 pt-0.5 text-xs text-muted-foreground">
+                            {qIdx + 1}
+                          </span>
 
                           {/* Question info */}
                           <div className="min-w-0 flex-1">
                             <p className="line-clamp-1 text-xs leading-snug">
                               {q.questionText}
                             </p>
-                            <div className="mt-1 flex flex-wrap items-center gap-1">
-                              <Badge
-                                variant="outline"
-                                className="text-[9px] px-1.5 py-0"
-                              >
-                                {typeLabel}
-                              </Badge>
-                              <Badge
-                                variant="secondary"
-                                className="text-[9px] px-1.5 py-0"
-                              >
-                                {SUBJECT_LABELS[q.subject as Subject]}
-                              </Badge>
-                              <Badge
-                                variant="secondary"
-                                className="text-[9px] px-1.5 py-0"
-                              >
-                                {DIFFICULTY_LABELS[q.difficulty as Difficulty]}
-                              </Badge>
-                            </div>
+                            <p className="mt-0.5 text-[10px] text-muted-foreground">
+                              {typeLabel} · {SUBJECT_LABELS[q.subject as Subject]} · {DIFFICULTY_LABELS[q.difficulty as Difficulty]}
+                            </p>
                           </div>
 
                           {/* Points override */}

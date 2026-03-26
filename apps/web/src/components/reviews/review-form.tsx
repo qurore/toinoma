@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Send } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -139,10 +139,8 @@ export function ReviewForm({ problemSetId, existingReview }: ReviewFormProps) {
         }
         size="sm"
       >
-        {isPending ? (
+        {isPending && (
           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-        ) : (
-          <Send className="mr-2 h-4 w-4" />
         )}
         {existingReview ? "レビューを更新" : "レビューを投稿"}
       </Button>

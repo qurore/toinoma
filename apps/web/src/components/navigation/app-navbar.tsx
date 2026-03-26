@@ -143,7 +143,7 @@ export function AppNavbar({
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" className="hidden sm:flex" asChild>
+              <Button variant="ghost" size="sm" asChild>
                 <Link href="/login">ログイン</Link>
               </Button>
               <Button size="sm" asChild>

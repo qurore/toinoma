@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Send, Brain, CheckCircle2, Sparkles } from "lucide-react";
+import { Send, Brain, CheckCircle2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Grading status indicator with animated transitions:
@@ -257,8 +257,7 @@ export function GradingStatusIndicator({
         {showScore && (
           <p className="mt-1 text-sm font-medium text-muted-foreground animate-[fade-in_0.8s_ease-out_0.5s_both]">
             {scorePercent >= 80 ? (
-              <span className="flex items-center justify-center gap-1 text-success">
-                <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
+              <span className="text-success">
                 素晴らしい成績です！
               </span>
             ) : scorePercent >= 50 ? (

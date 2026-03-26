@@ -1,10 +1,5 @@
 import Link from "next/link";
-import {
-  ExternalLink,
-  CheckCircle2,
-  AlertCircle,
-  CreditCard,
-} from "lucide-react";
+import { ExternalLink } from "lucide-react";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import {
@@ -14,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
@@ -67,17 +61,9 @@ export default async function SellerSettingsPage() {
                 購入者に表示される出品者情報を編集できます
               </CardDescription>
             </div>
-            {profileComplete ? (
-              <Badge>
-                <CheckCircle2 className="mr-1 h-3 w-3" />
-                設定済み
-              </Badge>
-            ) : (
-              <Badge variant="destructive">
-                <AlertCircle className="mr-1 h-3 w-3" />
-                未設定
-              </Badge>
-            )}
+            <span className={`text-xs font-medium ${profileComplete ? "text-primary" : "text-muted-foreground"}`}>
+              {profileComplete ? "設定済み" : "未設定"}
+            </span>
           </div>
         </CardHeader>
         <CardContent>
@@ -107,17 +93,9 @@ export default async function SellerSettingsPage() {
                 販売収益の受け取りに使用されるStripeアカウント
               </CardDescription>
             </div>
-            {stripeComplete ? (
-              <Badge>
-                <CheckCircle2 className="mr-1 h-3 w-3" />
-                接続済み
-              </Badge>
-            ) : (
-              <Badge variant="destructive">
-                <AlertCircle className="mr-1 h-3 w-3" />
-                未接続
-              </Badge>
-            )}
+            <span className={`text-xs font-medium ${stripeComplete ? "text-primary" : "text-muted-foreground"}`}>
+              {stripeComplete ? "接続済み" : "未接続"}
+            </span>
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -170,7 +148,6 @@ export default async function SellerSettingsPage() {
             </>
           ) : (
             <div className="rounded-lg border border-dashed border-border p-6 text-center">
-              <CreditCard className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
               <p className="mb-1 font-medium">
                 Stripe Connectの設定が必要です
               </p>
@@ -297,9 +274,9 @@ function NotificationRow({
         <p className="text-sm font-medium">{label}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
       </div>
-      <Badge variant={enabled ? "default" : "secondary"} className="text-[10px]">
+      <span className={`text-xs font-medium ${enabled ? "text-primary" : "text-muted-foreground"}`}>
         {enabled ? "オン" : "オフ"}
-      </Badge>
+      </span>
     </div>
   );
 }

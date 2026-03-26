@@ -67,6 +67,7 @@ export function MobileDashboardNav() {
                   className={cn(
                     "flex items-center border-b-2 px-3 text-xs font-medium whitespace-nowrap",
                     "transition-colors duration-150",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isActive
                       ? "border-primary text-primary"
                       : "border-transparent text-muted-foreground hover:text-foreground"

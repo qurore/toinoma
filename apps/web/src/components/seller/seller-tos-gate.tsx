@@ -3,11 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Loader2,
-  Check,
-  ArrowLeft,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
@@ -71,9 +67,6 @@ export function SellerTosGate() {
         <div className="fixed inset-0 z-40 bg-background/80 backdrop-blur-sm" />
         <main className="fixed inset-0 z-50 flex items-center justify-center px-4 py-12">
           <div className="flex flex-col items-center gap-4 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-foreground">
-              <Check className="h-6 w-6 text-background" />
-            </div>
             <h2 className="text-lg font-semibold tracking-tight">
               ようこそ、出品者モードへ
             </h2>
@@ -212,7 +205,6 @@ export function SellerTosGate() {
             <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-between">
               <Button variant="ghost" size="sm" asChild>
                 <Link href="/dashboard">
-                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
                   マイページに戻る
                 </Link>
               </Button>

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ArrowRight } from "lucide-react";
 
 export default function NotFoundPage() {
   return (
@@ -55,7 +54,6 @@ export default function NotFoundPage() {
               className="flex items-center justify-between rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
             >
               {link.label}
-              <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           ))}
         </nav>

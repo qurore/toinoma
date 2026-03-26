@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
-import { StickyNote, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, Loader2 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -119,7 +119,6 @@ export function QuestionNotes({
         type="button"
       >
         <span className="flex items-center gap-2">
-          <StickyNote className="h-4 w-4 text-amber-500" />
           <span className="font-medium">メモ</span>
           {hasContent && !expanded && (
             <span className="ml-1 rounded-full bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold text-amber-700">

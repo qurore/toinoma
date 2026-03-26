@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Download, Printer } from "lucide-react";
+// No decorative icons needed
 
 type MarginOption = "narrow" | "normal";
 
@@ -80,11 +80,9 @@ export function PdfPreview({
           <CardTitle className="text-base">PDFプレビュー・ダウンロード</CardTitle>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" onClick={handlePrint}>
-              <Printer className="mr-2 h-4 w-4" />
               印刷
             </Button>
             <Button variant="outline" size="sm" onClick={handleDownload}>
-              <Download className="mr-2 h-4 w-4" />
               ダウンロード
             </Button>
           </div>

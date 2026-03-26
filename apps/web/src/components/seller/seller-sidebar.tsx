@@ -2,23 +2,12 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Database,
-  Tag,
-  Receipt,
-  BarChart3,
-  Wallet,
-  Settings,
-  Library,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Navigation item type
 interface NavItem {
   href: string;
   label: string;
-  icon: typeof LayoutDashboard;
   exact: boolean;
 }
 
@@ -32,69 +21,29 @@ const NAV_SECTIONS: NavSection[] = [
   {
     label: null,
     items: [
-      {
-        href: "/seller",
-        label: "ダッシュボード",
-        icon: LayoutDashboard,
-        exact: true,
-      },
+      { href: "/seller", label: "ダッシュボード", exact: true },
     ],
   },
   {
     label: "コンテンツ",
     items: [
-      {
-        href: "/seller/pool",
-        label: "問題プール",
-        icon: Database,
-        exact: false,
-      },
-      {
-        href: "/seller/sets",
-        label: "問題セット",
-        icon: Library,
-        exact: false,
-      },
+      { href: "/seller/pool", label: "問題プール", exact: false },
+      { href: "/seller/sets", label: "問題セット", exact: false },
     ],
   },
   {
     label: "収益・販売",
     items: [
-      {
-        href: "/seller/analytics",
-        label: "分析",
-        icon: BarChart3,
-        exact: false,
-      },
-      {
-        href: "/seller/transactions",
-        label: "取引履歴",
-        icon: Receipt,
-        exact: false,
-      },
-      {
-        href: "/seller/coupons",
-        label: "クーポン",
-        icon: Tag,
-        exact: false,
-      },
-      {
-        href: "/seller/payouts",
-        label: "振込・収益",
-        icon: Wallet,
-        exact: false,
-      },
+      { href: "/seller/analytics", label: "分析", exact: false },
+      { href: "/seller/transactions", label: "取引履歴", exact: false },
+      { href: "/seller/coupons", label: "クーポン", exact: false },
+      { href: "/seller/payouts", label: "振込・収益", exact: false },
     ],
   },
   {
     label: null,
     items: [
-      {
-        href: "/seller/settings",
-        label: "設定",
-        icon: Settings,
-        exact: false,
-      },
+      { href: "/seller/settings", label: "設定", exact: false },
     ],
   },
 ];
@@ -120,14 +69,13 @@ export function SellerSidebarNav() {
               const isActive = item.exact
                 ? pathname === item.href
                 : pathname.startsWith(item.href);
-              const Icon = item.icon;
 
               return (
                 <li key={item.href}>
                   <Link
                     href={item.href}
                     className={cn(
-                      "relative flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium",
+                      "relative flex items-center rounded-md px-3 py-2 text-sm font-medium",
                       "transition-colors duration-150",
                       "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                       isActive
@@ -139,7 +87,6 @@ export function SellerSidebarNav() {
                     {isActive && (
                       <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
                     )}
-                    <Icon className="h-4 w-4 shrink-0" />
                     {item.label}
                   </Link>
                 </li>
@@ -184,6 +131,7 @@ export function MobileSellerNav() {
                 className={cn(
                   "flex items-center border-b-2 px-3 text-xs font-medium whitespace-nowrap",
                   "transition-colors duration-150",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive
                     ? "border-primary text-primary"
                     : "border-transparent text-muted-foreground hover:text-foreground"

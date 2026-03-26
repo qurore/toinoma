@@ -4,11 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Loader2,
-  ChevronRight,
-  ChevronLeft,
   Check,
-  Sparkles,
-  User,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -108,7 +104,7 @@ function DisplayNameStep({
         <Avatar className="h-20 w-20">
           <AvatarImage src={avatarUrl ?? undefined} alt={displayName || ""} />
           <AvatarFallback className="bg-primary/10 text-xl font-semibold text-primary">
-            {initials || <User className="h-8 w-8" />}
+            {initials || "?"}
           </AvatarFallback>
         </Avatar>
       </div>
@@ -273,18 +269,13 @@ function StudyGoalStep({
 
 function CelebrationScreen() {
   return (
-    <div className="space-y-6 text-center">
-      <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-primary/10">
-        <Sparkles className="h-10 w-10 text-primary" />
-      </div>
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">
-          Toinomaへようこそ
-        </h2>
-        <p className="mt-2 text-muted-foreground">
-          セットアップが完了しました。さっそく問題を探してみましょう。
-        </p>
-      </div>
+    <div className="space-y-4 text-center">
+      <h2 className="text-2xl font-bold tracking-tight">
+        Toinomaへようこそ
+      </h2>
+      <p className="text-muted-foreground">
+        セットアップが完了しました。さっそく問題を探してみましょう。
+      </p>
     </div>
   );
 }
@@ -405,7 +396,6 @@ export function WelcomeWizard({
           <CelebrationScreen />
           <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
             <Button onClick={handleGoToExplore} size="lg">
-              <Sparkles className="mr-2 h-4 w-4" />
               問題を探す
             </Button>
             <Button
@@ -455,7 +445,6 @@ export function WelcomeWizard({
           <div>
             {step > 1 ? (
               <Button variant="ghost" size="sm" onClick={handleBack}>
-                <ChevronLeft className="mr-1 h-4 w-4" />
                 戻る
               </Button>
             ) : (
@@ -468,12 +457,8 @@ export function WelcomeWizard({
               スキップ
             </Button>
             <Button onClick={handleNext} disabled={isSaving}>
-              {isSaving ? (
+              {isSaving && (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : step < TOTAL_STEPS ? (
-                <ChevronRight className="mr-1 h-4 w-4" />
-              ) : (
-                <Check className="mr-1 h-4 w-4" />
               )}
               {step < TOTAL_STEPS ? "次へ" : "完了"}
             </Button>

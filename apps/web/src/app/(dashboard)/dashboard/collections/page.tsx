@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { formatDistanceToNow } from "date-fns";
@@ -95,13 +94,9 @@ export default async function CollectionsPage() {
                         {c.description}
                       </p>
                     )}
-                    <div className="mt-3 flex items-center gap-3">
-                      <Badge variant="secondary" className="text-xs">
-                        {count}問
-                      </Badge>
-                      <span className="text-xs text-muted-foreground">
-                        {timeAgo}
-                      </span>
+                    <div className="mt-3 flex items-center gap-3 text-xs text-muted-foreground">
+                      <span>{count}問</span>
+                      <span>{timeAgo}</span>
                     </div>
                   </CardContent>
                 </Card>

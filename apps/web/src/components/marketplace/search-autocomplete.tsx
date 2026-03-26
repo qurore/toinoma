@@ -9,7 +9,6 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import { Search, Loader2, Clock, X, ArrowRight } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
 import { SUBJECT_LABELS } from "@toinoma/shared/constants";
@@ -313,7 +312,7 @@ export function SearchAutocomplete({
             break;
           case "seller":
             addRecentSearch(query.trim());
-            router.push(`/seller/${item.id}`);
+            router.push(`/sellers/${item.id}`);
             break;
           case "subject":
             router.push(`/explore/${item.subject}`);
@@ -605,18 +604,15 @@ export function SearchAutocomplete({
                     >
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">{item.title}</p>
+                        <p className="truncate text-xs text-muted-foreground">
+                          {SUBJECT_LABELS[item.subject]}
+                        </p>
                       </div>
-                      <Badge
-                        variant="secondary"
-                        className="shrink-0 text-[10px]"
-                      >
-                        {SUBJECT_LABELS[item.subject]}
-                      </Badge>
                       <span
                         className={cn(
                           "shrink-0 text-xs font-semibold",
                           item.price === 0
-                            ? "text-primary"
+                            ? "text-emerald-600"
                             : "text-muted-foreground"
                         )}
                       >

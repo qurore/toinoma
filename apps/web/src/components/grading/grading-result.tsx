@@ -17,13 +17,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import {
-  CheckCircle2,
-  XCircle,
-  MinusCircle,
-  RotateCcw,
-  Eye,
   Share2,
-  AlertTriangle,
   Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -120,19 +114,17 @@ function RubricMatchIndicator({
   const color =
     ratio >= 1 ? "success" : ratio > 0 ? "amber" : "destructive";
 
-  const Icon =
-    ratio >= 1 ? CheckCircle2 : ratio > 0 ? MinusCircle : XCircle;
-  const iconClass =
+  const dotClass =
     color === "success"
-      ? "text-success"
+      ? "bg-success"
       : color === "amber"
-        ? "text-amber-500"
-        : "text-destructive";
+        ? "bg-amber-500"
+        : "bg-destructive";
 
   return (
     <div
       className={cn(
-        "flex items-start gap-2 rounded-md border p-3",
+        "flex items-start gap-2.5 rounded-md border p-3",
         color === "success"
           ? "border-success/20 bg-success/5"
           : color === "amber"
@@ -140,7 +132,7 @@ function RubricMatchIndicator({
             : "border-destructive/20 bg-destructive/5"
       )}
     >
-      <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", iconClass)} aria-hidden="true" />
+      <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", dotClass)} aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center justify-between gap-2">
           <p className="text-sm font-medium">{match.element}</p>
@@ -220,31 +212,14 @@ function SectionResult({
                     <div className="flex items-center gap-2">
                       <span
                         className={cn(
-                          "flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold",
-                          qColors.bg,
-                          qColors.text
+                          "h-2 w-2 shrink-0 rounded-full",
+                          qColors.bar
                         )}
-                      >
-                        {qTier === "high" ? (
-                          <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
-                        ) : qTier === "low" ? (
-                          <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                        ) : (
-                          <MinusCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                        )}
-                      </span>
+                        aria-hidden="true"
+                      />
                       <span className="text-sm font-medium">
                         {question.number}
                       </span>
-                      <div
-                        className={cn(
-                          "flex h-5 items-center rounded-full px-2 text-[10px] font-semibold",
-                          qColors.bg,
-                          qColors.text
-                        )}
-                      >
-                        {qPct}%
-                      </div>
                     </div>
                     <span
                       className={cn(
@@ -475,13 +450,10 @@ export function GradingResultDisplay({
         </CardContent>
       </Card>
 
-      {/* AI grading disclaimer banner */}
-      <div className="flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/5 px-4 py-3">
-        <AlertTriangle className="h-4 w-4 shrink-0 text-warning" aria-hidden="true" />
-        <p className="text-xs leading-relaxed text-muted-foreground">
-          AI採点は参考スコアです。最終判断はご自身で行ってください。ルーブリックに基づく自動採点のため、実際の採点と異なる場合があります。
-        </p>
-      </div>
+      {/* AI grading disclaimer */}
+      <p role="note" className="text-center text-xs text-muted-foreground">
+        ※ AI採点は参考スコアです。ルーブリックに基づく自動採点のため、実際の採点と異なる場合があります。
+      </p>
 
       {/* Overall feedback */}
       <Card>
@@ -549,13 +521,11 @@ export function GradingResultDisplay({
         <div className="flex flex-col gap-3 sm:flex-row">
           <Button className="flex-1" asChild>
             <Link href={`/problem/${problemSetId}/solve`}>
-              <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
               もう一度解く
             </Link>
           </Button>
           <Button variant="outline" className="flex-1" asChild>
             <Link href={`/problem/${problemSetId}/history`}>
-              <Eye className="mr-1.5 h-4 w-4" aria-hidden="true" />
               解答を確認
             </Link>
           </Button>
@@ -565,14 +535,14 @@ export function GradingResultDisplay({
 
       {/* Next steps — guide the student toward continued learning */}
       {showActions && problemSetId && (
-        <Card className="border-primary/20">
+        <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-semibold">
               次のステップ
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ul className="space-y-3">
+            <ol className="list-decimal space-y-2 pl-4 text-sm text-muted-foreground marker:font-semibold marker:text-foreground">
               {/* Identify weakest section and suggest review */}
               {(() => {
                 const weakest = result.sections.reduce((min, s) =>
@@ -585,39 +555,26 @@ export function GradingResultDisplay({
                   : 0;
                 if (weakPct < 80) {
                   return (
-                    <li className="flex items-start gap-2.5 text-sm">
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-warning/10 text-[10px] font-bold text-warning">1</span>
-                      <span className="text-muted-foreground">
-                        大問{weakest.number}の得点率が{weakPct}%です。この大問のフィードバックを確認し、弱点を把握しましょう。
-                      </span>
+                    <li>
+                      大問{weakest.number}の得点率が{weakPct}%です。この大問のフィードバックを確認し、弱点を把握しましょう。
                     </li>
                   );
                 }
                 return null;
               })()}
-              <li className="flex items-start gap-2.5 text-sm">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
-                  {percentage < 80 ? "2" : "1"}
-                </span>
-                <span className="text-muted-foreground">
-                  <Link href={`/problem/${problemSetId}/history`} className="font-medium text-primary hover:underline">
-                    解答履歴
-                  </Link>
-                  で過去のスコア推移を確認し、学習の進捗を把握しましょう。
-                </span>
+              <li>
+                <Link href={`/problem/${problemSetId}/history`} className="font-medium text-primary hover:underline">
+                  解答履歴
+                </Link>
+                で過去のスコア推移を確認し、学習の進捗を把握しましょう。
               </li>
-              <li className="flex items-start gap-2.5 text-sm">
-                <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 text-[10px] font-bold text-primary">
-                  {percentage < 80 ? "3" : "2"}
-                </span>
-                <span className="text-muted-foreground">
-                  <Link href="/explore" className="font-medium text-primary hover:underline">
-                    他の問題セット
-                  </Link>
-                  にも挑戦して、幅広い出題パターンに対応できるようにしましょう。
-                </span>
+              <li>
+                <Link href="/explore" className="font-medium text-primary hover:underline">
+                  他の問題セット
+                </Link>
+                にも挑戦して、幅広い出題パターンに対応できるようにしましょう。
               </li>
-            </ul>
+            </ol>
           </CardContent>
         </Card>
       )}

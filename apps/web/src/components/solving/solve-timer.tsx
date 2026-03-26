@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Clock, AlertTriangle } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ──────────────────────────────────────────────
@@ -88,10 +88,8 @@ export function SolveTimer({
       aria-label={isCountdown ? "残り時間" : "経過時間"}
       aria-live={isCritical ? "assertive" : "off"}
     >
-      {isCritical ? (
+      {isCritical && (
         <AlertTriangle className={cn("h-3.5 w-3.5", !isTimeUp && "animate-pulse")} />
-      ) : (
-        <Clock className="h-3.5 w-3.5" />
       )}
       <span className={cn(isCritical && !isTimeUp && "animate-pulse")}>
         {timeStr}

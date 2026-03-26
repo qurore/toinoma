@@ -3,7 +3,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { SessionControls } from "./session-controls";
 
 // ──────────────────────────────────────────────
@@ -75,13 +74,9 @@ export default async function SessionsPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between space-y-0">
           <CardTitle className="text-base">現在のセッション</CardTitle>
-          <Badge
-            variant="outline"
-            className="border-success/30 bg-success/5 text-success"
-          >
-            <span className="mr-1.5 inline-block h-1.5 w-1.5 rounded-full bg-success" />
+          <span className="text-xs font-medium text-success">
             アクティブ
-          </Badge>
+          </span>
         </CardHeader>
         <CardContent>
           <div className="divide-y divide-border/50">

@@ -5,19 +5,13 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { AnswerForm } from "@/components/grading/answer-form";
 import { GradingResultDisplay } from "@/components/grading/grading-result";
 import { ProgressIndicator } from "@/components/solving/progress-indicator";
 import { SolveTimer } from "@/components/solving/solve-timer";
 import {
-  ArrowLeft,
-  Shuffle,
-  CheckCircle2,
-  AlertCircle,
   ChevronRight,
   Loader2,
-  Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { shuffleArray } from "@toinoma/shared/utils";
@@ -176,7 +170,6 @@ export function CollectionSolveClient({
         <div>
           <Button variant="ghost" size="sm" asChild className="mb-2">
             <Link href={`/dashboard/collections/${collectionId}`}>
-              <ArrowLeft className="mr-1 h-4 w-4" />
               コレクションに戻る
             </Link>
           </Button>
@@ -190,7 +183,6 @@ export function CollectionSolveClient({
         <div className="flex items-center gap-2">
           <SolveTimer timeLimitMinutes={null} />
           <Button variant="outline" size="sm" onClick={handleShuffle}>
-            <Shuffle className="mr-1 h-3.5 w-3.5" />
             シャッフル
           </Button>
         </div>
@@ -219,9 +211,9 @@ export function CollectionSolveClient({
               {completedCount}/{problems.length} 完了
             </span>
             {previouslyCompletedCount > 0 && (
-              <Badge variant="secondary" className="border border-border text-xs">
-                過去: {previouslyCompletedCount}問解答済み
-              </Badge>
+              <span className="text-xs text-muted-foreground">
+                (過去: {previouslyCompletedCount}問解答済み)
+              </span>
             )}
           </div>
         </CardContent>
@@ -229,8 +221,7 @@ export function CollectionSolveClient({
 
       {/* Unpurchased warning */}
       {unpurchasedCount > 0 && (
-        <div className="flex items-center gap-2 rounded-md border border-warning/20 bg-warning/5 px-4 py-3">
-          <AlertCircle className="h-4 w-4 shrink-0 text-warning" />
+        <div className="rounded-md border border-warning/20 bg-warning/5 px-4 py-3">
           <p className="text-sm text-warning">
             {unpurchasedCount}問の未購入の問題セットはスキップされます
           </p>
@@ -261,15 +252,14 @@ export function CollectionSolveClient({
                     <p className="truncate font-medium">{problem.title}</p>
                     <div className="mt-1 flex items-center gap-2">
                       {prevCompletion && (
-                        <Badge variant="secondary" className="border border-border text-xs">
+                        <span className="text-xs text-muted-foreground">
                           前回: {prevCompletion.score}/{prevCompletion.maxScore}
-                        </Badge>
+                        </span>
                       )}
                       {state?.status === "completed" && (
-                        <Badge className="text-xs">
-                          <CheckCircle2 className="mr-1 h-3 w-3" />
+                        <span className="text-xs font-medium text-primary">
                           完了
-                        </Badge>
+                        </span>
                       )}
                     </div>
                   </div>
@@ -370,8 +360,7 @@ export function CollectionSolveClient({
         // Error state
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <AlertCircle className="mb-4 h-8 w-8 text-destructive" />
-            <p className="mb-4 text-destructive">{currentState.message}</p>
+            <p className="mb-4 text-sm font-medium text-destructive">{currentState.message}</p>
             <div className="flex gap-2">
               <Button onClick={handleRetry}>再試行</Button>
               <Button
@@ -412,9 +401,8 @@ export function CollectionSolveClient({
         return (
           <Card className="border-primary/20 bg-primary/5">
             <CardContent className="flex flex-col items-center py-10">
-              <Trophy className="mb-4 h-12 w-12 text-primary" />
               <p className="mb-2 text-xl font-bold">
-                全問完了しました！
+                全問完了しました
               </p>
 
               {/* Aggregate score display */}
@@ -425,18 +413,18 @@ export function CollectionSolveClient({
                 <span className="text-lg text-muted-foreground">
                   / {totalMaxScore}
                 </span>
-                <Badge
-                  className="ml-2"
-                  variant={
+                <span
+                  className={cn(
+                    "ml-2 text-lg font-semibold",
                     percentage >= 80
-                      ? "default"
+                      ? "text-primary"
                       : percentage >= 50
-                        ? "secondary"
-                        : "destructive"
-                  }
+                        ? "text-amber-600"
+                        : "text-destructive"
+                  )}
                 >
-                  {percentage}%
-                </Badge>
+                  ({percentage}%)
+                </span>
               </div>
 
               {/* Per-problem breakdown */}

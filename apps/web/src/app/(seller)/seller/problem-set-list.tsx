@@ -5,7 +5,6 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { Trash2, EyeOff, Loader2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -270,14 +269,14 @@ export function ProblemSetList({ sets }: ProblemSetListProps) {
 function StatusBadge({ status }: { status: string }) {
   if (status === "published") {
     return (
-      <Badge className="border-transparent bg-primary/10 text-primary">
+      <span className="text-xs font-medium text-foreground">
         公開中
-      </Badge>
+      </span>
     );
   }
   return (
-    <Badge variant="secondary" className="border-transparent">
+    <span className="text-xs text-muted-foreground">
       下書き
-    </Badge>
+    </span>
   );
 }

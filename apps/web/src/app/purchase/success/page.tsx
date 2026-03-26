@@ -1,11 +1,5 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  CheckCircle2,
-  PenLine,
-  Printer,
-  FolderPlus,
-} from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getStripe } from "@/lib/stripe";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
@@ -13,7 +7,6 @@ import { SiteFooter } from "@/components/navigation/site-footer";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import type { Subject, Difficulty } from "@/types/database";
 import type { Metadata } from "next";
@@ -31,21 +24,6 @@ interface ProblemSetInfo {
   seller_display_name: string | null;
 }
 
-// Difficulty badge with semantic colors
-const DIFFICULTY_STYLES: Record<string, string> = {
-  easy: "bg-primary/5 text-primary border-primary/20",
-  medium: "bg-amber-50 text-amber-700 border-amber-200",
-  hard: "bg-red-50 text-red-700 border-red-200",
-};
-
-function DifficultyBadge({ difficulty }: { difficulty: Difficulty }) {
-  const style = DIFFICULTY_STYLES[difficulty] ?? "bg-secondary text-secondary-foreground border-border";
-  return (
-    <Badge className={`border text-xs ${style}`}>
-      {DIFFICULTY_LABELS[difficulty]}
-    </Badge>
-  );
-}
 
 export default async function PurchaseSuccessPage({
   searchParams,
@@ -159,19 +137,13 @@ export default async function PurchaseSuccessPage({
         />
         <div className="w-full max-w-lg">
           {/* Success card */}
-          <Card className="overflow-hidden shadow-lg">
-            {/* Animated gradient top bar */}
-            <div className="h-2 bg-gradient-to-r from-primary via-green-light to-primary bg-[length:200%_auto] animate-[gradient-slide_3s_linear_infinite]" />
-
+          <Card className="shadow-lg">
             <CardContent className="px-8 pb-8 pt-10 text-center">
-              {/* Success indicator */}
-              <CheckCircle2 className="mx-auto mb-4 h-10 w-10 text-success" aria-hidden="true" />
-
               <h1 className="mb-1 text-2xl font-bold tracking-tight">
                 購入が完了しました
               </h1>
               <p className="mb-6 text-sm text-muted-foreground">
-                問題セットの購入が完了しました！早速解いてみましょう。
+                問題セットの購入が完了しました。早速解いてみましょう。
               </p>
 
               {problemSet && (
@@ -180,27 +152,18 @@ export default async function PurchaseSuccessPage({
                     {problemSet.title}
                   </p>
 
-                  {/* Metadata badges */}
-                  <div className="mt-2 flex flex-wrap items-center justify-center gap-2">
-                    <Badge className="border border-border bg-secondary text-xs text-secondary-foreground">
-                      {SUBJECT_LABELS[problemSet.subject as Subject]}
-                    </Badge>
-                    <DifficultyBadge difficulty={problemSet.difficulty as Difficulty} />
-                    {problemSet.total_points && (
-                      <Badge variant="outline" className="text-xs">
-                        {problemSet.total_points}点満点
-                      </Badge>
-                    )}
-                    {problemSet.time_limit_minutes && (
-                      <Badge variant="outline" className="text-xs">
-                        {problemSet.time_limit_minutes}分
-                      </Badge>
-                    )}
-                  </div>
+                  {/* Metadata as plain text */}
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    {SUBJECT_LABELS[problemSet.subject as Subject]}
+                    {" / "}
+                    {DIFFICULTY_LABELS[problemSet.difficulty as Difficulty]}
+                    {problemSet.total_points && ` / ${problemSet.total_points}点満点`}
+                    {problemSet.time_limit_minutes && ` / ${problemSet.time_limit_minutes}分`}
+                  </p>
 
                   {/* Seller credit */}
                   {problemSet.seller_display_name && (
-                    <p className="mt-2 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       作成: {problemSet.seller_display_name}
                     </p>
                   )}
@@ -214,11 +177,10 @@ export default async function PurchaseSuccessPage({
                 </div>
               )}
 
-              {/* Primary CTA — large and prominent */}
+              {/* Primary CTA */}
               {problemSetId && (
-                <Button size="lg" className="mb-4 w-full text-base font-bold shadow-md" asChild>
+                <Button size="lg" className="mb-4 w-full text-base font-bold" asChild>
                   <Link href={`/problem/${problemSetId}/solve`}>
-                    <PenLine className="mr-2 h-5 w-5" />
                     今すぐ解く
                   </Link>
                 </Button>
@@ -231,13 +193,11 @@ export default async function PurchaseSuccessPage({
                     <Link
                       href={`/problem/${problemSetId}/print?mode=problems`}
                     >
-                      <Printer className="mr-1.5 h-3.5 w-3.5" />
                       印刷する
                     </Link>
                   </Button>
                   <Button variant="outline" size="sm" asChild>
                     <Link href="/dashboard/collections">
-                      <FolderPlus className="mr-1.5 h-3.5 w-3.5" />
                       コレクションへ
                     </Link>
                   </Button>

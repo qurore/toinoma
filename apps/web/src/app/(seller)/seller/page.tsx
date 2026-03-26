@@ -2,9 +2,6 @@ import Link from "next/link";
 import {
   Check,
   ArrowRight,
-  TrendingUp,
-  TrendingDown,
-  Minus,
   Plus,
 } from "lucide-react";
 import { getSellerTosStatus } from "@/lib/auth/require-seller";
@@ -546,9 +543,9 @@ export default async function SellerDashboardPage() {
                         {formatRelativeTime(item.createdAt)}
                       </p>
                     </div>
-                    <Badge variant="secondary" className="shrink-0 text-[10px]">
+                    <span className="shrink-0 text-[10px] text-muted-foreground">
                       {item.type === "purchase" ? "購入" : item.type === "submission" ? "解答" : "レビュー"}
-                    </Badge>
+                    </span>
                   </li>
                 ))}
               </ul>
@@ -706,25 +703,16 @@ function StatCardWithTrend({
       </CardHeader>
       <CardContent>
         <p className="text-3xl font-bold tabular-nums">{value}</p>
-        <div className="mt-1 flex items-center gap-1.5 text-xs text-muted-foreground">
+        <p className="mt-1 text-xs text-muted-foreground">
           {isUp ? (
-            <span className="inline-flex items-center gap-0.5 text-foreground">
-              <TrendingUp className="h-3 w-3" />
-              +{diff}%
-            </span>
+            <span className="font-medium text-foreground">+{diff}%</span>
           ) : isDown ? (
-            <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-              <TrendingDown className="h-3 w-3" />
-              {diff}%
-            </span>
+            <span>{diff}%</span>
           ) : (
-            <span className="inline-flex items-center gap-0.5 text-muted-foreground">
-              <Minus className="h-3 w-3" />
-              変動なし
-            </span>
+            <span>変動なし</span>
           )}
-          <span>前月比</span>
-        </div>
+          {" "}前月比
+        </p>
         {subLabel && (
           <p className="mt-0.5 text-xs text-muted-foreground">{subLabel}</p>
         )}

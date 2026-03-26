@@ -2,17 +2,9 @@
 
 import { useState, useCallback } from "react";
 import Link from "next/link";
-import {
-  ShoppingCart,
-  FileCheck,
-  Star,
-  FolderPlus,
-  Loader2,
-  Activity,
-} from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
 
@@ -43,32 +35,14 @@ interface ActivityFeedProps {
 }
 
 // ──────────────────────────────────────────────
-// Activity type configuration
+// Activity type labels (text-only, no icons)
 // ──────────────────────────────────────────────
 
-const ACTIVITY_CONFIG: Record<
-  ActivityType,
-  {
-    icon: typeof ShoppingCart;
-    className: string;
-  }
-> = {
-  purchase: {
-    icon: ShoppingCart,
-    className: "text-muted-foreground bg-muted",
-  },
-  submission: {
-    icon: FileCheck,
-    className: "text-muted-foreground bg-muted",
-  },
-  review: {
-    icon: Star,
-    className: "text-muted-foreground bg-muted",
-  },
-  collection_add: {
-    icon: FolderPlus,
-    className: "text-muted-foreground bg-muted",
-  },
+const ACTIVITY_TYPE_LABELS: Record<ActivityType, string> = {
+  purchase: "購入",
+  submission: "解答",
+  review: "レビュー",
+  collection_add: "コレクション",
 };
 
 // ──────────────────────────────────────────────
@@ -100,12 +74,11 @@ export function ActivityFeed({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center gap-2">
-          <Activity className="h-5 w-5 text-muted-foreground" />
+        <div className="flex items-center justify-between">
           <CardTitle className="text-base">アクティビティ</CardTitle>
           {totalCount > 0 && (
-            <span className="text-sm text-muted-foreground">
-              ({totalCount})
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {totalCount}件
             </span>
           )}
         </div>
@@ -113,89 +86,63 @@ export function ActivityFeed({
       <CardContent>
         {activities.length === 0 ? (
           <div className="flex flex-col items-center py-10 text-center">
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <Activity className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <p className="text-sm font-medium">
+            <p className="text-sm text-muted-foreground">
               まだアクティビティがありません
             </p>
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-muted-foreground/60">
               問題を購入したり解答すると、ここに表示されます
             </p>
           </div>
         ) : (
           <>
-            <div className="relative space-y-0">
-              {activities.map((activity, idx) => {
-                const config = ACTIVITY_CONFIG[activity.type];
-                const Icon = config.icon;
-                const isLast = idx === activities.length - 1;
-
-                return (
-                  <div key={activity.id} className="relative flex gap-3 pb-4">
-                    {/* Timeline line */}
-                    {!isLast && (
-                      <div className="absolute left-[17px] top-9 h-[calc(100%-20px)] w-px bg-border" />
-                    )}
-
-                    {/* Icon */}
-                    <div
-                      className={cn(
-                        "z-10 flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
-                        config.className
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </div>
-
-                    {/* Content */}
-                    <div className="min-w-0 flex-1 pt-0.5">
-                      <Link
-                        href={activity.href}
-                        className="group block"
-                      >
+            <ul className="divide-y divide-border/60">
+              {activities.map((activity) => (
+                <li key={activity.id} className="py-3 first:pt-0 last:pb-0">
+                  <Link
+                    href={activity.href}
+                    className="group block"
+                  >
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
                         <p className="text-sm font-medium leading-snug group-hover:text-primary">
                           {activity.title}
                         </p>
                         <p className="mt-0.5 text-xs text-muted-foreground">
                           {activity.description}
                         </p>
-                      </Link>
-                      <div className="mt-1 flex items-center gap-2">
-                        <time
-                          dateTime={activity.timestamp}
-                          className="text-[11px] text-muted-foreground"
-                        >
-                          {formatDistanceToNow(
-                            new Date(activity.timestamp),
-                            { addSuffix: true, locale: ja }
-                          )}
-                        </time>
-                        {activity.meta && (
-                          <span className="rounded-full bg-muted px-1.5 py-0.5 text-[10px] font-medium">
-                            {activity.meta}
-                          </span>
-                        )}
                       </div>
+                      {activity.meta && (
+                        <span className="shrink-0 text-xs font-medium tabular-nums text-foreground">
+                          {activity.meta}
+                        </span>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
-            </div>
+                    <div className="mt-1.5 flex items-center gap-2 text-[11px] text-muted-foreground">
+                      <span>{ACTIVITY_TYPE_LABELS[activity.type]}</span>
+                      <span aria-hidden="true">·</span>
+                      <time dateTime={activity.timestamp}>
+                        {formatDistanceToNow(
+                          new Date(activity.timestamp),
+                          { addSuffix: true, locale: ja }
+                        )}
+                      </time>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
 
             {/* Load more */}
             {hasMore && onLoadMore && (
-              <div className="mt-2 flex justify-center">
+              <div className="mt-4 flex justify-center">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={handleLoadMore}
                   disabled={loading}
                 >
-                  {loading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Activity className="h-4 w-4" />
+                  {loading && (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                   )}
                   もっと読み込む
                 </Button>

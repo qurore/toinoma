@@ -1,10 +1,8 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Play, BookOpen, Search, Tag } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { CollectionItemList } from "@/components/collections/collection-item-list";
 import { CollectionSettings } from "@/components/collections/collection-settings";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
@@ -95,15 +93,6 @@ export default async function CollectionDetailPage({
         ]}
       />
 
-      <div className="mb-2">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/dashboard/collections">
-            <ArrowLeft className="mr-1 h-4 w-4" />
-            コレクション一覧
-          </Link>
-        </Button>
-      </div>
-
       <div className="mb-6 flex items-start justify-between gap-4">
         <div className="min-w-0">
           <h1 className="text-2xl font-bold tracking-tight">
@@ -114,26 +103,21 @@ export default async function CollectionDetailPage({
               {collection.description}
             </p>
           )}
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <Badge variant="secondary" className="text-xs">
-              <BookOpen className="mr-1 h-3 w-3" />
-              {itemCount}問
-            </Badge>
+          <p className="mt-2 text-sm text-muted-foreground">
+            {itemCount}問
             {uniqueSubjects.length > 0 && (
-              <Badge variant="secondary" className="gap-1 border border-border text-xs">
-                <Tag className="h-3 w-3" />
+              <span className="ml-2">
                 {uniqueSubjects
                   .map((s) => SUBJECT_LABELS[s as Subject])
                   .join("・")}
-              </Badge>
+              </span>
             )}
-          </div>
+          </p>
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {itemCount > 0 && (
             <Button asChild>
               <Link href={`/dashboard/collections/${id}/solve`}>
-                <Play className="mr-1.5 h-4 w-4" />
                 解き始める
               </Link>
             </Button>
@@ -149,9 +133,6 @@ export default async function CollectionDetailPage({
       {itemCount === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
-              <Search className="h-7 w-7 text-muted-foreground" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               まだ問題がありません
             </h2>

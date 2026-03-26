@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Heart, Star, Users } from "lucide-react";
+import { Heart, Star } from "lucide-react";
 import { useState, useCallback, useOptimistic } from "react";
 import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -72,24 +72,24 @@ function StarRating({
           return (
             <span key={star} className="relative">
               {/* Background (empty) star */}
-              <Star className={cn(starSize, "fill-muted/60 text-muted/60")} />
+              <Star className={cn(starSize, "fill-muted/40 text-muted/40")} />
               {/* Foreground (filled) star with clip */}
               {(isFull || isHalf) && (
                 <span
                   className="absolute inset-0 overflow-hidden"
                   style={{ width: isFull ? "100%" : "50%" }}
                 >
-                  <Star className={cn(starSize, "fill-amber-400 text-amber-400")} />
+                  <Star className={cn(starSize, "fill-amber-400/80 text-amber-400/80")} />
                 </span>
               )}
             </span>
           );
         })}
       </div>
-      <span className="text-xs font-medium text-foreground">
+      <span className="text-xs font-medium text-muted-foreground">
         {roundedRating.toFixed(1)}
       </span>
-      <span className="text-xs text-muted-foreground">({count})</span>
+      <span className="text-xs text-muted-foreground/70">({count})</span>
     </div>
   );
 }
@@ -175,38 +175,18 @@ function FavoriteButton({
 // Price display helper
 // ──────────────────────────────────────────────
 
-function PriceTag({
-  price,
-  variant,
-}: {
-  price: number;
-  variant: "overlay" | "inline";
-}) {
-  const label = price === 0 ? "無料" : `¥${price.toLocaleString()}`;
-
-  if (variant === "overlay") {
+function PriceTag({ price }: { price: number }) {
+  if (price === 0) {
     return (
-      <span
-        className={cn(
-          "rounded-full px-3 py-1 text-xs font-bold shadow-sm",
-          price === 0
-            ? "bg-primary text-primary-foreground"
-            : "bg-white/95 text-foreground backdrop-blur-sm"
-        )}
-      >
-        {label}
+      <span className="shrink-0 text-sm font-semibold text-emerald-600">
+        無料
       </span>
     );
   }
 
   return (
-    <span
-      className={cn(
-        "shrink-0 font-bold",
-        price === 0 ? "text-sm text-primary" : "text-base text-foreground"
-      )}
-    >
-      {label}
+    <span className="shrink-0 text-base font-bold text-foreground">
+      ¥{price.toLocaleString()}
     </span>
   );
 }
@@ -224,9 +204,8 @@ function PurchaseCount({ count }: { count: number }) {
       : String(count);
 
   return (
-    <span className="flex items-center gap-0.5 text-xs text-muted-foreground">
-      <Users className="h-3 w-3" aria-hidden="true" />
-      <span>{label}人購入</span>
+    <span className="text-xs text-muted-foreground">
+      {label}人が購入
     </span>
   );
 }
@@ -258,7 +237,7 @@ function CardCover({
           src={coverImageUrl}
           alt=""
           fill
-          className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          className="object-cover"
           sizes={sizes}
         />
       ) : (
@@ -269,8 +248,8 @@ function CardCover({
           {SUBJECT_LABELS[subject]}
         </span>
       )}
-      {/* Gradient overlay for readability */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent" />
+      {/* Subtle gradient overlay for readability */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent" />
     </div>
   );
 }
@@ -352,7 +331,7 @@ export function ProblemSetCard({
           className="block"
           aria-label={`${data.title} - ${SUBJECT_LABELS[data.subject]} ${DIFFICULTY_LABELS[data.difficulty]}`}
         >
-          <article className="flex h-full overflow-hidden rounded-xl border border-border bg-card transition-all duration-200 hover:border-primary/20 hover:shadow-md">
+          <article className="flex h-full overflow-hidden rounded-lg border border-border bg-card transition-shadow duration-200 hover:shadow-md">
             {/* Cover / gradient */}
             <CardCover
               subject={data.subject}
@@ -386,7 +365,7 @@ export function ProblemSetCard({
                     </p>
                   )}
                 </div>
-                <PriceTag price={data.price} variant="inline" />
+                <PriceTag price={data.price} />
               </div>
             </div>
           </article>
@@ -414,7 +393,7 @@ export function ProblemSetCard({
         className="block"
         aria-label={`${data.title} - ${SUBJECT_LABELS[data.subject]} ${DIFFICULTY_LABELS[data.difficulty]}`}
       >
-        <article className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/20 hover:shadow-md">
+        <article className="flex h-full flex-col overflow-hidden rounded-lg border border-border bg-card transition-shadow duration-200 hover:shadow-md">
           {/* Cover image / gradient placeholder */}
           <div className="relative">
             <CardCover
@@ -461,9 +440,9 @@ export function ProblemSetCard({
             />
           </div>
 
-          {/* Price — bold at the bottom like Udemy */}
+          {/* Price */}
           <div className="mt-1.5">
-            <PriceTag price={data.price} variant="inline" />
+            <PriceTag price={data.price} />
           </div>
         </div>
       </article>

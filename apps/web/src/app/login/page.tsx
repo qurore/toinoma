@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { BookOpen, CheckCircle2, Loader2 } from "lucide-react";
+import { BookOpen, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -156,11 +156,10 @@ function LoginContent() {
             <br />
             出会う場所
           </h1>
-          <ul className="space-y-3">
+          <ul className="space-y-2.5">
             {benefits.map((b) => (
-              <li key={b} className="flex items-start gap-2 text-white/80">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-green-light" aria-hidden="true" />
-                <span className="text-sm">{b}</span>
+              <li key={b} className="text-sm text-white/80 pl-3 relative before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-white/50">
+                {b}
               </li>
             ))}
           </ul>
@@ -315,14 +314,13 @@ function LoginContent() {
           </p>
 
           {/* Mobile benefits — visible only on small screens */}
-          <ul className="mt-8 space-y-2 lg:hidden">
+          <ul className="mt-8 space-y-1.5 lg:hidden">
             {benefits.map((b) => (
               <li
                 key={b}
-                className="flex items-start gap-2 text-muted-foreground"
+                className="text-xs text-muted-foreground pl-3 relative before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-muted-foreground/40"
               >
-                <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary" aria-hidden="true" />
-                <span className="text-xs">{b}</span>
+                {b}
               </li>
             ))}
           </ul>

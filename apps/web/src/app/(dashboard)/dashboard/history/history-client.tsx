@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -12,13 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  TrendingUp,
-  TrendingDown,
-  ChevronLeft,
-  ChevronRight,
-  RotateCcw,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Subject } from "@/types/database";
 
@@ -109,21 +102,22 @@ function ScoreTrendChart({ items }: { items: HistoryItem[] }) {
           />
         ))}
       </svg>
-      <div className="flex items-center gap-1 text-xs">
-        {trending === "up" ? (
-          <>
-            <TrendingUp className="h-3.5 w-3.5 text-primary" />
-            <span className="font-medium text-primary">上昇傾向</span>
-          </>
-        ) : trending === "down" ? (
-          <>
-            <TrendingDown className="h-3.5 w-3.5 text-destructive" />
-            <span className="font-medium text-destructive">下降傾向</span>
-          </>
-        ) : (
-          <span className="text-muted-foreground">横ばい</span>
+      <span
+        className={cn(
+          "text-xs font-medium",
+          trending === "up"
+            ? "text-primary"
+            : trending === "down"
+              ? "text-destructive"
+              : "text-muted-foreground"
         )}
-      </div>
+      >
+        {trending === "up"
+          ? "上昇傾向"
+          : trending === "down"
+            ? "下降傾向"
+            : "横ばい"}
+      </span>
     </div>
   );
 }
@@ -325,7 +319,6 @@ export function SubmissionHistoryClient({
                 onClick={handleResetFilters}
                 className="h-8 px-2 text-xs text-muted-foreground"
               >
-                <RotateCcw className="mr-1 h-3 w-3" />
                 フィルターをリセット
               </Button>
             )}
@@ -347,7 +340,6 @@ export function SubmissionHistoryClient({
                   size="sm"
                   onClick={handleResetFilters}
                 >
-                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
                   フィルターをリセット
                 </Button>
               </CardContent>
@@ -374,43 +366,32 @@ export function SubmissionHistoryClient({
                     <CardContent className="flex items-center justify-between gap-4 p-4">
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium">{s.title}</p>
-                        <div className="mt-1 flex flex-wrap items-center gap-2">
+                        <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
                           {s.subjectLabel && (
-                            <Badge variant="secondary" className="border border-border text-xs">
-                              {s.subjectLabel}
-                            </Badge>
+                            <span>{s.subjectLabel}</span>
                           )}
-                          <span className="text-xs text-muted-foreground">
-                            {date}
-                          </span>
+                          <span>{date}</span>
                         </div>
                       </div>
                       <div className="flex shrink-0 items-center gap-3">
                         {s.score !== null && s.maxScore !== null && (
-                          <span className="text-sm font-semibold tabular-nums">
+                          <span className="text-sm tabular-nums text-muted-foreground">
                             {s.score} / {s.maxScore}
                           </span>
                         )}
                         {s.percentage !== null && (
-                          <Badge
+                          <span
                             className={cn(
-                              "min-w-[3rem] justify-center tabular-nums",
+                              "min-w-[3rem] rounded-md px-2 py-1 text-center text-sm font-semibold tabular-nums",
                               s.percentage >= 80
-                                ? "bg-primary/10 text-primary border-primary/30"
+                                ? "bg-success/10 text-success"
                                 : s.percentage >= 50
-                                  ? "bg-warning/10 text-warning border-warning/30"
-                                  : ""
+                                  ? "bg-amber-500/10 text-amber-600"
+                                  : "bg-destructive/10 text-destructive"
                             )}
-                            variant={
-                              s.percentage >= 80
-                                ? "default"
-                                : s.percentage >= 50
-                                  ? "secondary"
-                                  : "destructive"
-                            }
                           >
                             {s.percentage}%
-                          </Badge>
+                          </span>
                         )}
                       </div>
                     </CardContent>

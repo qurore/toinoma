@@ -12,15 +12,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  ArrowRight,
-  ExternalLink,
-  CheckCircle,
-  AlertCircle,
-  Infinity as InfinityIcon,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ManagePaymentButton } from "./manage-payment-button";
 import type { Metadata } from "next";
@@ -157,32 +149,24 @@ export default async function BillingPage() {
                 </CardTitle>
                 <CardDescription>{tierConfig.description}</CardDescription>
               </div>
-              {/* Cancellation / active / past_due badge */}
+              {/* Cancellation / active / past_due status */}
               {subState.tier !== "free" && (
-                <Badge
-                  variant="outline"
+                <span
                   className={cn(
-                    "shrink-0 gap-1 text-xs",
+                    "shrink-0 text-xs font-medium",
                     subState.cancelAtPeriodEnd
-                      ? "border-amber-500/40 bg-amber-500/10 text-amber-600"
+                      ? "text-amber-600"
                       : subState.status === "past_due"
-                        ? "border-destructive/40 bg-destructive/10 text-destructive"
-                        : "border-success/40 bg-success/10 text-success"
+                        ? "text-destructive"
+                        : "text-success"
                   )}
                 >
-                  {subState.cancelAtPeriodEnd ? (
-                    <AlertCircle className="h-3 w-3" />
-                  ) : subState.status === "past_due" ? (
-                    <AlertCircle className="h-3 w-3" />
-                  ) : (
-                    <CheckCircle className="h-3 w-3" />
-                  )}
                   {subState.cancelAtPeriodEnd
                     ? "解約予約済み"
                     : subState.status === "past_due"
                       ? "支払い遅延"
                       : "有効"}
-                </Badge>
+                </span>
               )}
             </div>
 
@@ -229,8 +213,7 @@ export default async function BillingPage() {
                   AI採点の利用状況
                 </span>
                 {isUnlimited ? (
-                  <span className="flex items-center gap-1.5 text-sm font-semibold text-primary">
-                    <InfinityIcon className="h-4 w-4" />
+                  <span className="text-sm font-semibold text-primary">
                     無制限
                   </span>
                 ) : (
@@ -281,10 +264,9 @@ export default async function BillingPage() {
                   </p>
                 </>
               ) : (
-                <div className="flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs text-primary">
-                  <CheckCircle className="h-3.5 w-3.5 shrink-0" />
+                <p className="text-xs text-muted-foreground">
                   プロプランではAI採点を無制限にご利用いただけます
-                </div>
+                </p>
               )}
             </div>
 
@@ -425,15 +407,14 @@ export default async function BillingPage() {
                             ¥{inv.amount.toLocaleString()}
                           </td>
                           <td className="py-3 text-center">
-                            <Badge
-                              variant="outline"
+                            <span
                               className={cn(
-                                "text-xs",
+                                "text-xs font-medium",
                                 inv.status === "paid"
-                                  ? "border-success/40 bg-success/10 text-success"
+                                  ? "text-success"
                                   : inv.status === "open"
-                                    ? "border-amber-500/40 bg-amber-500/10 text-amber-600"
-                                    : "border-destructive/40 bg-destructive/10 text-destructive"
+                                    ? "text-amber-600"
+                                    : "text-destructive"
                               )}
                             >
                               {inv.status === "paid"
@@ -443,7 +424,7 @@ export default async function BillingPage() {
                                   : inv.status === "void"
                                     ? "無効"
                                     : inv.status}
-                            </Badge>
+                            </span>
                           </td>
                           <td className="py-3 text-right">
                             {inv.url && (
@@ -451,10 +432,9 @@ export default async function BillingPage() {
                                 href={inv.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/5 hover:underline"
+                                className="rounded-md px-2 py-1 text-xs text-primary transition-colors hover:bg-primary/5 hover:underline"
                               >
                                 表示
-                                <ExternalLink className="h-3 w-3" />
                               </a>
                             )}
                           </td>
@@ -498,10 +478,9 @@ export default async function BillingPage() {
                 </p>
                 <Link
                   href="/explore"
-                  className="mt-2 inline-flex items-center gap-1 text-sm text-primary hover:underline"
+                  className="mt-2 text-sm text-primary hover:underline"
                 >
                   問題セットを探す
-                  <ArrowRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
             ) : (
@@ -537,9 +516,9 @@ export default async function BillingPage() {
                         </td>
                         <td className="whitespace-nowrap py-3 text-right tabular-nums">
                           {p.amount_paid === 0 ? (
-                            <Badge variant="secondary" className="text-xs">
+                            <span className="text-xs text-muted-foreground">
                               無料
-                            </Badge>
+                            </span>
                           ) : (
                             `¥${p.amount_paid.toLocaleString()}`
                           )}

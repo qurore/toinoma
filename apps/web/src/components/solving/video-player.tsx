@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Film } from "lucide-react";
+// No decorative icons needed
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -56,7 +56,7 @@ function LazyVideo({ url, title }: { url: string; title: string }) {
         </video>
       ) : (
         <div className="flex aspect-video w-full items-center justify-center rounded-md bg-muted">
-          <Film className="h-10 w-10 text-muted-foreground" aria-hidden="true" />
+          <span className="text-sm text-muted-foreground">読み込み中...</span>
         </div>
       )}
     </div>
@@ -73,8 +73,7 @@ export function VideoPlayer({ videos }: VideoPlayerProps) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Film className="h-4 w-4" aria-hidden="true" />
+          <CardTitle className="text-base">
             解説動画
           </CardTitle>
         </CardHeader>
@@ -94,10 +93,9 @@ export function VideoPlayer({ videos }: VideoPlayerProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-base">
-          <Film className="h-4 w-4" />
+        <CardTitle className="flex items-center justify-between text-base">
           解説動画
-          <span className="ml-auto text-sm font-normal text-muted-foreground">
+          <span className="text-sm font-normal text-muted-foreground">
             {videos.length}本
           </span>
         </CardTitle>

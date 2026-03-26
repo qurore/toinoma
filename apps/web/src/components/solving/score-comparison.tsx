@@ -8,7 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+// Badge removed — using plain text
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -74,12 +74,6 @@ function buildSmoothPath(points: { x: number; y: number }[]): string {
     d += ` C${cpx},${prev.y} ${cpx},${curr.y} ${curr.x},${curr.y}`;
   }
   return d;
-}
-
-function getPercentileBadgeVariant(rank: number) {
-  if (rank >= 90) return "default" as const;
-  if (rank >= 70) return "secondary" as const;
-  return "outline" as const;
 }
 
 function getPercentileLabel(rank: number): string {
@@ -165,12 +159,9 @@ function ScoreComparisonChart({ data }: { data: ScoreComparisonData }) {
               あなたの推移と全体平均
             </CardDescription>
           </div>
-          <Badge
-            variant={getPercentileBadgeVariant(percentileRank)}
-            className="shrink-0 text-xs"
-          >
+          <span className="shrink-0 text-xs text-muted-foreground">
             {getPercentileLabel(percentileRank)} (上位{Math.max(1, 100 - percentileRank)}%)
-          </Badge>
+          </span>
         </div>
       </CardHeader>
       <CardContent>

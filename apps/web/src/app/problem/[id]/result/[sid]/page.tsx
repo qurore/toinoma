@@ -3,16 +3,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
 import { PdfDownloadButton } from "@/components/solving/pdf-download-button";
-import {
-  History,
-  Star,
-  RotateCcw,
-  FolderPlus,
-  AlertTriangle,
-  Target,
-  Lightbulb,
-  TrendingUp,
-} from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import { gradingResultSchema } from "@toinoma/shared/schemas";
 import { GradingResultDisplay } from "@/components/grading/grading-result";
 import { AiAssistantDialog } from "@/components/ai-assistant/ai-assistant-dialog";
@@ -153,7 +144,6 @@ export default async function GradingResultPage({
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-center">
               <Button asChild>
                 <Link href={`/problem/${id}/solve`}>
-                  <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
                   もう一度解く
                 </Link>
               </Button>
@@ -211,7 +201,6 @@ export default async function GradingResultPage({
             <PdfDownloadButton problemSetId={id} />
             <Button variant="outline" size="sm" asChild>
               <Link href={`/problem/${id}/history`}>
-                <History className="mr-1 h-3.5 w-3.5" aria-hidden="true" />
                 履歴
               </Link>
             </Button>
@@ -236,85 +225,54 @@ export default async function GradingResultPage({
         {/* Improvement advice section (score-based) */}
         <div className="mt-6 rounded-lg border border-border bg-card">
           <div className="border-b border-border px-5 py-4">
-            <h2 className="flex items-center gap-2 text-base font-semibold">
-              <Lightbulb className="h-4 w-4 text-primary" aria-hidden="true" />
+            <h2 className="text-base font-semibold">
               学習アドバイス
             </h2>
           </div>
           <div className="space-y-4 p-5">
             {scorePercent >= 80 ? (
               <>
-                <div className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-success/10">
-                    <Target className="h-3.5 w-3.5 text-success" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-success">素晴らしい成績です</p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      高得点を維持しています。間違えた問題を復習して、満点を目指しましょう。
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium text-success">素晴らしい成績です</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    高得点を維持しています。間違えた問題を復習して、満点を目指しましょう。
+                  </p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">次のステップ</p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      より難易度の高い問題に挑戦して、さらに実力を伸ばしましょう。
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium">次のステップ</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    より難易度の高い問題に挑戦して、さらに実力を伸ばしましょう。
+                  </p>
                 </div>
               </>
             ) : scorePercent >= 50 ? (
               <>
-                <div className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-amber-500/10">
-                    <Target className="h-3.5 w-3.5 text-amber-600" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">よく頑張りました</p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      各大問のフィードバックを確認し、部分点を落としている箇所を重点的に復習しましょう。
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium">よく頑張りました</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    各大問のフィードバックを確認し、部分点を落としている箇所を重点的に復習しましょう。
+                  </p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">得点アップのコツ</p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      ルーブリック評価で減点されている要素を確認し、解答に含めるべきポイントを意識しましょう。
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium">得点アップのコツ</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    ルーブリック評価で減点されている要素を確認し、解答に含めるべきポイントを意識しましょう。
+                  </p>
                 </div>
               </>
             ) : (
               <>
-                <div className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted">
-                    <Target className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">伸びしろがあります</p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      まずは各設問の総合フィードバックを読み、解答の方向性を確認しましょう。
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium">伸びしろがあります</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    まずは各設問の総合フィードバックを読み、解答の方向性を確認しましょう。
+                  </p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                    <TrendingUp className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">基礎を固めよう</p>
-                    <p className="mt-0.5 text-sm text-muted-foreground">
-                      得点率の低い大問から優先的に復習し、繰り返し解くことで着実にスコアが上がります。
-                    </p>
-                  </div>
+                <div>
+                  <p className="text-sm font-medium">基礎を固めよう</p>
+                  <p className="mt-0.5 text-sm text-muted-foreground">
+                    得点率の低い大問から優先的に復習し、繰り返し解くことで着実にスコアが上がります。
+                  </p>
                 </div>
               </>
             )}
@@ -325,19 +283,16 @@ export default async function GradingResultPage({
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <Button className="w-full" asChild>
             <Link href={`/problem/${id}/solve`}>
-              <RotateCcw className="mr-1.5 h-4 w-4" aria-hidden="true" />
               もう一度解く
             </Link>
           </Button>
           <Button variant="outline" className="w-full" asChild>
             <Link href={`/problem/${id}/history`}>
-              <History className="mr-1.5 h-4 w-4" aria-hidden="true" />
               履歴を見る
             </Link>
           </Button>
           <Button variant="outline" className="w-full" asChild>
             <Link href={`/dashboard/collections`}>
-              <FolderPlus className="mr-1.5 h-4 w-4" aria-hidden="true" />
               コレクションに追加
             </Link>
           </Button>
@@ -347,22 +302,16 @@ export default async function GradingResultPage({
         {showReviewPrompt && (
           <div className="mt-6 rounded-lg border border-primary/20 bg-primary/5 p-4">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <Star className="h-4 w-4 text-primary" aria-hidden="true" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium">
-                    この問題セットを評価しませんか？
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    レビューは他の学生の参考になります
-                  </p>
-                </div>
+              <div>
+                <p className="text-sm font-medium">
+                  この問題セットを評価しませんか？
+                </p>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  レビューは他の学生の参考になります
+                </p>
               </div>
               <Button size="sm" asChild>
                 <Link href={`/problem/${id}#reviews`}>
-                  <Star className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
                   レビューを書く
                 </Link>
               </Button>

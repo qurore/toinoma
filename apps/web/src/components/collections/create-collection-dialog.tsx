@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { createCollection } from "@/app/(dashboard)/dashboard/collections/actions";
 
@@ -57,7 +57,6 @@ export function CreateCollectionDialog() {
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button>
-          <Plus className="mr-1.5 h-4 w-4" />
           新規作成
         </Button>
       </DialogTrigger>
@@ -108,10 +107,8 @@ export function CreateCollectionDialog() {
               キャンセル
             </Button>
             <Button type="submit" disabled={isSubmitting}>
-              {isSubmitting ? (
+              {isSubmitting && (
                 <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
-              ) : (
-                <Plus className="mr-1.5 h-4 w-4" />
               )}
               作成
             </Button>

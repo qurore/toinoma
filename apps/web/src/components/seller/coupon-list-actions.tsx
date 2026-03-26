@@ -18,13 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Copy,
-  MoreHorizontal,
-  Power,
-  PowerOff,
-  Trash2,
-} from "lucide-react";
+import { MoreHorizontal } from "lucide-react";
 import { toast } from "sonner";
 import {
   toggleCouponActive,
@@ -124,22 +118,11 @@ export function CouponListActions({
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={handleCopyCode}>
-          <Copy className="mr-2 h-4 w-4" />
           コードをコピー
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleToggle}>
-          {isActive ? (
-            <>
-              <PowerOff className="mr-2 h-4 w-4" />
-              無効にする
-            </>
-          ) : (
-            <>
-              <Power className="mr-2 h-4 w-4" />
-              有効にする
-            </>
-          )}
+          {isActive ? "無効にする" : "有効にする"}
         </DropdownMenuItem>
         {!hasUses && (
           <>
@@ -148,7 +131,6 @@ export function CouponListActions({
               onClick={handleDelete}
               className="text-destructive focus:text-destructive"
             >
-              <Trash2 className="mr-2 h-4 w-4" />
               削除する
             </DropdownMenuItem>
           </>

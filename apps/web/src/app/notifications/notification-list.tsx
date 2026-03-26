@@ -5,19 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { formatDistanceToNow } from "date-fns";
 import { ja } from "date-fns/locale";
-import {
-  ShoppingCart,
-  ClipboardCheck,
-  Star,
-  Megaphone,
-  CreditCard,
-  Settings,
-  Trash2,
-  CheckCheck,
-  Bell,
-} from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { markAsRead, markAllAsRead, deleteNotification } from "./actions";
@@ -43,24 +32,6 @@ const TYPE_LABELS: Record<NotificationType, string> = {
   announcement: "お知らせ",
   subscription: "サブスク",
   system: "システム",
-};
-
-const TYPE_ICONS: Record<NotificationType, React.ElementType> = {
-  purchase: ShoppingCart,
-  grading: ClipboardCheck,
-  review: Star,
-  announcement: Megaphone,
-  subscription: CreditCard,
-  system: Settings,
-};
-
-const TYPE_COLORS: Record<NotificationType, string> = {
-  purchase: "text-muted-foreground bg-muted",
-  grading: "text-muted-foreground bg-muted",
-  review: "text-muted-foreground bg-muted",
-  announcement: "text-muted-foreground bg-muted",
-  subscription: "text-muted-foreground bg-muted",
-  system: "text-muted-foreground bg-muted",
 };
 
 const FILTER_OPTIONS: Array<{ value: TypeFilter; label: string }> = [
@@ -162,7 +133,6 @@ export function NotificationList({
             disabled={isPending}
             onClick={handleMarkAllAsRead}
           >
-            <CheckCheck className="mr-2 h-4 w-4" />
             すべて既読にする
           </Button>
         )}
@@ -196,21 +166,16 @@ export function NotificationList({
         <NotificationListSkeleton />
       ) : notifications.length === 0 ? (
         <Card>
-          <CardContent className="flex flex-col items-center gap-4 py-20 text-center">
-            <div className="rounded-full bg-muted p-5">
-              <Bell className="h-10 w-10 text-muted-foreground/60" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-base font-semibold text-foreground">
-                {filter === "all"
-                  ? "通知はまだありません"
-                  : `${FILTER_OPTIONS.find((o) => o.value === filter)?.label ?? ""}の通知はありません`}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                問題の購入や採点完了時に通知が届きます。
-              </p>
-            </div>
-            <Button variant="outline" size="sm" asChild>
+          <CardContent className="flex flex-col items-center py-16 text-center">
+            <p className="text-base font-semibold text-foreground">
+              {filter === "all"
+                ? "通知はまだありません"
+                : `${FILTER_OPTIONS.find((o) => o.value === filter)?.label ?? ""}の通知はありません`}
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              問題の購入や採点完了時に通知が届きます。
+            </p>
+            <Button variant="outline" size="sm" className="mt-4" asChild>
               <Link href="/explore">問題を探す</Link>
             </Button>
           </CardContent>
@@ -218,8 +183,6 @@ export function NotificationList({
       ) : (
         <div className="space-y-2" role="list" aria-label="通知一覧">
           {notifications.map((n) => {
-            const Icon = TYPE_ICONS[n.type];
-            const colorClass = TYPE_COLORS[n.type];
             const isUnread = !n.read_at;
 
             const content = (
@@ -231,13 +194,6 @@ export function NotificationList({
                 } ${n.link ? "cursor-pointer hover:shadow-sm" : ""}`}
               >
                 <CardContent className="flex items-start gap-3 p-4">
-                  {/* Type icon */}
-                  <div
-                    className={`mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${colorClass}`}
-                  >
-                    <Icon className="h-4 w-4" />
-                  </div>
-
                   {/* Content */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -250,12 +206,9 @@ export function NotificationList({
                       <p className="truncate text-sm font-medium">
                         {n.title}
                       </p>
-                      <Badge
-                        variant="secondary"
-                        className="shrink-0 border border-border text-xs"
-                      >
+                      <span className="shrink-0 text-xs text-muted-foreground">
                         {TYPE_LABELS[n.type]}
-                      </Badge>
+                      </span>
                     </div>
                     <p className="mt-0.5 line-clamp-2 text-sm text-muted-foreground">
                       {n.body}
@@ -353,12 +306,11 @@ export function NotificationListSkeleton() {
     <div className="space-y-2" aria-busy="true" aria-label="通知を読み込み中">
       {Array.from({ length: 5 }).map((_, i) => (
         <Card key={i}>
-          <CardContent className="flex items-start gap-3 p-4">
-            <Skeleton className="h-9 w-9 shrink-0 rounded-full" />
-            <div className="min-w-0 flex-1 space-y-2">
+          <CardContent className="p-4">
+            <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Skeleton className="h-4 w-48" />
-                <Skeleton className="h-5 w-12 rounded-full" />
+                <Skeleton className="h-3 w-10" />
               </div>
               <Skeleton className="h-3.5 w-full" />
               <Skeleton className="h-3 w-24" />

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -53,16 +53,13 @@ export function DeleteAccountConfirm() {
   return (
     <>
       <div className="mt-4 space-y-4 rounded-lg border-2 border-destructive/30 bg-destructive/5 p-4">
-        <div className="flex items-start gap-2 text-sm text-destructive">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-          <p>
-            退会するには、下のフィールドに{" "}
-            <strong className="rounded bg-destructive/10 px-1.5 py-0.5 font-mono text-xs">
-              {CONFIRM_PHRASE}
-            </strong>{" "}
-            と入力してください。
-          </p>
-        </div>
+        <p className="text-sm text-destructive">
+          退会するには、下のフィールドに{" "}
+          <strong className="rounded bg-destructive/10 px-1.5 py-0.5 font-mono text-xs">
+            {CONFIRM_PHRASE}
+          </strong>{" "}
+          と入力してください。
+        </p>
 
         <div className="space-y-1.5">
           <Label htmlFor="confirm-phrase" className="text-sm">
@@ -85,10 +82,8 @@ export function DeleteAccountConfirm() {
           disabled={!canDelete || isDeleting}
           className="h-12 w-full"
         >
-          {isDeleting ? (
+          {isDeleting && (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Trash2 className="mr-2 h-4 w-4" />
           )}
           退会手続きをする
         </Button>
@@ -98,8 +93,7 @@ export function DeleteAccountConfirm() {
       <AlertDialog open={showFinalDialog} onOpenChange={setShowFinalDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-5 w-5" />
+            <AlertDialogTitle className="text-destructive">
               本当に退会しますか？
             </AlertDialogTitle>
             <AlertDialogDescription>

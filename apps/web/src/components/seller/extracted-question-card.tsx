@@ -2,19 +2,10 @@
 
 import { useState } from "react";
 import {
-  FileText,
-  CheckSquare,
-  Type,
-  ListChecks,
   ChevronDown,
   ChevronUp,
-  AlertCircle,
-  CheckCircle2,
-  HelpCircle,
-  Pencil,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -38,10 +29,10 @@ import type { Subject, Difficulty } from "@/types/database";
 import type { ExtractedQuestion } from "@/app/api/pdf-import/route";
 
 const QUESTION_TYPES = [
-  { value: "essay", label: "記述式", icon: FileText },
-  { value: "mark_sheet", label: "マーク式", icon: CheckSquare },
-  { value: "fill_in_blank", label: "穴埋め式", icon: Type },
-  { value: "multiple_choice", label: "選択式", icon: ListChecks },
+  { value: "essay", label: "記述式" },
+  { value: "mark_sheet", label: "マーク式" },
+  { value: "fill_in_blank", label: "穴埋め式" },
+  { value: "multiple_choice", label: "選択式" },
 ] as const;
 
 const TYPE_LABELS: Record<string, string> = {
@@ -54,18 +45,15 @@ const TYPE_LABELS: Record<string, string> = {
 const CONFIDENCE_CONFIG = {
   high: {
     label: "高",
-    icon: CheckCircle2,
-    className: "text-green-600 bg-green-50 border-green-200",
+    className: "text-green-600",
   },
   medium: {
     label: "中",
-    icon: HelpCircle,
-    className: "text-amber-600 bg-amber-50 border-amber-200",
+    className: "text-amber-600",
   },
   low: {
     label: "低",
-    icon: AlertCircle,
-    className: "text-red-600 bg-red-50 border-red-200",
+    className: "text-red-600",
   },
 };
 
@@ -94,11 +82,7 @@ export function ExtractedQuestionCard({
     question.questionText !== originalText ||
     question.questionType !== originalType;
 
-  const TypeIcon =
-    QUESTION_TYPES.find((t) => t.value === question.questionType)?.icon ??
-    FileText;
   const confidenceConfig = CONFIDENCE_CONFIG[question.confidence];
-  const ConfidenceIcon = confidenceConfig.icon;
 
   return (
     <Card
@@ -122,54 +106,31 @@ export function ExtractedQuestionCard({
             />
           </div>
 
-          {/* Type icon */}
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
-            <TypeIcon className="h-4 w-4 text-foreground/60" />
-          </div>
-
           {/* Question preview */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
               <span className="text-sm font-semibold text-muted-foreground">
                 Q{index + 1}
               </span>
-              <Badge variant="outline" className="text-xs">
-                {TYPE_LABELS[question.questionType] ?? question.questionType}
-              </Badge>
-              {question.subject && (
-                <Badge variant="secondary" className="text-xs">
-                  {SUBJECT_LABELS[question.subject as Subject] ??
-                    question.subject}
-                </Badge>
-              )}
-              {question.difficulty && (
-                <Badge variant="secondary" className="text-xs">
-                  {DIFFICULTY_LABELS[question.difficulty as Difficulty] ??
-                    question.difficulty}
-                </Badge>
-              )}
               <span className="text-xs text-muted-foreground">
-                {question.points}点
+                {[
+                  TYPE_LABELS[question.questionType] ?? question.questionType,
+                  question.subject && (SUBJECT_LABELS[question.subject as Subject] ?? question.subject),
+                  question.difficulty && (DIFFICULTY_LABELS[question.difficulty as Difficulty] ?? question.difficulty),
+                  `${question.points}点`,
+                ].filter(Boolean).join(" · ")}
               </span>
 
-              {/* Confidence badge */}
-              <Badge
-                variant="outline"
-                className={cn("ml-auto text-xs", confidenceConfig.className)}
-              >
-                <ConfidenceIcon className="mr-1 h-3 w-3" />
+              {/* Confidence label */}
+              <span className={cn("ml-auto text-xs", confidenceConfig.className)}>
                 確信度: {confidenceConfig.label}
-              </Badge>
+              </span>
 
               {/* Edit indicator */}
               {hasEdits && (
-                <Badge
-                  variant="outline"
-                  className="text-xs text-primary bg-primary-50 border-primary-200"
-                >
-                  <Pencil className="mr-1 h-3 w-3" />
+                <span className="text-xs text-primary">
                   編集済み
-                </Badge>
+                </span>
               )}
             </div>
 
@@ -211,11 +172,6 @@ export function ExtractedQuestionCard({
                 size="sm"
                 onClick={() => setIsEditing(!isEditing)}
               >
-                {isEditing ? (
-                  <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                ) : (
-                  <Pencil className="mr-1.5 h-3.5 w-3.5" />
-                )}
                 {isEditing ? "編集を完了" : "編集する"}
               </Button>
             </div>
@@ -514,7 +470,7 @@ function RubricPreview({
             <span>{opt.id}.</span>
             <span>{opt.text}</span>
             {correctIds.includes(opt.id) && (
-              <CheckCircle2 className="h-3.5 w-3.5 text-green-600" />
+              <span className="text-xs text-green-600">✓</span>
             )}
           </div>
         ))}

@@ -2,33 +2,20 @@ import Link from "next/link";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Plus,
-  FileText,
-  CheckSquare,
-  Type,
-  ListChecks,
   Search,
   Upload,
 } from "lucide-react";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS, ANSWER_TYPE_LABELS } from "@toinoma/shared/constants";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
-import { cn } from "@/lib/utils";
 import { PoolFilterBar } from "@/components/seller/pool-filter-bar";
 import type { Subject, Difficulty, AnswerType } from "@/types/database";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "問題プール - 問の間",
-};
-
-const TYPE_ICONS: Record<string, typeof FileText> = {
-  essay: FileText,
-  mark_sheet: CheckSquare,
-  fill_in_blank: Type,
-  multiple_choice: ListChecks,
 };
 
 const TYPE_LABELS: Record<string, string> = {
@@ -122,7 +109,6 @@ export default async function ProblemPoolPage({
       {/* Type-level stats as cards */}
       <div className="mb-6 flex flex-wrap items-center gap-2">
         {Object.entries(TYPE_LABELS).map(([type, label]) => {
-          const Icon = TYPE_ICONS[type] ?? FileText;
           const count = allQuestions.filter(
             (item) => item.question_type === type
           ).length;
@@ -131,9 +117,8 @@ export default async function ProblemPoolPage({
               key={type}
               className="flex items-center gap-1.5 rounded-md border border-border bg-card px-2.5 py-1.5 text-xs"
             >
-              <Icon className="h-3 w-3 text-muted-foreground" />
               <span className="text-muted-foreground">{label}</span>
-              <span className="font-semibold">{count}</span>
+              <span className="font-semibold tabular-nums">{count}</span>
             </div>
           );
         })}
@@ -155,9 +140,6 @@ export default async function ProblemPoolPage({
       {allQuestions.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-center">
-            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-              <FileText className="h-8 w-8 text-muted-foreground/40" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               {hasActiveFilters
                 ? "条件に一致する問題がありません"
@@ -195,78 +177,48 @@ export default async function ProblemPoolPage({
         </Card>
       ) : (
         <div className="space-y-2">
-          {allQuestions.map((item) => {
-            const Icon = TYPE_ICONS[item.question_type] ?? FileText;
-            return (
+          {allQuestions.map((item) => (
               <Link
                 key={item.id}
                 href={`/seller/pool/${item.id}/edit`}
                 className="block rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/20 hover:bg-muted/30"
               >
                 <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-start gap-3 min-w-0 flex-1">
-                    {/* Type icon */}
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
-                      <Icon className="h-4 w-4 text-foreground/60" />
-                    </div>
+                  <div className="min-w-0 flex-1">
+                    {/* Question text preview */}
+                    <p className="line-clamp-2 text-sm font-medium">
+                      {item.question_text?.slice(0, 120) ||
+                        "（問題テキストなし）"}
+                    </p>
 
-                    <div className="min-w-0 flex-1">
-                      {/* Question text preview */}
-                      <p className="line-clamp-2 text-sm font-medium">
-                        {item.question_text?.slice(0, 120) ||
-                          "（問題テキストなし）"}
-                      </p>
-
-                      {/* Badges row */}
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        <Badge variant="outline" className="text-xs">
-                          {ANSWER_TYPE_LABELS[
-                            item.question_type as AnswerType
-                          ] ??
-                            TYPE_LABELS[item.question_type] ??
-                            item.question_type}
-                        </Badge>
-                        {item.subject && (
-                          <Badge variant="secondary" className="border border-border text-xs">
-                            {SUBJECT_LABELS[item.subject as Subject]}
-                          </Badge>
-                        )}
-                        {item.difficulty && (
-                          <Badge
-                            variant="outline"
-                            className={cn(
-                              "text-xs",
-                              item.difficulty === "easy"
-                                ? "border-primary/30 bg-primary/5 text-primary"
-                                : item.difficulty === "hard"
-                                  ? "border-destructive/30 bg-destructive/5 text-destructive"
-                                  : "border-amber-600/30 bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400"
-                            )}
-                          >
-                            {DIFFICULTY_LABELS[item.difficulty as Difficulty]}
-                          </Badge>
-                        )}
-                        {item.points && (
-                          <Badge variant="secondary" className="text-xs">
-                            {item.points}点
-                          </Badge>
-                        )}
-                        {item.vertical_text && (
-                          <Badge variant="outline" className="text-xs">
-                            縦書き
-                          </Badge>
-                        )}
-                        {/* Show topic tags if present */}
-                        {item.topic_tags?.map((tag) => (
-                          <Badge
-                            key={tag}
-                            variant="outline"
-                            className="text-xs text-muted-foreground"
-                          >
-                            {tag}
-                          </Badge>
-                        ))}
-                      </div>
+                    {/* Metadata row — text-based, minimal */}
+                    <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                      <span>
+                        {ANSWER_TYPE_LABELS[
+                          item.question_type as AnswerType
+                        ] ??
+                          TYPE_LABELS[item.question_type] ??
+                          item.question_type}
+                      </span>
+                      {item.subject && (
+                        <span>
+                          {SUBJECT_LABELS[item.subject as Subject]}
+                        </span>
+                      )}
+                      {item.difficulty && (
+                        <span>
+                          {DIFFICULTY_LABELS[item.difficulty as Difficulty]}
+                        </span>
+                      )}
+                      {item.points && (
+                        <span className="tabular-nums">{item.points}点</span>
+                      )}
+                      {item.vertical_text && (
+                        <span>縦書き</span>
+                      )}
+                      {item.topic_tags?.map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
                     </div>
                   </div>
 
@@ -279,8 +231,7 @@ export default async function ProblemPoolPage({
                   </span>
                 </div>
               </Link>
-            );
-          })}
+          ))}
         </div>
       )}
     </div>
