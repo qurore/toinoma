@@ -4,19 +4,6 @@ import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  TrendingUp,
-  Users,
-  Activity,
-  ShoppingCart,
-  ClipboardCheck,
-  CreditCard,
-  Flag,
-  UserCog,
-  Store,
-  BookOpen,
-  Megaphone,
-} from "lucide-react";
 import type { Metadata } from "next";
 
 export const dynamic = "force-dynamic";
@@ -341,37 +328,31 @@ export default async function AdminDashboardPage() {
         <StatCard
           title="総ユーザー数"
           value={totalUsers.toLocaleString()}
-          icon={Users}
           subtitle="登録済みアカウント"
         />
         <StatCard
           title="出品者数"
           value={totalSellers.toLocaleString()}
-          icon={Store}
           subtitle="オンボーディング完了済み"
         />
         <StatCard
           title="公開中の問題セット"
           value={publishedSets.toLocaleString()}
-          icon={BookOpen}
           subtitle="マーケットプレイスに掲載"
         />
         <StatCard
           title="総売上"
           value={`¥${totalRevenue.toLocaleString()}`}
-          icon={TrendingUp}
           subtitle="累計取引額"
         />
         <StatCard
           title="有料サブスク"
           value={paidSubs.toLocaleString()}
-          icon={CreditCard}
           subtitle="ベーシック + プロ"
         />
         <StatCard
           title="未対応の報告"
           value={pendingReports.toLocaleString()}
-          icon={Flag}
           subtitle="対応待ちの報告数"
         />
       </div>
@@ -380,8 +361,7 @@ export default async function AdminDashboardPage() {
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <Activity className="h-4 w-4" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               アクティブユーザー（7日間）
             </CardTitle>
           </CardHeader>
@@ -394,8 +374,7 @@ export default async function AdminDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <TrendingUp className="h-4 w-4" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               コンバージョン率
             </CardTitle>
           </CardHeader>
@@ -408,8 +387,7 @@ export default async function AdminDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <ShoppingCart className="h-4 w-4" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               今月の売上
             </CardTitle>
           </CardHeader>
@@ -424,8 +402,7 @@ export default async function AdminDashboardPage() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-              <ClipboardCheck className="h-4 w-4" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               総提出数
             </CardTitle>
           </CardHeader>
@@ -444,31 +421,26 @@ export default async function AdminDashboardPage() {
       <div className="mb-8 flex flex-wrap gap-2">
         <Button size="sm" asChild>
           <Link href="/admin/users">
-            <UserCog className="mr-1.5 h-3.5 w-3.5" />
             ユーザー管理
           </Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin/reports">
-            <Flag className="mr-1.5 h-3.5 w-3.5" />
             報告管理
           </Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin/sellers">
-            <Store className="mr-1.5 h-3.5 w-3.5" />
             出品者管理
           </Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin/announcements">
-            <Megaphone className="mr-1.5 h-3.5 w-3.5" />
             お知らせ管理
           </Link>
         </Button>
         <Button variant="outline" size="sm" asChild>
           <Link href="/admin/revenue">
-            <TrendingUp className="mr-1.5 h-3.5 w-3.5" />
             売上レポート
           </Link>
         </Button>
@@ -478,8 +450,7 @@ export default async function AdminDashboardPage() {
       <div className="mb-8 grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Users className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-base">
               ユーザー登録数（週次・直近12週間）
             </CardTitle>
           </CardHeader>
@@ -494,8 +465,7 @@ export default async function AdminDashboardPage() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-base">
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-base">
               売上推移（週次・直近12週間）
             </CardTitle>
           </CardHeader>
@@ -512,8 +482,7 @@ export default async function AdminDashboardPage() {
       {/* Recent reports queue */}
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-base">
-            <Flag className="h-4 w-4 text-muted-foreground" />
+          <CardTitle className="text-base">
             最近の報告
           </CardTitle>
           <Button variant="ghost" size="sm" asChild>
@@ -588,19 +557,16 @@ export default async function AdminDashboardPage() {
 function StatCard({
   title,
   value,
-  icon: Icon,
   subtitle,
 }: {
   title: string;
   value: string | number;
-  icon?: typeof Users;
   subtitle?: string;
 }) {
   return (
     <Card>
       <CardHeader className="pb-2">
-        <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-          {Icon && <Icon className="h-4 w-4" />}
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
       </CardHeader>

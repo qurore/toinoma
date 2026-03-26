@@ -2,26 +2,16 @@ import { requireAdmin } from "@/lib/auth/require-seller";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { AdminMobileSidebar } from "@/components/admin/admin-mobile-sidebar";
 import { AdminDesktopNav } from "@/components/admin/admin-desktop-nav";
-import {
-  LayoutDashboard,
-  Users,
-  Flag,
-  TrendingUp,
-  Megaphone,
-  ClipboardList,
-  Undo2,
-  Store,
-} from "lucide-react";
 
 const ADMIN_NAV = [
-  { href: "/admin", label: "ダッシュボード", icon: LayoutDashboard, exact: true },
-  { href: "/admin/users", label: "ユーザー管理", icon: Users, exact: false },
-  { href: "/admin/sellers", label: "出品者管理", icon: Store, exact: false },
-  { href: "/admin/reports", label: "報告管理", icon: Flag, exact: false },
-  { href: "/admin/refunds", label: "返金管理", icon: Undo2, exact: false },
-  { href: "/admin/revenue", label: "売上レポート", icon: TrendingUp, exact: false },
-  { href: "/admin/announcements", label: "お知らせ管理", icon: Megaphone, exact: false },
-  { href: "/admin/audit", label: "監査ログ", icon: ClipboardList, exact: false },
+  { href: "/admin", label: "ダッシュボード", exact: true },
+  { href: "/admin/users", label: "ユーザー管理", exact: false },
+  { href: "/admin/sellers", label: "出品者管理", exact: false },
+  { href: "/admin/reports", label: "報告管理", exact: false },
+  { href: "/admin/refunds", label: "返金管理", exact: false },
+  { href: "/admin/revenue", label: "売上レポート", exact: false },
+  { href: "/admin/announcements", label: "お知らせ管理", exact: false },
+  { href: "/admin/audit", label: "監査ログ", exact: false },
 ] as const;
 
 export default async function AdminLayout({

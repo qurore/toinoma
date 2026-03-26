@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Download, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -62,7 +61,6 @@ export function RevenueFilters({
     <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:flex-wrap">
       <div className="space-y-1">
         <Label htmlFor="start-date" className="text-xs text-muted-foreground">
-          <Calendar className="mr-1 inline h-3 w-3" />
           開始日
         </Label>
         <Input
@@ -75,7 +73,6 @@ export function RevenueFilters({
       </div>
       <div className="space-y-1">
         <Label htmlFor="end-date" className="text-xs text-muted-foreground">
-          <Calendar className="mr-1 inline h-3 w-3" />
           終了日
         </Label>
         <Input
@@ -105,7 +102,6 @@ export function RevenueFilters({
 
       <div className="sm:ml-auto">
         <Button variant="outline" size="sm" onClick={handleExportCsv}>
-          <Download className="mr-2 h-4 w-4" />
           CSV出力
         </Button>
       </div>

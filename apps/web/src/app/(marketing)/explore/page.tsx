@@ -451,7 +451,7 @@ export default async function ExplorePage({
 
         <div className="flex gap-8">
           {/* Desktop filter sidebar */}
-          <Suspense fallback={null}>
+          <Suspense fallback={<div className="hidden w-64 shrink-0 lg:block"><div className="sticky top-20 rounded-lg border border-border bg-card p-4"><div className="mb-3 h-3 w-20 rounded bg-muted" /><div className="space-y-4"><div className="h-40 rounded bg-muted animate-pulse" /><div className="h-32 rounded bg-muted animate-pulse" /><div className="h-24 rounded bg-muted animate-pulse" /></div></div></div>}>
             <ExploreFiltersSidebar />
           </Suspense>
 

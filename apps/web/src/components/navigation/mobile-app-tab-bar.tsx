@@ -59,7 +59,7 @@ export function MobileAppTabBar() {
                 )}
               >
                 {isActive && (
-                  <span className="absolute top-0.5 left-1/2 h-0.5 w-4 -translate-x-1/2 rounded-full bg-primary" />
+                  <span className="absolute top-0.5 left-1/2 h-[3px] w-5 -translate-x-1/2 rounded-full bg-primary" />
                 )}
                 <Icon
                   className={cn(

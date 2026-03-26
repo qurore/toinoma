@@ -3,17 +3,10 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Plus,
-  Megaphone,
   MoreHorizontal,
-  Pencil,
   Send,
-  EyeOff,
   Trash2,
   Loader2,
-  Users,
-  Store,
-  Crown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -48,11 +41,6 @@ const TARGET_LABELS: Record<string, string> = {
   subscribers: "有料会員のみ",
 };
 
-const TARGET_ICONS: Record<string, typeof Users> = {
-  all: Users,
-  sellers: Store,
-  subscribers: Crown,
-};
 
 interface AnnouncementsClientProps {
   announcements: AnnouncementRow[];
@@ -132,7 +120,6 @@ export function AnnouncementsClient({
           </p>
         </div>
         <Button onClick={() => setShowCreateForm(true)}>
-          <Plus className="mr-1.5 h-4 w-4" />
           お知らせを作成
         </Button>
       </div>
@@ -154,9 +141,6 @@ export function AnnouncementsClient({
       {announcements.length === 0 && !showCreateForm && (
         <Card>
           <CardContent className="py-12 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <Megaphone className="h-6 w-6 text-foreground/60" />
-            </div>
             <p className="mb-2 text-lg font-medium">
               お知らせがまだありません
             </p>
@@ -164,7 +148,6 @@ export function AnnouncementsClient({
               ユーザーに向けたお知らせを作成しましょう
             </p>
             <Button onClick={() => setShowCreateForm(true)}>
-              <Plus className="mr-1.5 h-4 w-4" />
               最初のお知らせを作成
             </Button>
           </CardContent>
@@ -293,16 +276,9 @@ export function AnnouncementsClient({
       {announcements.length > 0 && (
         <div className="space-y-2">
           {announcements.map((ann) => {
-            const TargetIcon = TARGET_ICONS[ann.target] ?? Users;
-
             return (
               <Card key={ann.id}>
                 <CardContent className="flex items-start gap-4 p-4">
-                  {/* Icon */}
-                  <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
-                    <Megaphone className="h-4 w-4 text-foreground/60" />
-                  </div>
-
                   {/* Main content */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
@@ -319,8 +295,7 @@ export function AnnouncementsClient({
                       {ann.body}
                     </p>
                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
-                        <TargetIcon className="h-3 w-3" />
+                      <span>
                         {TARGET_LABELS[ann.target] ?? ann.target}
                       </span>
                       <span>
@@ -359,14 +334,12 @@ export function AnnouncementsClient({
                       <DropdownMenuItem
                         onClick={() => setEditingAnnouncement(ann)}
                       >
-                        <Pencil className="mr-2 h-4 w-4" />
                         編集
                       </DropdownMenuItem>
                       {!ann.published && (
                         <DropdownMenuItem
                           onClick={() => handlePublish(ann.id)}
                         >
-                          <Send className="mr-2 h-4 w-4" />
                           公開する
                         </DropdownMenuItem>
                       )}
@@ -374,7 +347,6 @@ export function AnnouncementsClient({
                         <DropdownMenuItem
                           onClick={() => handleUnpublish(ann.id)}
                         >
-                          <EyeOff className="mr-2 h-4 w-4" />
                           非公開にする
                         </DropdownMenuItem>
                       )}
@@ -384,7 +356,6 @@ export function AnnouncementsClient({
                           className="text-destructive focus:text-destructive"
                           onClick={() => handleDelete(ann.id)}
                         >
-                          <Trash2 className="mr-2 h-4 w-4" />
                           削除
                         </DropdownMenuItem>
                       )}

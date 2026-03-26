@@ -178,7 +178,7 @@ function FavoriteButton({
 function PriceTag({ price }: { price: number }) {
   if (price === 0) {
     return (
-      <span className="shrink-0 text-sm font-semibold text-emerald-600">
+      <span className="shrink-0 text-sm font-semibold text-primary">
         無料
       </span>
     );

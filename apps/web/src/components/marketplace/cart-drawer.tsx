@@ -186,11 +186,11 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                      className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
                       onClick={() => removeItem(item.id)}
                       aria-label={`${item.title}をお気に入りから削除`}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
+                      <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
 
@@ -201,7 +201,7 @@ export function CartDrawer({ userId, initialCount = 0 }: CartDrawerProps) {
                     <Button
                       size="sm"
                       variant="outline"
-                      className="h-7 gap-1 text-xs"
+                      className="h-8 gap-1.5 text-xs"
                       asChild
                     >
                       <Link

@@ -11,7 +11,7 @@ export function HeroSection() {
       <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-28 sm:px-6 sm:pb-28 sm:pt-36 lg:pb-32 lg:pt-40">
         <div className="grid items-center gap-12 lg:grid-cols-2 lg:gap-16">
           {/* Left column — copy */}
-          <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left animate-fade-in opacity-0">
+          <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left animate-fade-in [animation-fill-mode:backwards]">
             {/* Heading — lead with the user's goal */}
             <h1 className="text-4xl font-bold leading-[1.15] tracking-tight text-white sm:text-5xl lg:text-[3.5rem]">
               入試本番レベルの問題を
@@ -47,7 +47,8 @@ export function HeroSection() {
                   type="text"
                   name="q"
                   placeholder="教科名や大学名で検索..."
-                  className="h-11 w-full rounded-full border border-white/20 bg-white/10 pl-4 pr-12 text-sm text-white placeholder:text-white/40 backdrop-blur-sm transition-colors focus:border-white/40 focus:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
+                  required
+                  className="h-11 w-full rounded-full border border-white/20 bg-white/10 pl-4 pr-12 text-sm text-white placeholder:text-white/60 backdrop-blur-sm transition-colors focus:border-white/40 focus:bg-white/15 focus:outline-none focus-visible:ring-2 focus-visible:ring-white"
                 />
                 <button
                   type="submit"
@@ -66,10 +67,22 @@ export function HeroSection() {
             <p className="mt-6 text-xs text-white/50">
               9科目対応 · 無料問題あり · 登録かんたん
             </p>
+
+            {/* Compact mobile grading preview — visible only on small screens */}
+            <div className="mt-5 block lg:hidden">
+              <div className="flex items-center gap-3 rounded-xl border border-white/10 bg-white/[0.07] px-4 py-3 backdrop-blur-md">
+                <span className="shrink-0 rounded-full bg-green/20 px-2.5 py-0.5 text-xs font-bold text-green-light">
+                  82/100
+                </span>
+                <p className="min-w-0 truncate text-xs text-white/60">
+                  主権国家体制の形成過程をより明確に記述すると得点率が向上します
+                </p>
+              </div>
+            </div>
           </div>
 
           {/* Right column — grading result preview card */}
-          <div className="relative mx-auto hidden w-full max-w-md lg:mx-0 lg:block animate-fade-in opacity-0">
+          <div className="relative mx-auto hidden w-full max-w-md lg:mx-0 lg:block animate-fade-in [animation-fill-mode:backwards]">
             <div className="rounded-2xl border border-white/10 bg-white/[0.07] p-6 shadow-2xl backdrop-blur-md">
               {/* Card header */}
               <div className="mb-5 flex items-center justify-between">

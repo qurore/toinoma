@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft, Loader2, Mail } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -53,9 +53,6 @@ export default function ForgotPasswordPage() {
       <main className="flex min-h-screen items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-              <Mail className="h-7 w-7 text-primary" aria-hidden="true" />
-            </div>
             <CardTitle className="text-2xl">メールを確認してください</CardTitle>
             <CardDescription>
               <strong>{email}</strong>{" "}
@@ -75,8 +72,7 @@ export default function ForgotPasswordPage() {
             </Button>
             <Button variant="ghost" className="w-full" asChild>
               <Link href="/login">
-                <ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" />
-                ログインに戻る
+                ← ログインに戻る
               </Link>
             </Button>
           </CardContent>
@@ -89,9 +85,6 @@ export default function ForgotPasswordPage() {
     <main className="flex min-h-screen items-center justify-center px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-            <Mail className="h-7 w-7 text-primary" aria-hidden="true" />
-          </div>
           <CardTitle className="text-2xl">パスワードをリセット</CardTitle>
           <CardDescription>
             登録済みのメールアドレスを入力してください。パスワードリセットのリンクを送信します。
@@ -121,17 +114,14 @@ export default function ForgotPasswordPage() {
             <Button type="submit" className="h-12 w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Mail className="mr-2 h-4 w-4" />
-              )}
+              ) : null}
               リセットメールを送信
             </Button>
           </form>
 
           <Button variant="ghost" className="w-full" asChild>
             <Link href="/login">
-              <ArrowLeft className="mr-1 h-4 w-4" aria-hidden="true" />
-              ログインに戻る
+              ← ログインに戻る
             </Link>
           </Button>
         </CardContent>

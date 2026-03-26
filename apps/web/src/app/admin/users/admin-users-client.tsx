@@ -5,11 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import {
   Search,
   MoreHorizontal,
-  Eye,
-  AlertTriangle,
-  Ban,
-  Clock,
-  ShieldCheck,
   ChevronLeft,
   ChevronRight,
   Loader2,
@@ -250,9 +245,6 @@ export function AdminUsersClient({
         <CardContent>
           {users.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
-              <div className="rounded-full bg-muted p-3">
-                <Search className="h-6 w-6 text-muted-foreground" />
-              </div>
               <p className="font-medium">条件に一致するユーザーが見つかりません</p>
               <p className="text-sm text-muted-foreground">
                 検索条件やフィルターを変更してお試しください
@@ -368,7 +360,6 @@ export function AdminUsersClient({
                                   )
                                 }
                               >
-                                <Eye className="mr-2 h-4 w-4" />
                                 プロフィールを表示
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
@@ -377,7 +368,6 @@ export function AdminUsersClient({
                                   onClick={() => handleUnban(u)}
                                   disabled={isPending}
                                 >
-                                  <ShieldCheck className="mr-2 h-4 w-4" />
                                   制限を解除
                                 </DropdownMenuItem>
                               ) : (
@@ -387,7 +377,6 @@ export function AdminUsersClient({
                                       openActionDialog("warn", u)
                                     }
                                   >
-                                    <AlertTriangle className="mr-2 h-4 w-4" />
                                     警告する
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
@@ -395,7 +384,6 @@ export function AdminUsersClient({
                                       openActionDialog("suspend", u)
                                     }
                                   >
-                                    <Clock className="mr-2 h-4 w-4" />
                                     一時停止する
                                   </DropdownMenuItem>
                                   <DropdownMenuItem
@@ -404,7 +392,6 @@ export function AdminUsersClient({
                                       openActionDialog("ban", u)
                                     }
                                   >
-                                    <Ban className="mr-2 h-4 w-4" />
                                     BANする
                                   </DropdownMenuItem>
                                 </>

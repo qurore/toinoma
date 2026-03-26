@@ -112,7 +112,7 @@ describe("MobileDashboardNav", () => {
   it("is fixed below the AppNavbar at top-16", () => {
     expect(mobileNavSource).toContain("fixed");
     expect(mobileNavSource).toContain("top-16");
-    expect(mobileNavSource).toContain("h-10");
+    expect(mobileNavSource).toContain("h-12");
   });
 
   it("reuses NAV_ITEMS from sidebar-nav (single source of truth)", () => {

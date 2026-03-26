@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
-import { BookOpen, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -138,7 +138,6 @@ function LoginContent() {
           href="/"
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
-          <BookOpen className="h-6 w-6 text-white" aria-hidden="true" />
           <div className="flex flex-col leading-none">
             <span className="font-display text-lg font-bold text-white">
               問の間
@@ -184,7 +183,6 @@ function LoginContent() {
             href="/"
             className="mb-8 flex items-center gap-2 lg:hidden"
           >
-            <BookOpen className="h-6 w-6 text-primary" aria-hidden="true" />
             <div className="flex flex-col leading-none">
               <span className="font-display text-lg font-bold">問の間</span>
               <span className="text-[10px] font-medium tracking-wider text-muted-foreground">
@@ -274,7 +272,7 @@ function LoginContent() {
                 <Link
                   href="/forgot-password"
                   className="text-xs text-muted-foreground hover:text-primary transition-colors"
-                  tabIndex={-1}
+
                 >
                   パスワードをお忘れですか？
                 </Link>
@@ -346,19 +344,6 @@ function LoginContent() {
         </div>
       </main>
 
-      {/* Minimal footer for mobile (desktop has brand panel copyright) */}
-      <footer className="fixed inset-x-0 bottom-0 flex items-center justify-center gap-4 bg-background/80 py-4 text-xs text-muted-foreground backdrop-blur-sm lg:hidden">
-        <Link href="/legal/terms" className="hover:text-foreground transition-colors">
-          利用規約
-        </Link>
-        <Link href="/legal/privacy" className="hover:text-foreground transition-colors">
-          プライバシー
-        </Link>
-        <Link href="/help" className="hover:text-foreground transition-colors">
-          ヘルプ
-        </Link>
-        <span>&copy; {new Date().getFullYear()} Toinoma</span>
-      </footer>
     </div>
   );
 }

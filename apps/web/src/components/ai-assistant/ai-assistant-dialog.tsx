@@ -26,13 +26,14 @@ export function AiAssistantDialog({
 
   return (
     <>
-      {/* Floating action button */}
+      {/* Floating action button -- positioned above mobile tab bar on small screens */}
       <Button
         onClick={() => setOpen(true)}
         size="lg"
         className={cn(
-          "fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full shadow-lg",
+          "fixed bottom-20 right-4 z-40 h-14 w-14 rounded-full shadow-lg",
           "transition-transform hover:scale-105 active:scale-95",
+          "md:bottom-6 md:right-6",
           "sm:h-auto sm:w-auto sm:rounded-full sm:px-5"
         )}
         aria-label="AI学習アシスタントを開く"

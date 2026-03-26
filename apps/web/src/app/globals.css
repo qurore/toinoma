@@ -535,4 +535,9 @@
     animation: none !important;
     transform: none !important;
   }
+
+  .stagger-children > * {
+    opacity: 1 !important;
+    animation: none !important;
+  }
 }

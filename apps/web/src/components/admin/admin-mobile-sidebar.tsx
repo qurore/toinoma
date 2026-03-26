@@ -4,7 +4,6 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu } from "lucide-react";
-import type { LucideIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -18,7 +17,6 @@ import { cn } from "@/lib/utils";
 interface AdminNavItem {
   href: string;
   label: string;
-  icon: LucideIcon;
   exact: boolean;
 }
 
@@ -57,7 +55,6 @@ export function AdminMobileSidebar({ navItems }: AdminMobileSidebarProps) {
                 const isActive = item.exact
                   ? pathname === item.href
                   : pathname.startsWith(item.href);
-                const Icon = item.icon;
 
                 return (
                   <li key={item.href}>
@@ -65,14 +62,18 @@ export function AdminMobileSidebar({ navItems }: AdminMobileSidebarProps) {
                       href={item.href}
                       onClick={() => setOpen(false)}
                       className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors",
+                        "relative flex items-center rounded-md px-3 py-2.5 text-sm font-medium",
+                        "transition-colors duration-150",
+                        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                         isActive
                           ? "bg-primary/10 text-primary"
                           : "text-muted-foreground hover:bg-muted hover:text-foreground"
                       )}
                       aria-current={isActive ? "page" : undefined}
                     >
-                      <Icon className="h-4 w-4 shrink-0" />
+                      {isActive && (
+                        <span className="absolute left-0 top-1/2 h-4 w-0.5 -translate-y-1/2 rounded-full bg-primary" />
+                      )}
                       {item.label}
                     </Link>
                   </li>

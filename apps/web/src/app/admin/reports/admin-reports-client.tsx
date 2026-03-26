@@ -8,9 +8,6 @@ import {
   ChevronLeft,
   ChevronRight,
   Loader2,
-  XCircle,
-  CheckCircle,
-  Shield,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -245,9 +242,6 @@ export function AdminReportsClient({
         <CardContent>
           {reports.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-12 text-center">
-              <div className="rounded-full bg-muted p-3">
-                <Shield className="h-6 w-6 text-muted-foreground" />
-              </div>
               <p className="font-medium">条件に一致する報告はありません</p>
               <p className="text-sm text-muted-foreground">
                 フィルターを変更してお試しください
@@ -350,7 +344,6 @@ export function AdminReportsClient({
                                 }
                                 disabled={isPending}
                               >
-                                <CheckCircle className="mr-2 h-4 w-4" />
                                 確認済みにする
                               </DropdownMenuItem>
                             )}
@@ -359,7 +352,6 @@ export function AdminReportsClient({
                                 openDialog("action", report)
                               }
                             >
-                              <Shield className="mr-2 h-4 w-4" />
                               対応する（コンテンツ削除）
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
@@ -368,7 +360,6 @@ export function AdminReportsClient({
                                 openDialog("dismiss", report)
                               }
                             >
-                              <XCircle className="mr-2 h-4 w-4" />
                               却下する
                             </DropdownMenuItem>
                           </DropdownMenuContent>

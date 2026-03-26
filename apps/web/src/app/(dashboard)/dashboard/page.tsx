@@ -284,7 +284,7 @@ export default async function DashboardPage() {
                   return (
                     <Card
                       key={item.id}
-                      className="border-primary/20 bg-primary/[0.02] transition-colors hover:border-primary/30"
+                      className="overflow-hidden border-primary/20 bg-primary/[0.02] transition-colors hover:border-primary/30"
                     >
                       <CardContent className="flex items-center gap-4 p-4">
                         <div className="min-w-0 flex-1">
@@ -308,6 +308,10 @@ export default async function DashboardPage() {
                           </Link>
                         </Button>
                       </CardContent>
+                      {/* Progress bar (0% — no submissions yet) */}
+                      <div className="h-1 bg-muted">
+                        <div className="h-full w-0 rounded-full bg-primary" />
+                      </div>
                     </Card>
                   );
                 })}

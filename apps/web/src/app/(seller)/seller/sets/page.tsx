@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Library, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Button } from "@/components/ui/button";
@@ -117,9 +117,6 @@ export default async function ProblemSetsPage({
       {allSets.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-center">
-            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-              <Library className="h-8 w-8 text-muted-foreground/40" aria-hidden="true" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               まだ問題セットがありません
             </h2>
@@ -142,9 +139,6 @@ export default async function ProblemSetsPage({
       ) : filteredSets.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center py-16 text-center">
-            <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-muted">
-              <Library className="h-8 w-8 text-muted-foreground/40" aria-hidden="true" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               {statusFilter === "published"
                 ? "公開中の問題セットはありません"

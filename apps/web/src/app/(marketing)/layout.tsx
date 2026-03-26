@@ -7,7 +7,9 @@ export default function MarketingLayout({
 }>) {
   return (
     <>
-      {children}
+      <div className="pb-20 md:pb-0">
+        {children}
+      </div>
       <MobileAppTabBar />
     </>
   );

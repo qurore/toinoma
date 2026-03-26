@@ -109,7 +109,7 @@ export default async function SubscriptionSettingsPage(props: {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               現在のプラン
             </CardTitle>
             <Badge
@@ -202,7 +202,7 @@ export default async function SubscriptionSettingsPage(props: {
       {/* Feature comparison table */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             機能比較
           </CardTitle>
         </CardHeader>
@@ -211,22 +211,22 @@ export default async function SubscriptionSettingsPage(props: {
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b text-left">
-                  <th className="pb-3 pr-4 font-medium text-muted-foreground">
+                  <th scope="col" className="pb-3 pr-4 font-medium text-muted-foreground">
                     機能
                   </th>
-                  <th className="whitespace-nowrap pb-3 pr-4 text-center font-medium">
+                  <th scope="col" className="whitespace-nowrap pb-3 pr-4 text-center font-medium">
                     フリー
                     <span className="block text-xs font-normal text-muted-foreground">
                       ¥0
                     </span>
                   </th>
-                  <th className="whitespace-nowrap pb-3 pr-4 text-center font-medium">
+                  <th scope="col" className="whitespace-nowrap pb-3 pr-4 text-center font-medium">
                     ベーシック
                     <span className="block text-xs font-normal text-muted-foreground">
                       ¥498/月
                     </span>
                   </th>
-                  <th className="whitespace-nowrap pb-3 text-center font-medium">
+                  <th scope="col" className="whitespace-nowrap pb-3 text-center font-medium">
                     プロ
                     <span className="block text-xs font-normal text-muted-foreground">
                       ¥1,980/月
@@ -322,7 +322,7 @@ function FeatureRow({
 
   return (
     <tr>
-      <td className="py-3 pr-4 text-sm">{feature}</td>
+      <th scope="row" className="py-3 pr-4 text-sm font-normal text-left">{feature}</th>
       <td className="py-3 pr-4 text-center">{renderCell(free)}</td>
       <td className="py-3 pr-4 text-center">{renderCell(basic)}</td>
       <td className="py-3 text-center">{renderCell(pro)}</td>

@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, CheckCircle2, KeyRound } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 export default function ResetPasswordPage() {
   const [password, setPassword] = useState("");
@@ -61,9 +61,7 @@ export default function ResetPasswordPage() {
       <main className="flex min-h-screen items-center justify-center px-4 py-8">
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-success/10">
-              <CheckCircle2 className="h-7 w-7 text-success" aria-hidden="true" />
-            </div>
+            <p className="mb-3 text-2xl" aria-hidden="true">&#10003;</p>
             <CardTitle className="text-2xl">
               パスワードを更新しました
             </CardTitle>
@@ -85,9 +83,6 @@ export default function ResetPasswordPage() {
     <main className="flex min-h-screen items-center justify-center px-4 py-8">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-primary/10">
-            <KeyRound className="h-7 w-7 text-primary" aria-hidden="true" />
-          </div>
           <CardTitle className="text-2xl">新しいパスワードを設定</CardTitle>
           <CardDescription>
             新しいパスワードを入力してください。
@@ -142,9 +137,7 @@ export default function ResetPasswordPage() {
             <Button type="submit" className="h-12 w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <KeyRound className="mr-2 h-4 w-4" />
-              )}
+              ) : null}
               パスワードを更新
             </Button>
           </form>

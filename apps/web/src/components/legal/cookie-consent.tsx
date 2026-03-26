@@ -3,7 +3,6 @@
 import { useState, useCallback, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Cookie, ChevronDown, ChevronUp } from "lucide-react";
 
 const CONSENT_KEY = "toinoma_cookie_consent";
 
@@ -54,7 +53,6 @@ export function CookieConsent() {
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
         <div className="flex min-w-0 flex-1 items-start gap-3">
-          <Cookie className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
           <div className="min-w-0 flex-1 space-y-1">
             <p className="text-sm font-medium">Cookieの使用について</p>
             <p className="text-sm text-muted-foreground">
@@ -100,11 +98,7 @@ export function CookieConsent() {
             size="sm"
             onClick={() => setDetailsOpen((prev) => !prev)}
           >
-            {detailsOpen ? (
-              <ChevronUp className="mr-1 h-3.5 w-3.5" />
-            ) : (
-              <ChevronDown className="mr-1 h-3.5 w-3.5" />
-            )}
+            <span className="mr-1 text-xs" aria-hidden="true">{detailsOpen ? "\u25B2" : "\u25BC"}</span>
             詳細
           </Button>
           <Button size="sm" onClick={handleAccept}>

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { BookOpen, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { GoogleIcon, XIcon } from "@/components/auth/oauth-icons";
 
 // ──────────────────────────────────────────────
@@ -126,7 +126,6 @@ export default function SignupPage() {
           href="/"
           className="flex items-center gap-2 transition-opacity hover:opacity-80"
         >
-          <BookOpen className="h-6 w-6 text-white" aria-hidden="true" />
           <div className="flex flex-col leading-none">
             <span className="font-display text-lg font-bold text-white">
               問の間
@@ -172,7 +171,6 @@ export default function SignupPage() {
             href="/"
             className="mb-8 flex items-center gap-2 lg:hidden"
           >
-            <BookOpen className="h-6 w-6 text-primary" aria-hidden="true" />
             <div className="flex flex-col leading-none">
               <span className="font-display text-lg font-bold">問の間</span>
               <span className="text-[10px] font-medium tracking-wider text-muted-foreground">

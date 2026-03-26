@@ -9,12 +9,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  TrendingUp,
-  Receipt,
-  Users,
-  Banknote,
-} from "lucide-react";
 import { RevenueFilters } from "./revenue-filters";
 import type { Metadata } from "next";
 
@@ -255,8 +249,7 @@ export default async function AdminRevenuePage(props: {
       <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <Banknote className="h-3.5 w-3.5" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               総売上
             </CardTitle>
           </CardHeader>
@@ -266,8 +259,7 @@ export default async function AdminRevenuePage(props: {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <TrendingUp className="h-3.5 w-3.5" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               プラットフォーム手数料 (15%)
             </CardTitle>
           </CardHeader>
@@ -279,8 +271,7 @@ export default async function AdminRevenuePage(props: {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <Receipt className="h-3.5 w-3.5" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Stripe手数料 (3.6% + 40円)
             </CardTitle>
           </CardHeader>
@@ -292,8 +283,7 @@ export default async function AdminRevenuePage(props: {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-              <Users className="h-3.5 w-3.5" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               総取引数
             </CardTitle>
           </CardHeader>

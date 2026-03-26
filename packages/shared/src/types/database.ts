@@ -1154,6 +1154,14 @@ export interface Database {
         Args: { review_id_param: string; delta: number };
         Returns: undefined;
       };
+      check_rate_limit: {
+        Args: { p_key: string; p_max_requests: number; p_window_ms: number };
+        Returns: {
+          allowed: boolean;
+          current_count: number;
+          window_end_ms: number;
+        }[];
+      };
     };
     Enums: {
       subject: Subject;

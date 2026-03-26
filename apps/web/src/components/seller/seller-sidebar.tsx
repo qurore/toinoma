@@ -115,7 +115,7 @@ export function MobileSellerNav() {
 
   return (
     <nav
-      className="fixed left-0 right-0 top-16 z-40 h-10 border-b border-border bg-card md:hidden"
+      className="fixed left-0 right-0 top-16 z-40 h-12 border-b border-border bg-card md:hidden"
       aria-label="出品者ナビゲーション"
     >
       <ul className="flex h-full overflow-x-auto scrollbar-thin">
@@ -129,7 +129,7 @@ export function MobileSellerNav() {
               <Link
                 href={item.href}
                 className={cn(
-                  "flex items-center border-b-2 px-3 text-xs font-medium whitespace-nowrap",
+                  "flex items-center border-b-2 px-3 text-xs font-medium whitespace-nowrap min-h-[44px]",
                   "transition-colors duration-150",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                   isActive

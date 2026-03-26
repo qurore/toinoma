@@ -78,8 +78,7 @@ describe("Navbar component", () => {
     expect(navbarSource).not.toContain("bg-navy");
   });
 
-  it("uses text-green for logo icon, not text-teal", () => {
-    expect(navbarSource).toContain("text-green");
+  it("uses text-only logo without teal colors", () => {
     expect(navbarSource).not.toContain("text-teal");
   });
 });

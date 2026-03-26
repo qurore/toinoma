@@ -534,7 +534,7 @@ function AnswerSection({
       {/* Mobile progress bar */}
       <div className="sticky top-0 z-30 -mx-4 border-b border-border bg-background/95 px-4 py-2 backdrop-blur-sm lg:hidden">
         <div className="flex items-center justify-between text-xs">
-          <div className="flex gap-2">
+          <div className="flex gap-1.5 overflow-x-auto">
             {progress.sections.map((s) => (
               <button
                 key={s.sectionNumber}
@@ -547,7 +547,7 @@ function AnswerSection({
                   )
                 }
                 className={cn(
-                  "rounded-md px-2 py-1 font-medium transition-colors",
+                  "shrink-0 rounded-md px-2.5 py-1.5 font-medium transition-colors",
                   s.answered === s.total
                     ? "bg-success/10 text-success"
                     : "bg-muted text-muted-foreground"
@@ -560,7 +560,7 @@ function AnswerSection({
               </button>
             ))}
           </div>
-          <span className="font-semibold tabular-nums text-foreground">
+          <span className="shrink-0 pl-2 font-semibold tabular-nums text-foreground">
             {progress.totalAnswered}/{progress.totalQuestions}
           </span>
         </div>
@@ -983,7 +983,7 @@ export function SolveClient({
       )}
 
       {/* Header bar */}
-      <div className="mb-4 flex items-center justify-between gap-3">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-2 sm:gap-3">
         <div className="flex items-center gap-2">
           {/* Progress indicator: "問 X / Y" */}
           <Badge variant="outline" className="text-xs tabular-nums">
@@ -1012,7 +1012,7 @@ export function SolveClient({
         </div>
         <div className="flex items-center gap-2">
           <AutoSaveIndicator lastSaved={lastSavedAt} />
-          <Button variant="outline" size="sm" onClick={handleSaveDraft}>
+          <Button variant="outline" size="sm" className="min-h-[44px] sm:min-h-0" onClick={handleSaveDraft}>
             保存
           </Button>
         </div>
@@ -1181,12 +1181,12 @@ export function SolveClient({
         </p>
       </div>
 
-      {/* Scroll to top button */}
+      {/* Scroll to top button -- positioned above mobile tab bar on small screens */}
       {showScrollNav && (
         <button
           type="button"
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-6 right-6 z-50 flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background shadow-md transition-all hover:bg-muted lg:bottom-8 lg:right-8"
+          className="fixed bottom-20 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-background shadow-md transition-all hover:bg-muted md:bottom-8 md:right-8 md:h-10 md:w-10"
           aria-label="トップに戻る"
         >
           <ChevronUp className="h-5 w-5" aria-hidden="true" />

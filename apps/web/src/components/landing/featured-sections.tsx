@@ -27,12 +27,12 @@ function SectionWrapper({
     <section className={className}>
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         {/* Header */}
-        <div className="mb-8 flex items-end justify-between">
+        <div className="mb-6 flex items-end justify-between sm:mb-8">
           <div>
-            <h2 className="font-display text-xl font-bold tracking-tight sm:text-2xl">
+            <h2 className="font-display text-lg font-bold tracking-tight sm:text-2xl">
               {title}
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>
+            <p className="mt-1 text-xs text-muted-foreground sm:text-sm">{subtitle}</p>
           </div>
           <Link
             href={href}
@@ -49,7 +49,7 @@ function SectionWrapper({
         <div className="mt-6 text-center sm:hidden">
           <Link
             href={href}
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex min-h-[44px] items-center justify-center rounded-lg px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             もっと見る
           </Link>

@@ -21,12 +21,8 @@ import type { Metadata } from "next";
 import {
   ShieldCheck,
   BookOpen,
-  Users,
-  Star,
-  MessageSquare,
   Flag,
   Award,
-  CalendarDays,
 } from "lucide-react";
 
 // ──────────────────────────────────────────────
@@ -257,18 +253,18 @@ export default async function SellerProfilePage({
   return (
     <>
       <AppNavbar {...navbarData} />
-      <main className="mx-auto max-w-5xl px-4 pb-12 pt-20 sm:px-6">
+      <main className="mx-auto max-w-5xl px-4 pb-24 pt-20 sm:px-6 md:pb-12">
         {/* ── Profile header ── */}
         <Card>
-          <CardContent className="p-6 sm:p-8">
-            <div className="flex flex-col gap-6 sm:flex-row sm:items-start">
+          <CardContent className="p-4 sm:p-6 md:p-8">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
               {/* Avatar */}
-              <Avatar className="h-24 w-24 shrink-0">
+              <Avatar className="h-20 w-20 shrink-0 sm:h-24 sm:w-24">
                 <AvatarImage
                   src={profile?.avatar_url ?? undefined}
                   alt={displayName}
                 />
-                <AvatarFallback className="bg-primary/10 text-2xl font-semibold text-primary">
+                <AvatarFallback className="bg-primary/10 text-xl font-semibold text-primary sm:text-2xl">
                   {initials}
                 </AvatarFallback>
               </Avatar>
@@ -319,8 +315,8 @@ export default async function SellerProfilePage({
                     targetType="problem_set"
                     targetId={id}
                     trigger={
-                      <Button variant="ghost" size="sm" className="text-xs text-muted-foreground">
-                        <Flag className="mr-1 h-3 w-3" />
+                      <Button variant="ghost" size="sm" className="min-h-[44px] text-xs text-muted-foreground sm:min-h-0">
+                        <Flag className="mr-1.5 h-3.5 w-3.5" />
                         出品者を報告
                       </Button>
                     }
@@ -332,35 +328,30 @@ export default async function SellerProfilePage({
             <Separator className="my-6" />
 
             {/* ── Stats grid ── */}
-            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-4">
-                <BookOpen className="mb-1.5 h-5 w-5 text-primary" />
-                <p className="text-2xl font-bold">{sets.length}</p>
-                <p className="text-xs text-muted-foreground">問題セット</p>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-5">
+              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3 sm:p-4">
+                <p className="text-xl font-bold sm:text-2xl">{sets.length}</p>
+                <p className="text-[11px] text-muted-foreground sm:text-xs">問題セット</p>
               </div>
-              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-4">
-                <Users className="mb-1.5 h-5 w-5 text-primary" />
-                <p className="text-2xl font-bold">
+              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3 sm:p-4">
+                <p className="text-xl font-bold sm:text-2xl">
                   {totalStudents.toLocaleString()}
                 </p>
-                <p className="text-xs text-muted-foreground">購入者</p>
+                <p className="text-[11px] text-muted-foreground sm:text-xs">購入者</p>
               </div>
-              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-4">
-                <Star className="mb-1.5 h-5 w-5 text-primary" />
-                <p className="text-2xl font-bold">
+              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3 sm:p-4">
+                <p className="text-xl font-bold sm:text-2xl">
                   {totalReviews > 0 ? averageRating.toFixed(1) : "-"}
                 </p>
-                <p className="text-xs text-muted-foreground">平均評価</p>
+                <p className="text-[11px] text-muted-foreground sm:text-xs">平均評価</p>
               </div>
-              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-4">
-                <MessageSquare className="mb-1.5 h-5 w-5 text-primary" />
-                <p className="text-2xl font-bold">{totalReviews}</p>
-                <p className="text-xs text-muted-foreground">レビュー数</p>
+              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-3 sm:p-4">
+                <p className="text-xl font-bold sm:text-2xl">{totalReviews}</p>
+                <p className="text-[11px] text-muted-foreground sm:text-xs">レビュー数</p>
               </div>
-              <div className="flex flex-col items-center rounded-lg bg-muted/50 p-4">
-                <CalendarDays className="mb-1.5 h-5 w-5 text-primary" />
+              <div className="col-span-2 flex flex-col items-center rounded-lg bg-muted/50 p-3 sm:col-span-1 sm:p-4">
                 <p className="text-sm font-bold">{memberSince}</p>
-                <p className="text-xs text-muted-foreground">登録日</p>
+                <p className="text-[11px] text-muted-foreground sm:text-xs">登録日</p>
               </div>
             </div>
           </CardContent>

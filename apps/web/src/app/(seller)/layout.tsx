@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { SellerSidebar, MobileSellerNav } from "@/components/seller/seller-sidebar";
 import { MobileAppTabBar } from "@/components/navigation/mobile-app-tab-bar";
@@ -22,7 +23,7 @@ export default async function SellerLayout({
       <MobileSellerNav />
       {/*
         Content offset:
-        - Mobile: pt-28 = navbar (h-16=64px) + mobile seller nav (h-10=40px) + gap = 112px
+        - Mobile: pt-28 (7rem = 112px) = navbar (h-16=64px) + mobile seller nav (h-12=48px) = 112px
         - Desktop: pt-16 = navbar (h-16=64px) only, pl-60 = sidebar (w-60=240px)
       */}
       <main id="main-content" className="min-h-[calc(100vh-4rem)] pb-20 pt-28 md:pb-0 md:pl-60 md:pt-16">
@@ -30,10 +31,10 @@ export default async function SellerLayout({
         {/* Compact footer for link discoverability in sidebar layouts */}
         <footer className="mt-12 border-t border-border px-4 py-6">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-            <a href="/legal/terms" className="hover:text-foreground transition-colors">利用規約</a>
-            <a href="/legal/privacy" className="hover:text-foreground transition-colors">プライバシー</a>
-            <a href="/legal/seller-tos" className="hover:text-foreground transition-colors">出品者規約</a>
-            <a href="/help/seller-guide" className="hover:text-foreground transition-colors">出品ガイド</a>
+            <Link href="/legal/terms" className="hover:text-foreground transition-colors">利用規約</Link>
+            <Link href="/legal/privacy" className="hover:text-foreground transition-colors">プライバシー</Link>
+            <Link href="/legal/seller-tos" className="hover:text-foreground transition-colors">出品者規約</Link>
+            <Link href="/help/seller-guide" className="hover:text-foreground transition-colors">出品ガイド</Link>
             <span className="ml-auto">&copy; {new Date().getFullYear()} Toinoma</span>
           </div>
         </footer>

@@ -73,7 +73,7 @@ function NavSection({
             href={item.href}
             onClick={onClose}
             className={cn(
-              "flex items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+              "flex min-h-[44px] items-center rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
               isActive
                 ? "bg-primary/10 text-primary"
                 : "text-foreground/80 hover:bg-muted hover:text-foreground"
@@ -181,10 +181,10 @@ export function MobileNavMenu({ user, isSeller }: MobileNavMenuProps) {
                   variant="ghost"
                   size="sm"
                   onClick={close}
-                  className="h-8 gap-1 px-2 text-xs text-muted-foreground"
+                  className="h-11 gap-1.5 px-3 text-xs text-muted-foreground"
                   aria-label="メニューを閉じる"
                 >
-                  <X className="h-3.5 w-3.5" />
+                  <X className="h-4 w-4" />
                   閉じる
                 </Button>
               </div>

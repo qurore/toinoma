@@ -19,7 +19,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Loader2, RefreshCw, AlertTriangle, Undo2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { processRefund } from "./actions";
 
 interface RefundRow {
@@ -66,8 +66,7 @@ export function RefundsClient({ rows }: { rows: RefundRow[] }) {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Undo2 className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-base">
               返金対象の購入
             </CardTitle>
             <Badge variant="secondary">{rows.length}件</Badge>
@@ -139,7 +138,6 @@ export function RefundsClient({ rows }: { rows: RefundRow[] }) {
                           disabled={!row.eligible || isPending}
                           onClick={() => setConfirmRow(row)}
                         >
-                          <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
                           返金
                         </Button>
                       </td>
@@ -159,8 +157,7 @@ export function RefundsClient({ rows }: { rows: RefundRow[] }) {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-warning" />
+            <DialogTitle>
               返金の確認
             </DialogTitle>
             <DialogDescription>
@@ -206,9 +203,7 @@ export function RefundsClient({ rows }: { rows: RefundRow[] }) {
             >
               {processing ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Undo2 className="mr-2 h-4 w-4" />
-              )}
+              ) : null}
               返金を実行
             </Button>
           </DialogFooter>

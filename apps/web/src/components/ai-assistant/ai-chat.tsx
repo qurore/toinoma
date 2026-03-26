@@ -245,7 +245,7 @@ export function AiChat({ problemSetId, isPro, className }: AiChatProps) {
       </div>
 
       {/* Input area */}
-      <div className="shrink-0 border-t border-border p-4">
+      <div className="shrink-0 border-t border-border p-4 pb-safe">
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -259,12 +259,13 @@ export function AiChat({ problemSetId, isPro, className }: AiChatProps) {
             }
             disabled={isStreaming || isLimitReached}
             rows={1}
-            className="flex max-h-32 min-h-[2.5rem] w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex max-h-32 min-h-[44px] w-full resize-none rounded-lg border border-input bg-background px-3 py-2.5 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
             aria-label="メッセージ入力"
           />
           <Button
             type="button"
             size="icon"
+            className="h-11 w-11 shrink-0"
             disabled={isStreaming || !inputValue.trim() || isLimitReached}
             onClick={handleSend}
             aria-label="送信"

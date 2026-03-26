@@ -8,8 +8,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   ChevronLeft,
   ChevronRight,
-  ClipboardList,
-  Shield,
 } from "lucide-react";
 import { AuditFilters } from "./audit-filters";
 import type { Metadata } from "next";
@@ -156,9 +154,6 @@ export default async function AdminAuditPage(props: {
       {logs.length === 0 && (
         <Card>
           <CardContent className="py-12 text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-              <ClipboardList className="h-6 w-6 text-foreground/60" />
-            </div>
             <p className="mb-2 text-lg font-medium">
               監査ログがありません
             </p>
@@ -208,10 +203,7 @@ export default async function AdminAuditPage(props: {
                           })}
                         </td>
                         <td className="px-4 py-3">
-                          <span className="inline-flex items-center gap-1.5">
-                            <Shield className="h-3.5 w-3.5 text-muted-foreground" />
-                            {adminNameMap.get(log.admin_id) ?? "不明"}
-                          </span>
+                          {adminNameMap.get(log.admin_id) ?? "不明"}
                         </td>
                         <td className="px-4 py-3">
                           <Badge

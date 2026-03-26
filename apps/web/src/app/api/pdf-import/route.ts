@@ -180,8 +180,9 @@ export async function POST(request: Request) {
     });
 
   if (uploadError) {
+    console.error("[pdf-import] Upload failed:", uploadError.message);
     return NextResponse.json(
-      { error: `Upload failed: ${uploadError.message}` },
+      { error: "ファイルのアップロードに失敗しました。再度お試しください。" },
       { status: 500 }
     );
   }
@@ -243,11 +244,9 @@ export async function POST(request: Request) {
     } catch {
       // Clean up uploaded file on failure
       await adminSupabase.storage.from("problem-pdfs").remove([storagePath]);
+      console.error("[pdf-import] Failed to parse AI response:", cleanedText.slice(0, 500));
       return NextResponse.json(
-        {
-          error: "Failed to parse AI response",
-          rawResponse: cleanedText.slice(0, 500),
-        },
+        { error: "AIの応答を処理できませんでした。別のPDFで再度お試しください。" },
         { status: 500 }
       );
     }
@@ -285,10 +284,12 @@ export async function POST(request: Request) {
     // Clean up uploaded file on any error
     await adminSupabase.storage.from("problem-pdfs").remove([storagePath]);
 
-    const message =
-      error instanceof Error ? error.message : "Unknown extraction error";
+    console.error(
+      "[pdf-import] AI extraction failed:",
+      error instanceof Error ? error.message : error
+    );
     return NextResponse.json(
-      { error: `AI extraction failed: ${message}` },
+      { error: "PDF解析中にエラーが発生しました。しばらく後に再度お試しください。" },
       { status: 500 }
     );
   }

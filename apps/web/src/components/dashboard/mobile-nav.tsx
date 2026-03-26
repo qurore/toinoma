@@ -7,7 +7,7 @@ import { NAV_ITEMS } from "./sidebar-nav";
 import { cn } from "@/lib/utils";
 
 // Mobile horizontal tab bar — shown below AppNavbar on small screens (md:hidden).
-// Fixed at top-16 (below h-16 AppNavbar), height h-10, z-index below AppNavbar (z-40).
+// Fixed at top-16 (below h-16 AppNavbar), height h-12 (48px), z-index below AppNavbar (z-40).
 // Gradient fade masks indicate scrollable content off-screen.
 export function MobileDashboardNav() {
   const pathname = usePathname();
@@ -37,7 +37,7 @@ export function MobileDashboardNav() {
 
   return (
     <nav
-      className="fixed left-0 right-0 top-16 z-40 h-10 border-b border-border bg-card md:hidden"
+      className="fixed left-0 right-0 top-16 z-40 h-12 border-b border-border bg-card md:hidden"
       aria-label="ダッシュボードナビゲーション"
     >
       <div className="relative h-full">
@@ -65,7 +65,7 @@ export function MobileDashboardNav() {
                 <Link
                   href={item.href}
                   className={cn(
-                    "flex items-center border-b-2 px-3 text-xs font-medium whitespace-nowrap",
+                    "flex items-center border-b-2 px-3 text-xs font-medium whitespace-nowrap min-h-[44px]",
                     "transition-colors duration-150",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                     isActive

@@ -462,9 +462,6 @@ export default async function SellerDashboardPage() {
                   <div
                     key={i}
                     className="group relative flex flex-1 flex-col items-center"
-                    tabIndex={d.revenue > 0 ? 0 : undefined}
-                    role={d.revenue > 0 ? "button" : undefined}
-                    aria-label={d.revenue > 0 ? `${d.date}: ¥${d.revenue.toLocaleString()}` : undefined}
                   >
                     <div
                       className={`w-full rounded-sm transition-colors ${
@@ -502,7 +499,7 @@ export default async function SellerDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {chartData.filter((d) => d.revenue > 0).map((d, i) => (
+                {chartData.map((d, i) => (
                   <tr key={i}>
                     <td>{d.date}</td>
                     <td>¥{d.revenue.toLocaleString()}</td>
@@ -510,6 +507,15 @@ export default async function SellerDashboardPage() {
                 ))}
               </tbody>
             </table>
+            {/* Best day summary — touch-friendly alternative to hover tooltips */}
+            {(() => {
+              const best = chartData.reduce((max, d) => d.revenue > max.revenue ? d : max, chartData[0]);
+              return best.revenue > 0 ? (
+                <p className="mt-3 text-xs text-muted-foreground">
+                  最高: {best.date} ¥{best.revenue.toLocaleString()}
+                </p>
+              ) : null;
+            })()}
             </>
           )}
         </CardContent>
@@ -570,10 +576,10 @@ export default async function SellerDashboardPage() {
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b text-left text-xs text-muted-foreground">
-                      <th className="px-6 py-2.5 font-medium">問題セット</th>
-                      <th className="px-3 py-2.5 font-medium">回答者</th>
-                      <th className="px-3 py-2.5 text-right font-medium">得点</th>
-                      <th className="px-6 py-2.5 text-right font-medium">日時</th>
+                      <th scope="col" className="px-6 py-2.5 font-medium">問題セット</th>
+                      <th scope="col" className="px-3 py-2.5 font-medium">回答者</th>
+                      <th scope="col" className="px-3 py-2.5 text-right font-medium">得点</th>
+                      <th scope="col" className="px-6 py-2.5 text-right font-medium">日時</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/60">
@@ -603,9 +609,9 @@ export default async function SellerDashboardPage() {
                             {sub.score !== null && sub.max_score !== null ? (
                               <span className={
                                 scoreRatio !== null && scoreRatio >= 0.8
-                                  ? "font-medium"
+                                  ? "text-primary font-medium"
                                   : scoreRatio !== null && scoreRatio < 0.4
-                                    ? "font-medium text-muted-foreground"
+                                    ? "text-muted-foreground font-medium"
                                     : "font-medium"
                               }>
                                 {sub.score}/{sub.max_score}

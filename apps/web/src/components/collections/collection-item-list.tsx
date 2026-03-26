@@ -79,9 +79,9 @@ export function CollectionItemList({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="text-sm text-muted-foreground">{items.length}問</p>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"
             size="sm"
@@ -113,28 +113,28 @@ export function CollectionItemList({
           const ps = item.problem_sets;
           return (
             <Card key={item.id} className="transition-colors hover:bg-muted/30">
-              <CardContent className="flex items-center gap-3 p-4">
+              <CardContent className="flex items-center gap-2 p-3 sm:gap-3 sm:p-4">
                 {/* Reorder controls */}
                 <div className="flex shrink-0 flex-col gap-0.5">
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     onClick={() => handleMoveUp(index)}
                     disabled={index === 0}
                     aria-label="上に移動"
                   >
-                    <ArrowUp className="h-3.5 w-3.5" />
+                    <ArrowUp className="h-4 w-4" />
                   </Button>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     onClick={() => handleMoveDown(index)}
                     disabled={index === items.length - 1}
                     aria-label="下に移動"
                   >
-                    <ArrowDown className="h-3.5 w-3.5" />
+                    <ArrowDown className="h-4 w-4" />
                   </Button>
                 </div>
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium">
@@ -168,7 +168,7 @@ export function CollectionItemList({
                   size="icon"
                   onClick={() => handleRemove(item.problem_set_id)}
                   disabled={removingId === item.problem_set_id}
-                  className="shrink-0 text-muted-foreground hover:text-destructive"
+                  className="h-9 w-9 shrink-0 text-muted-foreground hover:text-destructive"
                   aria-label="コレクションから削除"
                 >
                   {removingId === item.problem_set_id ? (
