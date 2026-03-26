@@ -3,7 +3,7 @@ import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, CreditCard, Wallet } from "lucide-react";
+import { ExternalLink, CreditCard } from "lucide-react";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Metadata } from "next";
 
@@ -137,7 +137,6 @@ export default async function PayoutsPage() {
             </p>
             <Button asChild>
               <Link href="/seller/onboarding?step=3">
-                <CreditCard className="mr-1.5 h-4 w-4" />
                 支払い設定を完了する
               </Link>
             </Button>
@@ -153,7 +152,6 @@ export default async function PayoutsPage() {
         <CardContent>
           {allPurchases.length === 0 ? (
             <div className="flex flex-col items-center py-8 text-center">
-              <Wallet className="mb-2 h-8 w-8 text-muted-foreground/30" />
               <p className="text-sm text-muted-foreground">
                 まだ売上がありません
               </p>

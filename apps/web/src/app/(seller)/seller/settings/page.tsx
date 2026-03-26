@@ -153,12 +153,11 @@ export default async function SellerSettingsPage() {
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" asChild>
                   <a
-                    href="https://dashboard.stripe.com/"
+                    href="https://connect.stripe.com/express_login"
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <CreditCard className="mr-1.5 h-3.5 w-3.5" />
-                    Stripe Expressダッシュボード
+                    Stripeダッシュボードを開く
                     <ExternalLink className="ml-1.5 h-3 w-3" />
                   </a>
                 </Button>

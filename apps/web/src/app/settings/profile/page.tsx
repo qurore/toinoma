@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ProfileEditForm } from "@/components/settings/profile-edit-form";
-import { Shield } from "lucide-react";
 import type { Database } from "@/types/database";
 import type { Metadata } from "next";
 
@@ -57,8 +56,7 @@ export default async function ProfileSettingsPage() {
             <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
               アカウント情報
             </CardTitle>
-            <Badge variant="outline" className="gap-1.5 text-xs">
-              <Shield className="h-3 w-3" />
+            <Badge variant="outline" className="text-xs">
               {providerLabel[provider] ?? provider}
             </Badge>
           </div>

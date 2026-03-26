@@ -254,6 +254,7 @@ export default async function DashboardAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold tabular-nums">{totalAttempts}</p>
+                <p className="mt-1 text-xs text-muted-foreground">これまでの解答数</p>
               </CardContent>
             </Card>
             <Card>
@@ -264,6 +265,7 @@ export default async function DashboardAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold tabular-nums">{overallAverage}%</p>
+                <p className="mt-1 text-xs text-muted-foreground">全科目の平均</p>
               </CardContent>
             </Card>
             <Card>
@@ -274,6 +276,7 @@ export default async function DashboardAnalyticsPage() {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold tabular-nums">{subjectAverages.length}</p>
+                <p className="mt-1 text-xs text-muted-foreground">解答した科目</p>
               </CardContent>
             </Card>
             <Card>
@@ -287,6 +290,11 @@ export default async function DashboardAnalyticsPage() {
                   <p className="text-3xl font-bold tabular-nums">{currentStreak}</p>
                   <span className="text-sm text-muted-foreground">日</span>
                 </div>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {currentStreak > 0
+                    ? `最長 ${longestStreak}日`
+                    : "今日から始めましょう"}
+                </p>
               </CardContent>
             </Card>
           </div>

@@ -3,7 +3,6 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Clock } from "lucide-react";
 import { CreateCollectionDialog } from "@/components/collections/create-collection-dialog";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { formatDistanceToNow } from "date-fns";
@@ -100,8 +99,7 @@ export default async function CollectionsPage() {
                       <Badge variant="secondary" className="text-xs">
                         {count}問
                       </Badge>
-                      <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
+                      <span className="text-xs text-muted-foreground">
                         {timeAgo}
                       </span>
                     </div>

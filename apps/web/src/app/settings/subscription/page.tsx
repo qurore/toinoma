@@ -11,11 +11,9 @@ import { SubscriptionPlans } from "@/components/subscription/subscription-plans"
 import {
   Check,
   X,
-  Zap,
   CreditCard,
   AlertTriangle,
   ArrowRight,
-  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
@@ -127,9 +125,7 @@ export default async function SubscriptionSettingsPage(props: {
             </CardTitle>
             <Badge
               variant={subState.tier === "free" ? "secondary" : "default"}
-              className="gap-1"
             >
-              {subState.tier === "pro" && <Crown className="h-3 w-3" />}
               {tierConfig.label}
             </Badge>
           </div>
@@ -138,8 +134,7 @@ export default async function SubscriptionSettingsPage(props: {
           {/* AI grading usage */}
           <div className="space-y-2.5">
             <div className="flex items-baseline justify-between">
-              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Zap className="h-3.5 w-3.5" />
+              <span className="text-sm text-muted-foreground">
                 AI採点の利用
               </span>
               <span className="text-sm font-semibold">

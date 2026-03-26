@@ -21,7 +21,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Heart, ArrowUpDown, Filter, Loader2 } from "lucide-react";
+import { Heart, Loader2 } from "lucide-react";
 import { ProblemSetCard } from "@/components/marketplace/problem-set-card";
 import type { ProblemSetCardData } from "@/components/marketplace/problem-set-card";
 import { createClient } from "@/lib/supabase/client";
@@ -174,7 +174,6 @@ export function FavoritesClient({
           {/* Filters */}
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
               <Select
                 value={subjectFilter}
                 onValueChange={setSubjectFilter}
@@ -194,7 +193,6 @@ export function FavoritesClient({
             </div>
 
             <div className="flex items-center gap-2">
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
               <Select
                 value={sortMode}
                 onValueChange={(v) => setSortMode(v as SortMode)}
@@ -217,6 +215,28 @@ export function FavoritesClient({
               </span>
             )}
           </div>
+
+          {/* Filtered empty state */}
+          {filtered.length === 0 && (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center py-12 text-center">
+                <p className="mb-1 text-sm font-medium">
+                  条件に一致するお気に入りがありません
+                </p>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  フィルター条件を変更してお探しください
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSubjectFilter("all")}
+                >
+                  フィルターをリセット
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Grid */}
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

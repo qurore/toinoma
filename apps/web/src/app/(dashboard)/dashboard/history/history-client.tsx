@@ -13,10 +13,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  ArrowUpDown,
   TrendingUp,
   TrendingDown,
-  Filter,
   ChevronLeft,
   ChevronRight,
   RotateCcw,
@@ -263,7 +261,6 @@ export function SubmissionHistoryClient({
           {/* Filters row */}
           <div className="mb-4 flex flex-wrap items-center gap-3">
             <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
               <Select
                 value={subjectFilter}
                 onValueChange={handleSubjectChange}
@@ -298,7 +295,6 @@ export function SubmissionHistoryClient({
             </Select>
 
             <div className="flex items-center gap-2">
-              <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
               <Select
                 value={sortMode}
                 onValueChange={handleSortChange}
@@ -334,6 +330,29 @@ export function SubmissionHistoryClient({
               </Button>
             )}
           </div>
+
+          {/* Filtered empty state */}
+          {filtered.length === 0 && (
+            <Card className="border-dashed">
+              <CardContent className="flex flex-col items-center py-12 text-center">
+                <p className="mb-1 text-sm font-medium">
+                  条件に一致する解答がありません
+                </p>
+                <p className="mb-4 text-sm text-muted-foreground">
+                  フィルター条件を変更してお探しください
+                </p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleResetFilters}
+                >
+                  <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
+                  フィルターをリセット
+                </Button>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Submission list */}
           <div className="space-y-2">

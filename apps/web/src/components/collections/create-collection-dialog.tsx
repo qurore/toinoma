@@ -14,7 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Plus, FolderPlus } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { createCollection } from "@/app/(dashboard)/dashboard/collections/actions";
 
@@ -63,10 +63,7 @@ export function CreateCollectionDialog() {
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <FolderPlus className="h-5 w-5" />
-            コレクションを作成
-          </DialogTitle>
+          <DialogTitle>コレクションを作成</DialogTitle>
           <DialogDescription>
             問題セットをまとめて管理・学習するためのコレクションを作成します。
           </DialogDescription>

@@ -3,8 +3,7 @@ import { requireSellerTos } from "@/lib/auth/require-seller";
 import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { TrendingUp, TrendingDown, Minus, Download, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 import { SUBJECT_LABELS } from "@toinoma/shared/constants";
 import type { Subject } from "@/types/database";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
@@ -162,17 +161,11 @@ export default async function SalesAnalyticsPage() {
         { label: "出品者ダッシュボード", href: "/seller" },
         { label: "分析" },
       ]} />
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">販売分析</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            売上・購入・採点の統計データ
-          </p>
-        </div>
-        <Button variant="outline" size="sm">
-          <Download className="mr-1.5 h-3.5 w-3.5" />
-          データをエクスポート
-        </Button>
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold tracking-tight">販売分析</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          売上・購入・採点の統計データ
+        </p>
       </div>
 
       {/* Revenue overview cards with growth */}
@@ -234,7 +227,9 @@ export default async function SalesAnalyticsPage() {
               ¥{lastMonthRevenue.toLocaleString()}
             </p>
             <p className="mt-1 text-xs text-muted-foreground">
-              {totalPurchases}件の購入
+              {monthlyRevenue.length > 1
+                ? monthlyRevenue[monthlyRevenue.length - 2].count
+                : 0}件の購入
             </p>
           </CardContent>
         </Card>

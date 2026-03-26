@@ -207,19 +207,17 @@ export default async function DashboardPage() {
         <>
           {/* 4 stat cards — each links to a relevant drill-down view */}
           <div className="stagger-children mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            <Link href="/dashboard/favorites" className="group">
-              <Card className="transition-colors group-hover:border-primary/20">
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground">
-                    購入済みセット
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-3xl font-bold tabular-nums">{purchaseCount ?? 0}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">購入した問題セット</p>
-                </CardContent>
-              </Card>
-            </Link>
+            <Card>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                  購入済みセット
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-3xl font-bold tabular-nums">{purchaseCount ?? 0}</p>
+                <p className="mt-1 text-xs text-muted-foreground">購入した問題セット</p>
+              </CardContent>
+            </Card>
 
             <Link href="/dashboard/history" className="group">
               <Card className="transition-colors group-hover:border-primary/20">

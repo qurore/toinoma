@@ -4,7 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock, Eye, Search } from "lucide-react";
 import { getRecentlyViewed } from "@/lib/recently-viewed";
 import { SUBJECT_LABELS, DIFFICULTY_LABELS } from "@toinoma/shared/constants";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
@@ -52,9 +51,6 @@ export default async function RecentlyViewedPage() {
       {items.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex min-h-[40vh] flex-col items-center justify-center py-16 text-center">
-            <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-muted">
-              <Eye className="h-7 w-7 text-muted-foreground" />
-            </div>
             <h2 className="mb-2 text-lg font-semibold">
               まだ閲覧した問題がありません
             </h2>
@@ -66,7 +62,6 @@ export default async function RecentlyViewedPage() {
             </p>
             <Button asChild>
               <Link href="/explore">
-                <Search className="mr-1.5 h-4 w-4" />
                 問題を探す
               </Link>
             </Button>
@@ -115,10 +110,9 @@ export default async function RecentlyViewedPage() {
                         </span>
                       )}
                     </div>
-                    <div className="mt-2.5 flex items-center gap-1 text-xs text-muted-foreground">
-                      <Clock className="h-3 w-3" />
+                    <p className="mt-2.5 text-xs text-muted-foreground">
                       {viewedAgo}
-                    </div>
+                    </p>
                   </CardContent>
                 </Card>
               </Link>

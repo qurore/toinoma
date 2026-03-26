@@ -15,17 +15,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import {
-  CreditCard,
-  Receipt,
-  Calendar,
-  TrendingUp,
-  FileText,
   ArrowRight,
   ExternalLink,
   CheckCircle,
   AlertCircle,
   Infinity as InfinityIcon,
-  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ManagePaymentButton } from "./manage-payment-button";
@@ -158,8 +152,7 @@ export default async function BillingPage() {
           <CardHeader className="pb-4">
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-base">
                   現在のプラン
                 </CardTitle>
                 <CardDescription>{tierConfig.description}</CardDescription>
@@ -204,27 +197,13 @@ export default async function BillingPage() {
                     : "border-border bg-muted/50"
               )}
             >
-              <div className="flex items-center gap-3">
-                <div
-                  className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-lg",
-                    subState.tier === "pro"
-                      ? "bg-primary/10 text-primary"
-                      : subState.tier === "basic"
-                        ? "bg-accent/10 text-accent"
-                        : "bg-muted text-muted-foreground"
-                  )}
-                >
-                  <Zap className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-lg font-bold tracking-tight">
-                    {tierConfig.label}プラン
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {subRecord?.interval === "annual" ? "年払い" : subState.tier === "free" ? "無料" : "月払い"}
-                  </p>
-                </div>
+              <div>
+                <p className="text-lg font-bold tracking-tight">
+                  {tierConfig.label}プラン
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {subRecord?.interval === "annual" ? "年払い" : subState.tier === "free" ? "無料" : "月払い"}
+                </p>
               </div>
               <div className="text-right">
                 <p className="text-2xl font-bold tracking-tight">
@@ -314,8 +293,7 @@ export default async function BillingPage() {
             {/* Billing details grid */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
               <div>
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Calendar className="h-3 w-3" />
+                <p className="text-xs text-muted-foreground">
                   {subState.cancelAtPeriodEnd ? "プラン終了日" : "次の請求日"}
                 </p>
                 <p className="mt-1 text-sm font-semibold">
@@ -328,8 +306,7 @@ export default async function BillingPage() {
                 </p>
               </div>
               <div>
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <TrendingUp className="h-3 w-3" />
+                <p className="text-xs text-muted-foreground">
                   次回請求額
                 </p>
                 <p className="mt-1 text-sm font-semibold">
@@ -341,19 +318,13 @@ export default async function BillingPage() {
                 </p>
               </div>
               <div>
-                <p className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <CreditCard className="h-3 w-3" />
+                <p className="text-xs text-muted-foreground">
                   お支払い方法
                 </p>
                 <p className="mt-1 text-sm font-semibold">
-                  {subRecord?.stripe_customer_id ? (
-                    <span className="flex items-center gap-1.5">
-                      <CreditCard className="h-3.5 w-3.5 text-muted-foreground" />
-                      Stripe経由
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">未設定</span>
-                  )}
+                  {subRecord?.stripe_customer_id
+                    ? "Stripe経由"
+                    : <span className="text-muted-foreground">未設定</span>}
                 </p>
               </div>
             </div>
@@ -398,8 +369,7 @@ export default async function BillingPage() {
         {subState.tier !== "free" && (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base">
-                <FileText className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-base">
                 請求書
               </CardTitle>
               <CardDescription>
@@ -409,7 +379,6 @@ export default async function BillingPage() {
             <CardContent>
               {invoices.length === 0 ? (
                 <div className="flex flex-col items-center py-8 text-center">
-                  <FileText className="mb-3 h-8 w-8 text-muted-foreground/40" />
                   <p className="text-sm text-muted-foreground">
                     まだ請求書はありません
                   </p>
@@ -504,8 +473,7 @@ export default async function BillingPage() {
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="flex items-center gap-2 text-base">
-                  <Receipt className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-base">
                   購入履歴
                 </CardTitle>
                 <CardDescription className="mt-1">
@@ -525,7 +493,6 @@ export default async function BillingPage() {
           <CardContent>
             {allPurchases.length === 0 ? (
               <div className="flex flex-col items-center py-8 text-center">
-                <Receipt className="mb-3 h-8 w-8 text-muted-foreground/40" />
                 <p className="text-sm text-muted-foreground">
                   購入履歴がありません
                 </p>

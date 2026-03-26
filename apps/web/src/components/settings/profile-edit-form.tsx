@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Loader2, Save, Camera } from "lucide-react";
+import { Loader2, Save } from "lucide-react";
 import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -58,18 +58,14 @@ export function ProfileEditForm({
   return (
     <div className="space-y-6">
       {/* Avatar preview */}
+      {/* Avatar preview */}
       <div className="flex items-center gap-5">
-        <div className="group relative">
-          <Avatar className="h-20 w-20 border-2 border-border">
-            <AvatarImage src={avatarUrl ?? undefined} alt={displayName} />
-            <AvatarFallback className="bg-primary/10 text-xl font-semibold text-primary">
-              {initials}
-            </AvatarFallback>
-          </Avatar>
-          <div className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100">
-            <Camera className="h-5 w-5 text-white" />
-          </div>
-        </div>
+        <Avatar className="h-20 w-20 border-2 border-border">
+          <AvatarImage src={avatarUrl ?? undefined} alt={displayName} />
+          <AvatarFallback className="bg-primary/10 text-xl font-semibold text-primary">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
         <div>
           <p className="text-sm font-medium">プロフィール画像</p>
           <p className="mt-0.5 text-xs text-muted-foreground">

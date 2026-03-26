@@ -3,7 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Plus, Tag, Ticket } from "lucide-react";
+import { Plus, Ticket } from "lucide-react";
 import { CouponListActions } from "@/components/seller/coupon-list-actions";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import type { Database } from "@/types/database";
@@ -162,11 +162,6 @@ export default async function CouponsPage() {
             return (
               <Card key={coupon.id}>
                 <CardContent className="flex items-center gap-4 p-4">
-                  {/* Icon */}
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
-                    <Tag className="h-4 w-4 text-foreground/60" />
-                  </div>
-
                   {/* Main info */}
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2">
