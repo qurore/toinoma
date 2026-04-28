@@ -318,6 +318,11 @@ export function AdminUsersClient({
                             className="text-xs"
                           >
                             {u.tier}
+                            {u.has_override && (
+                              <span className="ml-1 text-[10px] opacity-75">
+                                (オーバーライド)
+                              </span>
+                            )}
                           </Badge>
                         </td>
                         <td className="py-3 pr-4">
@@ -354,13 +359,20 @@ export function AdminUsersClient({
                             <DropdownMenuContent align="end">
                               <DropdownMenuItem
                                 onClick={() =>
+                                  router.push(`/admin/users/${u.id}`)
+                                }
+                              >
+                                詳細を表示
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                onClick={() =>
                                   window.open(
                                     `/sellers/${u.id}`,
                                     "_blank"
                                   )
                                 }
                               >
-                                プロフィールを表示
+                                公開プロフィール
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               {isBannedOrSuspended ? (

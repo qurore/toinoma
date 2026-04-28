@@ -11,6 +11,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
+import { getResolvedTier } from "@toinoma/shared";
 import type { SubscriptionTier } from "@/types/database";
 
 // Gemini 2.0 Flash pricing (approximate, as of 2026)
@@ -52,11 +53,17 @@ export async function getUsageBudget(
   // Fetch subscription
   const { data: sub } = await supabase
     .from("user_subscriptions")
-    .select("tier, interval, current_period_start")
+    .select("tier, manual_override_tier, interval, current_period_start")
     .eq("user_id", userId)
     .single();
 
-  const tier = (sub?.tier ?? "free") as SubscriptionTier;
+  // Resolve tier through the canonical resolver — manual override takes precedence over Stripe tier.
+  const tier = sub
+    ? getResolvedTier({
+        tier: sub.tier,
+        manual_override_tier: sub.manual_override_tier,
+      })
+    : ("free" as SubscriptionTier);
   const interval = (sub?.interval as "monthly" | "annual" | null) ?? null;
   const tierConfig = SUBSCRIPTION_TIERS[tier];
   const monthlyBudgetJpy = tierConfig.aiCostBudgetJpy;
@@ -161,6 +168,47 @@ export async function canAffordAiCall(userId: string): Promise<{
   }
 
   return { allowed: true, budget };
+}
+
+export interface TokenConsumption {
+  tokensConsumed: number;
+  rowCount: number;
+  periodStart: string;
+  periodEnd: string;
+}
+
+/**
+ * Sum of organic token usage in a period — excludes operator adjustments.
+ *
+ * Reads exclusively from the `token_usage_consumption` view (security_invoker),
+ * which filters `adjustment_type IS NULL`. Use this for analytics, dashboards,
+ * and any reporting surface. Do NOT use for budget enforcement — `getUsageBudget()`
+ * intentionally sums the raw `token_usage` table so adjustment rows cancel out.
+ */
+export async function getTokenConsumption(
+  userId: string,
+  periodStart: string,
+  periodEnd: string
+): Promise<TokenConsumption> {
+  const supabase = createAdminClient();
+  const { data } = await supabase
+    .from("token_usage_consumption")
+    .select("tokens_used")
+    .eq("user_id", userId)
+    .gte("created_at", periodStart)
+    .lt("created_at", periodEnd);
+
+  let tokensConsumed = 0;
+  for (const row of data ?? []) {
+    tokensConsumed += row.tokens_used ?? 0;
+  }
+
+  return {
+    tokensConsumed,
+    rowCount: data?.length ?? 0,
+    periodStart,
+    periodEnd,
+  };
 }
 
 /**

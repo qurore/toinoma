@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { createClient } from "@/lib/supabase/server";
+import { getResolvedTier } from "@toinoma/shared";
 import { Button } from "@/components/ui/button";
 import { UserDropdown } from "./user-dropdown";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -52,7 +53,11 @@ export async function getNavbarData(): Promise<NavbarData> {
       .select("tos_accepted_at, stripe_account_id")
       .eq("id", user.id)
       .single(),
-    supabase.from("user_subscriptions").select("tier").eq("user_id", user.id).single(),
+    supabase
+      .from("user_subscriptions")
+      .select("tier, manual_override_tier")
+      .eq("user_id", user.id)
+      .single(),
   ]);
 
   const isSeller =
@@ -86,7 +91,12 @@ export async function getNavbarData(): Promise<NavbarData> {
     isSeller,
     displayName: profileResult.data?.display_name ?? null,
     avatarUrl: profileResult.data?.avatar_url ?? null,
-    subscriptionTier: (subResult.data?.tier ?? "free") as SubscriptionTier,
+    subscriptionTier: (subResult.data
+      ? getResolvedTier({
+          tier: subResult.data.tier,
+          manual_override_tier: subResult.data.manual_override_tier,
+        })
+      : "free") as SubscriptionTier,
     notificationCount,
     notifications,
   };

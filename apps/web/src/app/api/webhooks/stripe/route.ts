@@ -348,35 +348,43 @@ async function handleSubscriptionUpsert(
   // Try to find existing record by stripe_customer_id
   const { data: existingSub } = await supabase
     .from("user_subscriptions")
-    .select("id, user_id")
+    .select("id, user_id, tier, manual_override_tier, version")
     .eq("stripe_customer_id", customerId)
     .single();
 
   if (existingSub) {
+    // If admin has set a manual override, skip the tier write but still
+    // update Stripe-managed columns (status, period dates, cancel flag, etc.)
+    // and bump version uniformly so concurrent admin writes detect drift.
+    const updatePayload: Record<string, unknown> = {
+      ...subscriptionData,
+      version: existingSub.version + 1,
+    };
+    if (existingSub.manual_override_tier !== null) {
+      delete updatePayload.tier;
+    }
+
     await supabase
       .from("user_subscriptions")
-      .update(subscriptionData)
+      .update(updatePayload)
       .eq("id", existingSub.id);
 
-    // Notify on tier change (upgrade/downgrade)
-    if (subscription.status === "active") {
-      const { data: currentSub } = await supabase
-        .from("user_subscriptions")
-        .select("tier")
-        .eq("id", existingSub.id)
-        .single();
-
-      if (currentSub && currentSub.tier !== tier) {
-        const tierLabel =
-          tier === "pro" ? "プロ" : tier === "basic" ? "ベーシック" : "フリー";
-        await createNotification(
-          existingSub.user_id,
-          "subscription",
-          "プランが変更されました",
-          `${tierLabel}プランへの変更が完了しました。`,
-          "/settings/subscription"
-        );
-      }
+    // Notify on tier change only when no override active (otherwise user already
+    // received an admin-driven notification or intentionally has no notify_user).
+    if (
+      subscription.status === "active" &&
+      existingSub.manual_override_tier === null &&
+      existingSub.tier !== tier
+    ) {
+      const tierLabel =
+        tier === "pro" ? "プロ" : tier === "basic" ? "ベーシック" : "フリー";
+      await createNotification(
+        existingSub.user_id,
+        "subscription",
+        "プランが変更されました",
+        `${tierLabel}プランへの変更が完了しました。`,
+        "/settings/subscription"
+      );
     }
   } else {
     // Try to find user via metadata
@@ -419,26 +427,32 @@ async function handleSubscriptionDeleted(
 ): Promise<void> {
   const { data: subRecord } = await supabase
     .from("user_subscriptions")
-    .select("user_id")
+    .select("user_id, manual_override_tier, version")
     .eq("stripe_subscription_id", subscription.id)
     .single();
 
+  // Build update payload; preserve tier when manual override is active.
+  const updatePayload: Record<string, unknown> = {
+    interval: null,
+    stripe_subscription_id: null,
+    current_period_start: null,
+    current_period_end: null,
+    cancel_at_period_end: false,
+    status: "canceled",
+    grace_period_end: null,
+    version: (subRecord?.version ?? 0) + 1,
+  };
+  if (!subRecord || subRecord.manual_override_tier === null) {
+    updatePayload.tier = "free";
+  }
+
   await supabase
     .from("user_subscriptions")
-    .update({
-      tier: "free",
-      interval: null,
-      stripe_subscription_id: null,
-      current_period_start: null,
-      current_period_end: null,
-      cancel_at_period_end: false,
-      status: "canceled",
-      grace_period_end: null,
-    })
+    .update(updatePayload)
     .eq("stripe_subscription_id", subscription.id);
 
-  // Notify user
-  if (subRecord?.user_id) {
+  // Notify user only when no override (otherwise admin-driven notification path)
+  if (subRecord?.user_id && subRecord.manual_override_tier === null) {
     await createNotification(
       subRecord.user_id,
       "subscription",
@@ -462,12 +476,19 @@ async function handleInvoicePaymentSucceeded(
 
   if (!subscriptionId) return;
 
-  // Clear grace period and set status to active on successful payment
+  // Clear grace period and set status to active on successful payment.
+  // Bump version uniformly across all writers so concurrent admin overrides detect drift.
+  const { data: row } = await supabase
+    .from("user_subscriptions")
+    .select("version")
+    .eq("stripe_subscription_id", subscriptionId)
+    .single();
   await supabase
     .from("user_subscriptions")
     .update({
       status: "active",
       grace_period_end: null,
+      version: (row?.version ?? 0) + 1,
     })
     .eq("stripe_subscription_id", subscriptionId);
 }
@@ -490,11 +511,17 @@ async function handleInvoicePaymentFailed(
     Date.now() + 3 * 24 * 60 * 60 * 1000
   ).toISOString();
 
+  const { data: row } = await supabase
+    .from("user_subscriptions")
+    .select("version")
+    .eq("stripe_subscription_id", subscriptionId)
+    .single();
   await supabase
     .from("user_subscriptions")
     .update({
       status: "past_due",
       grace_period_end: gracePeriodEnd,
+      version: (row?.version ?? 0) + 1,
     })
     .eq("stripe_subscription_id", subscriptionId);
 

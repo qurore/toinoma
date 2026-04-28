@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getResolvedTier } from "@toinoma/shared";
 import type { Metadata } from "next";
 import { AdminUsersClient } from "./admin-users-client";
 
@@ -19,6 +20,7 @@ export interface AdminUserRow {
   ban_reason: string | null;
   is_seller: boolean;
   tier: string;
+  has_override: boolean;
 }
 
 export default async function AdminUsersPage(props: {
@@ -98,7 +100,7 @@ export default async function AdminUsersPage(props: {
             .in("id", userIds),
           admin
             .from("user_subscriptions")
-            .select("user_id, tier")
+            .select("user_id, tier, manual_override_tier")
             .in("user_id", userIds),
         ])
       : [{ data: [] }, { data: [] }];
@@ -108,22 +110,36 @@ export default async function AdminUsersPage(props: {
       .filter((s) => s.tos_accepted_at)
       .map((s) => s.id)
   );
+  // Resolve effective tier per user via getResolvedTier (override-aware).
   const subMap = new Map(
-    (subsResult.data ?? []).map((s) => [s.user_id, s.tier])
+    (subsResult.data ?? []).map((s) => [
+      s.user_id,
+      {
+        tier: getResolvedTier({
+          tier: s.tier,
+          manual_override_tier: s.manual_override_tier,
+        }),
+        has_override: s.manual_override_tier !== null,
+      },
+    ])
   );
 
   // Build rows
-  const rows: AdminUserRow[] = (users ?? []).map((u) => ({
-    id: u.id,
-    display_name: u.display_name,
-    avatar_url: u.avatar_url,
-    created_at: u.created_at,
-    banned_at: u.banned_at,
-    suspended_until: u.suspended_until,
-    ban_reason: u.ban_reason,
-    is_seller: sellerSet.has(u.id),
-    tier: subMap.get(u.id) ?? "free",
-  }));
+  const rows: AdminUserRow[] = (users ?? []).map((u) => {
+    const subInfo = subMap.get(u.id);
+    return {
+      id: u.id,
+      display_name: u.display_name,
+      avatar_url: u.avatar_url,
+      created_at: u.created_at,
+      banned_at: u.banned_at,
+      suspended_until: u.suspended_until,
+      ban_reason: u.ban_reason,
+      is_seller: sellerSet.has(u.id),
+      tier: subInfo?.tier ?? "free",
+      has_override: subInfo?.has_override ?? false,
+    };
+  });
 
   // Apply client-side role filter (sellers / subscribers)
   let filteredRows = rows;

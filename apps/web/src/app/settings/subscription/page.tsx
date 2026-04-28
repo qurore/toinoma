@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
 import { SubscriptionPlans } from "@/components/subscription/subscription-plans";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -29,6 +29,15 @@ export default async function SubscriptionSettingsPage(props: {
   const subState = await getSubscriptionState(user.id);
   const searchParams = await props.searchParams;
   const tierConfig = SUBSCRIPTION_TIERS[subState.tier];
+
+  // Detect manual override — surface a banner so the user understands why their
+  // effective plan may differ from Stripe billing state.
+  const { data: overrideRow } = await supabase
+    .from("user_subscriptions")
+    .select("manual_override_tier, tier")
+    .eq("user_id", user.id)
+    .maybeSingle();
+  const hasManualOverride = overrideRow?.manual_override_tier != null;
 
   // Compute progress bar values (only meaningful for limited tiers)
   const isUnlimited = subState.gradingLimit === -1;
@@ -82,6 +91,31 @@ export default async function SubscriptionSettingsPage(props: {
       {searchParams.canceled && (
         <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4 text-sm text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-200">
           サブスクリプションの申し込みがキャンセルされました。
+        </div>
+      )}
+
+      {/* Manual override banner */}
+      {hasManualOverride && (
+        <div
+          role="status"
+          className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm dark:border-blue-800 dark:bg-blue-950"
+        >
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-600 dark:text-blue-400" />
+          <div className="space-y-1">
+            <p className="font-medium text-blue-900 dark:text-blue-100">
+              管理者によりプランが設定されています
+            </p>
+            <p className="text-blue-800 dark:text-blue-200">
+              請求情報と実際のプランが異なる場合があります。ご不明な点はお問い合わせください。
+            </p>
+            <Link
+              href="/help/contact"
+              className="inline-flex items-center gap-1 text-sm font-medium text-blue-700 hover:underline dark:text-blue-300"
+            >
+              お問い合わせ
+              <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
         </div>
       )}
 

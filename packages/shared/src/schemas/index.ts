@@ -62,3 +62,10 @@ export {
   type TosAcceptanceInput,
   type SellerProfileInput,
 } from "./seller-schemas";
+
+export {
+  tierOverrideMetadataSchema,
+  aiUsageAdjustmentMetadataSchema,
+  type TierOverrideMetadata,
+  type AiUsageAdjustmentMetadata,
+} from "./admin-audit";

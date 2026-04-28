@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
+import { getResolvedTier } from "@toinoma/shared";
 import { Breadcrumbs } from "@/components/navigation/breadcrumbs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -203,7 +204,9 @@ export default async function AdminDashboardPage() {
       .select("id", { count: "exact", head: true })
       .eq("status", "published"),
     supabase.from("purchases").select("id, amount_paid"),
-    supabase.from("user_subscriptions").select("tier"),
+    supabase
+      .from("user_subscriptions")
+      .select("tier, manual_override_tier"),
     supabase
       .from("profiles")
       .select("id, created_at")
@@ -260,9 +263,14 @@ export default async function AdminDashboardPage() {
   );
 
   const subscriptions = subsResult.data ?? [];
-  const paidSubs = subscriptions.filter(
-    (s) => s.tier === "basic" || s.tier === "pro"
-  ).length;
+  // Count paid users by RESOLVED tier (manual override takes precedence over Stripe tier).
+  const paidSubs = subscriptions.filter((s) => {
+    const resolved = getResolvedTier({
+      tier: s.tier,
+      manual_override_tier: s.manual_override_tier,
+    });
+    return resolved === "basic" || resolved === "pro";
+  }).length;
 
   // This month's revenue
   const monthRevenue = (monthPurchasesResult.data ?? []).reduce(

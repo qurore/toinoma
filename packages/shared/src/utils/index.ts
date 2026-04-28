@@ -1,4 +1,5 @@
 export { shuffleArray } from "./shuffle";
+export { getResolvedTier, hasOverrideMismatch } from "./resolved-tier";
 
 export const PLATFORM_FEE_PERCENT = 15;
 

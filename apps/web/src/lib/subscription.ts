@@ -1,6 +1,7 @@
 // Subscription status helpers (FR-030)
 import { createClient } from "@/lib/supabase/server";
 import { SUBSCRIPTION_TIERS } from "@toinoma/shared/constants";
+import { getResolvedTier } from "@toinoma/shared";
 import { canAffordAiCall, type UsageBudget } from "@/lib/ai/usage-manager";
 import type { SubscriptionTier } from "@/types/database";
 
@@ -89,13 +90,18 @@ export async function getSubscriptionState(
   const { data: sub } = await supabase
     .from("user_subscriptions")
     .select(
-      "tier, status, interval, current_period_start, current_period_end, cancel_at_period_end, grace_period_end"
+      "tier, manual_override_tier, status, interval, current_period_start, current_period_end, cancel_at_period_end, grace_period_end"
     )
     .eq("user_id", userId)
     .single();
 
   const now = new Date();
-  const tier: SubscriptionTier = sub?.tier ?? "free";
+  const tier: SubscriptionTier = sub
+    ? getResolvedTier({
+        tier: sub.tier,
+        manual_override_tier: sub.manual_override_tier,
+      })
+    : "free";
   const status = sub?.status ?? "active";
 
   // Grace period: user retains paid-tier access during a 3-day window after payment failure.

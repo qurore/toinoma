@@ -75,3 +75,6 @@ spec/strong_rule_modification.md
 
 # screnshots for Playwright tests
 reports/screenshots
+
+# Local test fixtures (past exam PDFs, etc. — copyright-sensitive, large binaries)
+fixtures/

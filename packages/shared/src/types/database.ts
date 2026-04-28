@@ -55,7 +55,13 @@ export type AdminActionType =
   | "report_reviewed"
   | "report_dismissed"
   | "announcement_created"
-  | "seller_verified";
+  | "seller_verified"
+  | "subscription_tier_overridden"
+  | "ai_usage_credited"
+  | "ai_usage_deducted"
+  | "ai_usage_reset";
+
+export type TokenAdjustmentType = "credit" | "deduct" | "reset";
 
 export interface Database {
   public: {
@@ -461,6 +467,10 @@ export interface Database {
           cancel_at_period_end: boolean;
           status: string;
           grace_period_end: string | null;
+          manual_override_tier: SubscriptionTier | null;
+          manual_override_reason: string | null;
+          manual_override_at: string | null;
+          version: number;
           created_at: string;
           updated_at: string;
         };
@@ -476,6 +486,10 @@ export interface Database {
           cancel_at_period_end?: boolean;
           status?: string;
           grace_period_end?: string | null;
+          manual_override_tier?: SubscriptionTier | null;
+          manual_override_reason?: string | null;
+          manual_override_at?: string | null;
+          version?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -489,6 +503,10 @@ export interface Database {
           cancel_at_period_end?: boolean;
           status?: string;
           grace_period_end?: string | null;
+          manual_override_tier?: SubscriptionTier | null;
+          manual_override_reason?: string | null;
+          manual_override_at?: string | null;
+          version?: number;
           updated_at?: string;
         };
         Relationships: [];
@@ -560,6 +578,7 @@ export interface Database {
           tokens_used: number;
           cost_usd: number;
           model: string;
+          adjustment_type: TokenAdjustmentType | null;
           created_at: string;
         };
         Insert: {
@@ -569,6 +588,7 @@ export interface Database {
           tokens_used?: number;
           cost_usd?: number;
           model?: string;
+          adjustment_type?: TokenAdjustmentType | null;
           created_at?: string;
         };
         Update: {
@@ -1136,7 +1156,20 @@ export interface Database {
         Relationships: [];
       };
     };
-    Views: Record<string, never>;
+    Views: {
+      token_usage_consumption: {
+        Row: {
+          id: string;
+          user_id: string;
+          submission_id: string | null;
+          tokens_used: number;
+          cost_usd: number;
+          model: string;
+          adjustment_type: TokenAdjustmentType | null;
+          created_at: string;
+        };
+      };
+    };
     Functions: {
       get_user_id_by_email: {
         Args: { lookup_email: string };
@@ -1175,6 +1208,7 @@ export interface Database {
       report_status: ReportStatus;
       coupon_type: CouponType;
       admin_action_type: AdminActionType;
+      token_adjustment_type: TokenAdjustmentType;
     };
   };
 }

@@ -175,11 +175,16 @@ export async function publishAnnouncement(
       .not("tos_accepted_at", "is", null);
     userIds = (sellers ?? []).map((s) => s.id);
   } else if (announcement.target === "subscribers") {
+    // Resolve effective tier (manual_override_tier takes precedence) before filtering.
     const { data: subs } = await admin
       .from("user_subscriptions")
-      .select("user_id")
-      .in("tier", ["basic", "pro"]);
-    userIds = (subs ?? []).map((s) => s.user_id);
+      .select("user_id, tier, manual_override_tier");
+    userIds = (subs ?? [])
+      .filter((s) => {
+        const resolved = s.manual_override_tier ?? s.tier;
+        return resolved === "basic" || resolved === "pro";
+      })
+      .map((s) => s.user_id);
   } else {
     // "all" — fetch all profiles
     const { data: allUsers } = await admin
