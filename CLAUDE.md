@@ -415,6 +415,14 @@ GOOGLE_GENERATIVE_AI_API_KEY=
 NEXT_PUBLIC_APP_URL=https://toinoma.jp
 ```
 
+### Local Secrets
+
+`apps/web/.env.local` is the single source for local/dev secrets. It contains:
+- All `NEXT_PUBLIC_*` and server-only Supabase / Stripe / AI keys above.
+- The **dev Postgres connection string** (commented line at the bottom of the file) used by `supabase db push --db-url ...` and `psql` for direct migrations against the dev project. Format: `postgresql://postgres:<password>@db.<project-ref>.supabase.co:5432/postgres`.
+
+`.env.local` is gitignored — never commit it. When applying migrations from the CLI, read the connection string from this file rather than asking the user.
+
 ---
 
 # Agent Rules & Development Standards

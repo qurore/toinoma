@@ -3,6 +3,17 @@
 -- reports, and alter existing tables for enterprise features
 -- ============================================================
 
+-- Alias function — earlier migrations defined `handle_updated_at()`,
+-- this and later migrations use the `set_updated_at` name. Define both
+-- so trigger references resolve regardless of which name is used.
+CREATE OR REPLACE FUNCTION public.set_updated_at()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = NOW();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
 -- ============================================================
 -- ENUMS
 -- ============================================================
