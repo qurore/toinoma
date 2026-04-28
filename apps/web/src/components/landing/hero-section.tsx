@@ -14,7 +14,7 @@ export function HeroSection() {
           <div className="mx-auto max-w-xl text-center lg:mx-0 lg:text-left animate-fade-in [animation-fill-mode:backwards]">
             {/* Heading — lead with the user's goal */}
             <h1 className="text-4xl font-bold leading-[1.15] tracking-tight text-white sm:text-5xl lg:text-[3.5rem]">
-              入試本番レベルの問題を
+              大学受験対策の問題を
               <br />
               <span className="text-gradient-green inline-block">
                 AIが即座に採点
