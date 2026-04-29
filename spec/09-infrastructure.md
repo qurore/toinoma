@@ -217,9 +217,15 @@ CREATE INDEX idx_qa_answers_question ON qa_answers(qa_question_id, created_at);
 ## 6. Administration (ADM-001 to ADM-012)
 
 ### Admin Access Control
-```sql
-ALTER TABLE profiles ADD COLUMN is_admin BOOLEAN NOT NULL DEFAULT false;
-```
+
+Admin authorization is governed by the `ADMIN_EMAILS` environment variable — a server-only, comma-separated email allowlist with case-insensitive + whitespace-trimmed exact-string match (no plus-addressing normalization). Admin status is **not** persisted in the database.
+
+- **Grant admin:** append the email to `ADMIN_EMAILS` and redeploy
+- **Revoke admin:** remove the email from `ADMIN_EMAILS` and redeploy
+- **Helper module:** `apps/web/src/lib/auth/admin.ts` exports `isAdmin(email)` (pure boolean), `requireAdmin()` (page-guard, redirects on failure), and `requireAdminAction()` (server-action-guard, returns `{adminId} | {error}`)
+- **Fail-closed:** unset/empty `ADMIN_EMAILS` denies all admin access
+
+Email-rotation policy: admin grants are tied to the email-controlling identity. Operators MUST rotate `ADMIN_EMAILS` whenever a listed email changes ownership.
 
 ### Admin Routes
 ```

@@ -4,6 +4,8 @@ import {
   markSheetAnswerSchema,
   fillInBlankAnswerSchema,
   questionAnswerSchema,
+  draftAnswerSchema,
+  draftAnswersMapSchema,
 } from "./answer-schemas";
 
 describe("essayAnswerSchema", () => {
@@ -117,6 +119,81 @@ describe("questionAnswerSchema (discriminated union)", () => {
     const result = questionAnswerSchema.safeParse({
       type: "unknown_type",
       text: "Something",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("draftAnswerSchema (relaxed)", () => {
+  it("accepts an essay with neither text nor imageUrl", () => {
+    const result = draftAnswerSchema.safeParse({ type: "essay" });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a partial essay text", () => {
+    const result = draftAnswerSchema.safeParse({
+      type: "essay",
+      text: "in progress…",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an empty mark_sheet selection", () => {
+    const result = draftAnswerSchema.safeParse({
+      type: "mark_sheet",
+      selected: "",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an empty fill_in_blank text", () => {
+    const result = draftAnswerSchema.safeParse({
+      type: "fill_in_blank",
+      text: "",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an empty multiple_choice selection", () => {
+    const result = draftAnswerSchema.safeParse({
+      type: "multiple_choice",
+      selected: [],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects unknown type", () => {
+    const result = draftAnswerSchema.safeParse({ type: "garbage" });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects invalid imageUrl on essay", () => {
+    const result = draftAnswerSchema.safeParse({
+      type: "essay",
+      imageUrl: "not-a-url",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("draftAnswersMapSchema", () => {
+  it("accepts a map keyed by question id", () => {
+    const result = draftAnswersMapSchema.safeParse({
+      "1-(1)": { type: "essay", text: "draft" },
+      "1-(2)": { type: "mark_sheet", selected: "A" },
+      "2-(1)": { type: "fill_in_blank", text: "" },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an empty map", () => {
+    const result = draftAnswersMapSchema.safeParse({});
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a map containing an invalid answer", () => {
+    const result = draftAnswersMapSchema.safeParse({
+      "1-(1)": { type: "garbage" },
     });
     expect(result.success).toBe(false);
   });

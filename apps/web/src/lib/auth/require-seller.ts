@@ -90,30 +90,3 @@ export async function requireCompleteSeller() {
   return { user, sellerProfile };
 }
 
-/**
- * Require admin role. Redirects to /dashboard if not admin.
- * Admin is determined by the `is_admin` flag on the profiles table.
- * ADM-012: Admin role guard
- */
-export async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    redirect("/login");
-  }
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_admin) {
-    redirect("/dashboard");
-  }
-
-  return { user };
-}

@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdminAction } from "@/lib/auth/admin";
 import type { Database } from "@/types/database";
 import {
   notifyUserWarned,
@@ -15,27 +15,6 @@ import {
 
 type AdminActionType = Database["public"]["Enums"]["admin_action_type"];
 type ReportStatus = Database["public"]["Enums"]["report_status"];
-
-// --- Helpers ---
-
-async function requireAdmin(): Promise<{ adminId: string } | { error: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { error: "認証が必要です" };
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_admin) return { error: "管理者権限が必要です" };
-
-  return { adminId: user.id };
-}
 
 /**
  * Log an admin action to admin_audit_logs.
@@ -66,7 +45,7 @@ export async function banUser(
   targetUserId: string,
   reason: string
 ): Promise<{ success?: boolean; error?: string }> {
-  const authResult = await requireAdmin();
+  const authResult = await requireAdminAction();
   if ("error" in authResult) return { error: authResult.error };
 
   const admin = createAdminClient();
@@ -104,7 +83,7 @@ export async function suspendUser(
   reason: string,
   durationDays: number
 ): Promise<{ success?: boolean; error?: string }> {
-  const authResult = await requireAdmin();
+  const authResult = await requireAdminAction();
   if ("error" in authResult) return { error: authResult.error };
 
   if (durationDays < 1 || durationDays > 365) {
@@ -149,7 +128,7 @@ export async function warnUser(
   targetUserId: string,
   reason: string
 ): Promise<{ success?: boolean; error?: string }> {
-  const authResult = await requireAdmin();
+  const authResult = await requireAdminAction();
   if ("error" in authResult) return { error: authResult.error };
 
   await Promise.all([
@@ -173,7 +152,7 @@ export async function warnUser(
 export async function unbanUser(
   targetUserId: string
 ): Promise<{ success?: boolean; error?: string }> {
-  const authResult = await requireAdmin();
+  const authResult = await requireAdminAction();
   if ("error" in authResult) return { error: authResult.error };
 
   const admin = createAdminClient();
@@ -213,7 +192,7 @@ export async function updateReportStatus(
   status: ReportStatus,
   notes?: string
 ): Promise<{ success?: boolean; error?: string }> {
-  const authResult = await requireAdmin();
+  const authResult = await requireAdminAction();
   if ("error" in authResult) return { error: authResult.error };
 
   const admin = createAdminClient();
@@ -264,7 +243,7 @@ export async function takeReportAction(
   reportId: string,
   notes: string
 ): Promise<{ success?: boolean; error?: string }> {
-  const authResult = await requireAdmin();
+  const authResult = await requireAdminAction();
   if ("error" in authResult) return { error: authResult.error };
 
   const admin = createAdminClient();

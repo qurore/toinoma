@@ -40,11 +40,15 @@ export {
   fillInBlankAnswerSchema,
   multipleChoiceAnswerSchema,
   questionAnswerSchema,
+  draftAnswerSchema,
+  draftAnswersMapSchema,
   type EssayAnswer,
   type MarkSheetAnswer,
   type FillInBlankAnswer,
   type MultipleChoiceAnswer,
   type QuestionAnswer,
+  type DraftAnswer,
+  type DraftAnswersMap,
 } from "./answer-schemas";
 
 export {

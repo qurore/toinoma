@@ -6,9 +6,21 @@ import {
   useRef,
   useCallback,
   useMemo,
+  useReducer,
 } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { AutoSaveIndicator } from "./auto-save-indicator";
+import {
+  draftReducer,
+  initialDraftState,
+} from "@/lib/draft/save-state-machine";
+import { useOnlineStatus } from "@/lib/draft/use-online-status";
+import {
+  retryWithBackoff,
+  RetryableError,
+} from "@/lib/draft/retry-with-backoff";
+import { flushDraftToServer } from "@/lib/draft/send-beacon-flush";
 import { EssayAnswerInput } from "./essay-answer-input";
 import { MarkSheetInput } from "./mark-sheet-input";
 import { FillInBlankInput } from "./fill-in-blank-input";
@@ -50,8 +62,15 @@ import type {
 // Constants
 // ──────────────────────────────────────────────
 
-const AUTO_SAVE_INTERVAL_MS = 30_000;
-const DRAFT_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
+// Server-side draft autosave is debounced to fire 5s after the last edit.
+// localStorage writes happen synchronously on every edit so a tab close /
+// crash never loses data even if the debounce hasn't elapsed.
+const SERVER_SAVE_DEBOUNCE_MS = 5_000;
+// Submit-time flush has a hard timeout — the user-facing submission flow
+// must never hang waiting for draft persistence (the answers are about to
+// be POSTed to /api/grading anyway, which is canonical).
+const SUBMIT_FLUSH_TIMEOUT_MS = 3_000;
+const DRAFT_MAX_AGE_MS = 90 * 24 * 60 * 60 * 1000; // 90 days — matches server retention
 const MIN_DIVIDER_POSITION = 25;
 const MAX_DIVIDER_POSITION = 75;
 const DEFAULT_DIVIDER_POSITION = 50;
@@ -110,20 +129,78 @@ function clearDraft(key: string): void {
   }
 }
 
-// Save draft to server (debounced, best-effort)
-async function saveDraftToServer(
+// POST /api/draft with retry policy. Throws on exhaustion so the caller can
+// drive the state machine into the `error` state and surface the toast.
+async function postDraftWithRetry(
   problemSetId: string,
-  answers: Record<string, QuestionAnswer>
-): Promise<void> {
+  answers: Record<string, QuestionAnswer>,
+  signal: AbortSignal,
+  onAttempt: (attempt: number, nextDelayMs: number) => void
+): Promise<{ savedAt: string }> {
+  return retryWithBackoff(
+    async () => {
+      const res = await fetch("/api/draft", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ problemSetId, answers }),
+        signal,
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new RetryableError(
+          body.error ?? `HTTP ${res.status}`,
+          res.status
+        );
+      }
+      const data = (await res.json()) as { savedAt: string };
+      return data;
+    },
+    {
+      maxAttempts: 5,
+      baseDelayMs: 1_000,
+      maxDelayMs: 16_000,
+      onAttempt,
+      signal,
+    }
+  );
+}
+
+// GET /api/draft for mount-time reconciliation. No retry — fall back to
+// localStorage on any network failure.
+async function fetchServerDraft(
+  problemSetId: string
+): Promise<{ answers: Record<string, QuestionAnswer>; lastActiveAt: string } | null> {
   try {
-    await fetch("/api/draft", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ problemSetId, answers }),
-    });
+    const res = await fetch(
+      `/api/draft?problemSetId=${encodeURIComponent(problemSetId)}`,
+      { credentials: "include" }
+    );
+    if (!res.ok) return null;
+    const json = (await res.json()) as {
+      draft: {
+        answers: Record<string, QuestionAnswer>;
+        lastActiveAt: string;
+        expiresAt: string;
+      } | null;
+    };
+    if (!json.draft) return null;
+    return {
+      answers: json.draft.answers,
+      lastActiveAt: json.draft.lastActiveAt,
+    };
   } catch {
-    // Server draft save is best-effort — never block the user
+    return null;
   }
+}
+
+// DELETE /api/draft after successful submission — fire-and-forget cleanup.
+function deleteServerDraft(problemSetId: string): void {
+  void fetch(
+    `/api/draft?problemSetId=${encodeURIComponent(problemSetId)}`,
+    { method: "DELETE", credentials: "include" }
+  ).catch(() => {
+    // Best-effort cleanup — server pg_cron will purge anyway.
+  });
 }
 
 // ──────────────────────────────────────────────
@@ -291,51 +368,8 @@ function ExamTimer({
   );
 }
 
-// ──────────────────────────────────────────────
-// Auto-save indicator
-// ──────────────────────────────────────────────
-
-function AutoSaveIndicator({ lastSaved }: { lastSaved: number | null }) {
-  const [showPulse, setShowPulse] = useState(false);
-  const prevSaved = useRef<number | null>(null);
-
-  useEffect(() => {
-    if (lastSaved && lastSaved !== prevSaved.current) {
-      prevSaved.current = lastSaved;
-      // Schedule pulse asynchronously to avoid synchronous setState in effect body
-      const rafId = requestAnimationFrame(() => setShowPulse(true));
-      const timer = setTimeout(() => setShowPulse(false), 2000);
-      return () => {
-        cancelAnimationFrame(rafId);
-        clearTimeout(timer);
-      };
-    }
-  }, [lastSaved]);
-
-  if (!lastSaved) return null;
-
-  const date = new Date(lastSaved);
-  const timeStr = date.toLocaleTimeString("ja-JP", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-
-  return (
-    <div
-      className={cn(
-        "flex items-center gap-1.5 rounded-md px-2 py-1 text-xs transition-colors duration-500",
-        showPulse
-          ? "bg-success/10 text-success"
-          : "text-muted-foreground"
-      )}
-      aria-live="polite"
-      aria-atomic="true"
-    >
-      <CheckCircle2 className={cn("h-3 w-3", showPulse ? "text-success" : "text-muted-foreground/60")} />
-      <span>下書き保存済み {timeStr}</span>
-    </div>
-  );
-}
+// AutoSaveIndicator is imported from ./auto-save-indicator (extracted in
+// the FR-D6 server-draft refactor — see TDD §8 for the 7-state machine).
 
 // ──────────────────────────────────────────────
 // Question navigation sidebar
@@ -734,7 +768,16 @@ export function SolveClient({
   const [draftRestored, setDraftRestored] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [unansweredQuestions, setUnansweredQuestions] = useState<string[]>([]);
-  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [serverDraftBanner, setServerDraftBanner] = useState<{
+    serverActiveAt: string;
+  } | null>(null);
+  const [submitPhase, setSubmitPhase] = useState<
+    "idle" | "saving_draft" | "submitting_grade"
+  >("idle");
+  const [draftState, dispatchDraft] = useReducer(
+    draftReducer,
+    initialDraftState
+  );
   const [gradingStatus, setGradingStatus] = useState<
     "idle" | "submitting" | "grading" | "complete"
   >("idle");
@@ -743,55 +786,186 @@ export function SolveClient({
   const [mobileTab, setMobileTab] = useState<string>(problemPdfUrl ? "problem" : "answers");
   const [dividerPosition, setDividerPosition] = useState(DEFAULT_DIVIDER_POSITION);
   const [initialized, setInitialized] = useState(false);
+  const isOnline = useOnlineStatus();
 
   const answersRef = useRef<Record<string, QuestionAnswer>>({});
+  const debounceTimerRef = useRef<number | null>(null);
+  const inFlightAbortRef = useRef<AbortController | null>(null);
+  const lastPushedSerializedRef = useRef<string>("");
+  const wasOfflineRef = useRef<boolean>(false);
+  const reconcilingRef = useRef<boolean>(false);
   const draftKey = getDraftKey(problemSetId, userId);
 
-  // ── Draft restoration on mount ──
+  // ── Mount: localStorage-first paint, server reconcile in background ──
+  // The first paint MUST NOT block on the network. localStorage hydrates
+  // synchronously; the server fetch runs in parallel and reconciles via
+  // newer-wins without remounting.
   useEffect(() => {
-    const draft = loadDraft(draftKey);
-    if (draft) {
-      answersRef.current = draft.answers;
-      setAnswers(draft.answers);
+    const localDraft = loadDraft(draftKey);
+    if (localDraft) {
+      answersRef.current = localDraft.answers;
+      setAnswers(localDraft.answers);
       setDraftRestored(true);
-      setLastSavedAt(draft.savedAt);
-      const savedDate = new Date(draft.savedAt);
-      toast.info("下書きを復元しました", {
-        description: `保存日時: ${savedDate.toLocaleString("ja-JP")}`,
+      lastPushedSerializedRef.current = JSON.stringify(localDraft.answers);
+      dispatchDraft({
+        type: "SAVE_SUCCESS",
+        savedAt: new Date(localDraft.savedAt).toISOString(),
       });
     }
-    setInitialized(true);
-    // Only run on mount
+    setInitialized(true); // <- first paint happens here
+
+    // Background server reconciliation
+    void (async () => {
+      const serverDraft = await fetchServerDraft(problemSetId);
+      if (!serverDraft) return;
+      const serverMs = new Date(serverDraft.lastActiveAt).getTime();
+      const localMs = localDraft?.savedAt ?? 0;
+      // 5s buffer absorbs trivial clock skew between client and server
+      if (serverMs > localMs + 5_000) {
+        reconcilingRef.current = true;
+        answersRef.current = serverDraft.answers;
+        setAnswers(serverDraft.answers);
+        setDraftRestored(false);
+        setServerDraftBanner({ serverActiveAt: serverDraft.lastActiveAt });
+        saveDraft(draftKey, serverDraft.answers);
+        lastPushedSerializedRef.current = JSON.stringify(serverDraft.answers);
+        dispatchDraft({
+          type: "SAVE_SUCCESS",
+          savedAt: serverDraft.lastActiveAt,
+        });
+        reconcilingRef.current = false;
+      }
+    })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Auto-save every 30 seconds ──
-  useEffect(() => {
-    const interval = window.setInterval(() => {
-      if (Object.keys(answersRef.current).length > 0) {
-        saveDraft(draftKey, answersRef.current);
-        saveDraftToServer(problemSetId, answersRef.current);
-        setLastSavedAt(Date.now());
+  // ── Debounced server save pipeline ──
+  const pushDraftToServer = useCallback(async () => {
+    if (reconcilingRef.current) return;
+    if (Object.keys(answersRef.current).length === 0) return;
+    const serialized = JSON.stringify(answersRef.current);
+    if (serialized === lastPushedSerializedRef.current) return;
+    if (!isOnline) {
+      dispatchDraft({ type: "WENT_OFFLINE" });
+      return;
+    }
+    // Cancel any in-flight save before starting a new one
+    inFlightAbortRef.current?.abort();
+    const controller = new AbortController();
+    inFlightAbortRef.current = controller;
+    dispatchDraft({ type: "SAVE_START" });
+    try {
+      const result = await postDraftWithRetry(
+        problemSetId,
+        answersRef.current,
+        controller.signal,
+        (attempt, nextDelayMs) => {
+          dispatchDraft({
+            type: "SAVE_RETRY",
+            attempt,
+            nextDelayMs,
+          });
+        }
+      );
+      lastPushedSerializedRef.current = serialized;
+      dispatchDraft({ type: "SAVE_SUCCESS", savedAt: result.savedAt });
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      dispatchDraft({
+        type: "SAVE_ERROR",
+        message: err instanceof Error ? err.message : "unknown",
+      });
+      toast.error("下書きの保存に失敗しました", {
+        description: "ローカルには保存されています。再試行してください。",
+        action: {
+          label: "再試行",
+          onClick: () => void pushDraftToServer(),
+        },
+        duration: 30_000,
+      });
+    } finally {
+      if (inFlightAbortRef.current === controller) {
+        inFlightAbortRef.current = null;
       }
-    }, AUTO_SAVE_INTERVAL_MS);
-    return () => clearInterval(interval);
-  }, [draftKey, problemSetId]);
+    }
+  }, [problemSetId, isOnline]);
 
-  // ── Save on tab/window blur ──
+  // Schedule a debounced server save. Called from onAnswerChange.
+  const scheduleServerSave = useCallback(() => {
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+    }
+    debounceTimerRef.current = window.setTimeout(() => {
+      void pushDraftToServer();
+    }, SERVER_SAVE_DEBOUNCE_MS);
+  }, [pushDraftToServer]);
+
+  // Flush any pending or in-flight save with a hard timeout.
+  // Returns true if flush completed (or no flush was needed); false on timeout.
+  const flushPendingDraft = useCallback(async (): Promise<boolean> => {
+    if (debounceTimerRef.current !== null) {
+      window.clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = null;
+    }
+    const flushPromise = pushDraftToServer();
+    const timeout = new Promise<"timeout">((resolve) =>
+      window.setTimeout(() => resolve("timeout"), SUBMIT_FLUSH_TIMEOUT_MS)
+    );
+    const winner = await Promise.race([flushPromise.then(() => "ok" as const), timeout]);
+    return winner === "ok";
+  }, [pushDraftToServer]);
+
+  // ── Online/offline transitions ──
+  useEffect(() => {
+    if (!isOnline) {
+      wasOfflineRef.current = true;
+      dispatchDraft({ type: "WENT_OFFLINE" });
+      return;
+    }
+    if (wasOfflineRef.current) {
+      wasOfflineRef.current = false;
+      const hasPending =
+        JSON.stringify(answersRef.current) !== lastPushedSerializedRef.current;
+      if (hasPending) {
+        dispatchDraft({ type: "CAME_ONLINE_WITH_PENDING" });
+        void pushDraftToServer();
+      } else {
+        dispatchDraft({ type: "CAME_ONLINE_NO_PENDING" });
+      }
+    }
+  }, [isOnline, pushDraftToServer]);
+
+  // ── visibilitychange flush via sendBeacon (synchronous-best-effort) ──
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (
         document.visibilityState === "hidden" &&
         Object.keys(answersRef.current).length > 0
       ) {
+        if (debounceTimerRef.current !== null) {
+          window.clearTimeout(debounceTimerRef.current);
+          debounceTimerRef.current = null;
+        }
         saveDraft(draftKey, answersRef.current);
-        setLastSavedAt(Date.now());
+        const serialized = JSON.stringify(answersRef.current);
+        if (serialized !== lastPushedSerializedRef.current) {
+          flushDraftToServer({
+            problemSetId,
+            answers: answersRef.current,
+          });
+        }
       }
     };
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (Object.keys(answersRef.current).length > 0) {
         saveDraft(draftKey, answersRef.current);
-        // Warn about unsaved changes
+        const serialized = JSON.stringify(answersRef.current);
+        if (serialized !== lastPushedSerializedRef.current) {
+          flushDraftToServer({
+            problemSetId,
+            answers: answersRef.current,
+          });
+        }
         e.preventDefault();
       }
     };
@@ -801,19 +975,31 @@ export function SolveClient({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [draftKey]);
+  }, [draftKey, problemSetId]);
+
+  // ── Cleanup on unmount ──
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+      }
+      inFlightAbortRef.current?.abort();
+    };
+  }, []);
 
   // ── Keyboard shortcuts (Ctrl+S save, Ctrl+Enter submit) ──
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      // Ctrl+S / Cmd+S: save draft
+      // Ctrl+S / Cmd+S: save draft (immediate flush of pending debounce)
       if ((e.ctrlKey || e.metaKey) && e.key === "s") {
         e.preventDefault();
         if (Object.keys(answersRef.current).length > 0) {
           saveDraft(draftKey, answersRef.current);
-          saveDraftToServer(problemSetId, answersRef.current);
-          setLastSavedAt(Date.now());
-          toast.success("下書きを保存しました");
+          if (debounceTimerRef.current !== null) {
+            window.clearTimeout(debounceTimerRef.current);
+            debounceTimerRef.current = null;
+          }
+          void pushDraftToServer();
         }
       }
       // Ctrl+Enter / Cmd+Enter: submit
@@ -826,7 +1012,7 @@ export function SolveClient({
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [draftKey, problemSetId]);
+  }, [draftKey, problemSetId, pushDraftToServer]);
 
   // ── Scroll tracking for back-to-top button ──
   useEffect(() => {
@@ -838,26 +1024,34 @@ export function SolveClient({
   }, []);
 
   // ── Answer change handler ──
+  // localStorage write is synchronous; server save is debounced via
+  // scheduleServerSave (5s after the last edit).
   const handleAnswerChange = useCallback(
     (key: string, value: QuestionAnswer) => {
       setAnswers((prev) => {
         const next = { ...prev, [key]: value };
         answersRef.current = next;
+        saveDraft(draftKey, next);
+        scheduleServerSave();
         return next;
       });
     },
-    []
+    [draftKey, scheduleServerSave]
   );
 
-  // ── Manual save ──
+  // ── Manual save (toolbar button) ──
+  // Indicator drives the visual feedback; no toast on success — only
+  // the indicator's saving → saved transition is shown.
   const handleSaveDraft = useCallback(() => {
     if (Object.keys(answersRef.current).length > 0) {
       saveDraft(draftKey, answersRef.current);
-      saveDraftToServer(problemSetId, answersRef.current);
-      setLastSavedAt(Date.now());
-      toast.success("下書きを保存しました");
+      if (debounceTimerRef.current !== null) {
+        window.clearTimeout(debounceTimerRef.current);
+        debounceTimerRef.current = null;
+      }
+      void pushDraftToServer();
     }
-  }, [draftKey, problemSetId]);
+  }, [draftKey, pushDraftToServer]);
 
   // ── Question navigation ──
   const handleNavigateQuestion = useCallback((key: string) => {
@@ -870,13 +1064,25 @@ export function SolveClient({
     }
   }, []);
 
-  // ── Submission logic ──
+  // ── Submission logic (two-phase: flush draft → grade) ──
   const performSubmit = useCallback(
     async (submittedAnswers: Record<string, QuestionAnswer>) => {
       setError(null);
       setIsSubmitting(true);
       setGradingStatus("submitting");
 
+      // Phase A — flush the pending draft with a hard 3s timeout.
+      // Submission proceeds whether or not the flush completes; /api/grading
+      // is the canonical persistence path.
+      setSubmitPhase("saving_draft");
+      try {
+        await flushPendingDraft();
+      } catch {
+        // Never block submit on draft persistence
+      }
+
+      // Phase B — actual grading submission
+      setSubmitPhase("submitting_grade");
       try {
         await new Promise((resolve) => setTimeout(resolve, 500));
         setGradingStatus("grading");
@@ -896,11 +1102,13 @@ export function SolveClient({
           setError(data.error ?? "採点に失敗しました");
           setGradingStatus("idle");
           setIsSubmitting(false);
+          setSubmitPhase("idle");
           return;
         }
 
-        // Clear draft on successful submission
+        // Clear draft on successful submission — both local and server
         clearDraft(draftKey);
+        deleteServerDraft(problemSetId);
         setGradingStatus("complete");
         setResult(data.result);
 
@@ -913,9 +1121,10 @@ export function SolveClient({
         setError("採点リクエストに失敗しました。もう一度お試しください。");
         setGradingStatus("idle");
         setIsSubmitting(false);
+        setSubmitPhase("idle");
       }
     },
-    [problemSetId, draftKey, router]
+    [problemSetId, draftKey, router, flushPendingDraft]
   );
 
   const handleSubmit = useCallback(
@@ -977,9 +1186,31 @@ export function SolveClient({
         </div>
       )}
 
-      {draftRestored && (
+      {draftRestored && !serverDraftBanner && (
         <div className="mb-4 rounded-md border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
           前回の下書きを復元しました。続きから解答できます。
+        </div>
+      )}
+
+      {serverDraftBanner && (
+        <div className="mb-4 flex items-start justify-between gap-3 rounded-md border border-primary/20 bg-primary/5 p-3 text-sm text-primary">
+          <div>
+            <p className="font-medium">別の端末で進めた解答を復元しました。</p>
+            <p className="mt-1 text-xs text-primary/80">
+              最終更新:{" "}
+              {new Date(serverDraftBanner.serverActiveAt).toLocaleString(
+                "ja-JP"
+              )}
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setServerDraftBanner(null)}
+            className="text-xs text-primary/80 hover:text-primary"
+            aria-label="復元の通知を閉じる"
+          >
+            閉じる
+          </button>
         </div>
       )}
 
@@ -1012,7 +1243,12 @@ export function SolveClient({
           )}
         </div>
         <div className="flex items-center gap-2">
-          <AutoSaveIndicator lastSaved={lastSavedAt} />
+          {/* Canonical instance — owns aria-live region */}
+          <AutoSaveIndicator
+            state={draftState}
+            onRetry={() => void pushDraftToServer()}
+            ownsAriaLive={true}
+          />
           <Button variant="outline" size="sm" className="min-h-[44px] sm:min-h-0" onClick={handleSaveDraft}>
             保存
           </Button>
@@ -1181,7 +1417,14 @@ export function SolveClient({
               {progress.totalAnswered} / {progress.totalQuestions}問 回答済み
             </span>
           </div>
-          <AutoSaveIndicator lastSaved={lastSavedAt} />
+          {/* Decorative — header instance owns aria-live to avoid double announcements */}
+          <div aria-hidden="true">
+            <AutoSaveIndicator
+              state={draftState}
+              onRetry={() => void pushDraftToServer()}
+              ownsAriaLive={false}
+            />
+          </div>
         </div>
         <Progress
           value={
@@ -1196,18 +1439,27 @@ export function SolveClient({
               : "bg-primary"
           }
         />
+        {/* min-width locks button width across the three label variants
+            (per CLAUDE.md Button Layout Stability — text MAY change to
+            communicate progress, width MUST NOT). */}
         <Button
           className="w-full"
           size="lg"
           onClick={handleFormSubmit}
           disabled={isSubmitting}
+          style={{ minWidth: "16rem" }}
+          aria-busy={isSubmitting}
         >
           {isSubmitting ? (
             <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
           ) : (
             <Send className="mr-2 h-4 w-4" aria-hidden="true" />
           )}
-          解答を提出してAI採点
+          {submitPhase === "saving_draft"
+            ? "下書きを保存しています…"
+            : submitPhase === "submitting_grade"
+              ? "採点を開始しています…"
+              : "解答を提出してAI採点"}
         </Button>
         <p className="mt-2 text-center text-xs text-muted-foreground">
           ※ AI採点は参考スコアです。最終判断はご自身で行ってください。

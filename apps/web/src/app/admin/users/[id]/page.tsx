@@ -1,8 +1,8 @@
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/admin";
 import { getResolvedTier, hasOverrideMismatch } from "@toinoma/shared";
 import { Button } from "@/components/ui/button";
 import { AdminUserDetailClient } from "./admin-user-detail-client";
@@ -28,18 +28,7 @@ export const metadata: Metadata = {
 export default async function AdminUserDetailPage(props: {
   params: Promise<{ id: string }>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user: viewer },
-  } = await supabase.auth.getUser();
-  if (!viewer) redirect("/login");
-
-  const { data: viewerProfile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", viewer.id)
-    .single();
-  if (!viewerProfile?.is_admin) redirect("/dashboard");
+  await requireAdmin();
 
   const { id } = await props.params;
   const admin = createAdminClient();
@@ -48,7 +37,7 @@ export default async function AdminUserDetailPage(props: {
   const { data: profile } = await admin
     .from("profiles")
     .select(
-      "id, display_name, avatar_url, created_at, banned_at, suspended_until, ban_reason, is_admin"
+      "id, display_name, avatar_url, created_at, banned_at, suspended_until, ban_reason"
     )
     .eq("id", id)
     .single();

@@ -53,3 +53,49 @@ export type MarkSheetAnswer = z.infer<typeof markSheetAnswerSchema>;
 export type FillInBlankAnswer = z.infer<typeof fillInBlankAnswerSchema>;
 export type MultipleChoiceAnswer = z.infer<typeof multipleChoiceAnswerSchema>;
 export type QuestionAnswer = z.infer<typeof questionAnswerSchema>;
+
+// ---------------------------------------------------------------------------
+// Draft answer schemas (FR-D6: submission drafts)
+// ---------------------------------------------------------------------------
+// Drafts are saved continuously as the user types, so we relax the validation
+// rules used at submission time:
+//   - Essays may have neither text nor imageUrl (mid-typing, blank field).
+//   - Mark-sheet / multiple-choice may have an empty selection
+//     (deselected mid-flow).
+//   - Fill-in-blank text may be the empty string.
+// We still enforce the `type` discriminator so drafts can be safely typed
+// downstream and displayed in the answer input components.
+
+const draftEssayAnswerVariant = z.object({
+  type: z.literal("essay"),
+  text: z.string().optional(),
+  imageUrl: z.string().url().optional(),
+});
+
+const draftMarkSheetAnswerVariant = z.object({
+  type: z.literal("mark_sheet"),
+  selected: z.string(),
+});
+
+const draftFillInBlankAnswerVariant = z.object({
+  type: z.literal("fill_in_blank"),
+  text: z.string(),
+});
+
+const draftMultipleChoiceAnswerVariant = z.object({
+  type: z.literal("multiple_choice"),
+  selected: z.array(z.string()),
+});
+
+export const draftAnswerSchema = z.discriminatedUnion("type", [
+  draftEssayAnswerVariant,
+  draftMarkSheetAnswerVariant,
+  draftFillInBlankAnswerVariant,
+  draftMultipleChoiceAnswerVariant,
+]);
+
+// Map keyed by question id (e.g. "1-(1)") → DraftAnswer
+export const draftAnswersMapSchema = z.record(z.string(), draftAnswerSchema);
+
+export type DraftAnswer = z.infer<typeof draftAnswerSchema>;
+export type DraftAnswersMap = z.infer<typeof draftAnswersMapSchema>;

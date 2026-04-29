@@ -71,7 +71,6 @@ export interface Database {
           id: string;
           display_name: string | null;
           avatar_url: string | null;
-          is_admin: boolean;
           preferred_subjects: Subject[];
           study_goal: string | null;
           banned_at: string | null;
@@ -84,7 +83,6 @@ export interface Database {
           id: string;
           display_name?: string | null;
           avatar_url?: string | null;
-          is_admin?: boolean;
           preferred_subjects?: Subject[];
           study_goal?: string | null;
           banned_at?: string | null;
@@ -96,7 +94,6 @@ export interface Database {
         Update: {
           display_name?: string | null;
           avatar_url?: string | null;
-          is_admin?: boolean;
           preferred_subjects?: Subject[];
           study_goal?: string | null;
           banned_at?: string | null;
@@ -1057,6 +1054,47 @@ export interface Database {
           },
         ];
       };
+      submission_drafts: {
+        Row: {
+          id: string;
+          user_id: string;
+          problem_set_id: string;
+          answers: Json;
+          last_active_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          problem_set_id: string;
+          answers?: Json;
+          last_active_at?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          answers?: Json;
+          last_active_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "submission_drafts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "submission_drafts_problem_set_id_fkey";
+            columns: ["problem_set_id"];
+            isOneToOne: false;
+            referencedRelation: "problem_sets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       user_notes: {
         Row: {
           id: string;
@@ -1194,6 +1232,10 @@ export interface Database {
           current_count: number;
           window_end_ms: number;
         }[];
+      };
+      purge_old_drafts: {
+        Args: Record<string, never>;
+        Returns: number;
       };
     };
     Enums: {

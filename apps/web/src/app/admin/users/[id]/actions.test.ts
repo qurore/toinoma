@@ -1,10 +1,11 @@
 // @vitest-environment node
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Mocks for Supabase + helpers
 // ---------------------------------------------------------------------------
 
+vi.mock("server-only", () => ({}));
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
 }));
@@ -59,35 +60,28 @@ const DEFAULT_SUB: MockSubRow = {
   current_period_end: "2026-05-01T00:00:00.000Z",
 };
 
+const ADMIN_EMAIL = "admin@test.com";
+const NON_ADMIN_EMAIL = "student@test.com";
+
 function setupAuthAsAdmin() {
+  vi.stubEnv("ADMIN_EMAILS", ADMIN_EMAIL);
   vi.mocked(createClient).mockResolvedValue({
     auth: {
-      getUser: vi.fn().mockResolvedValue({ data: { user: { id: ADMIN_ID } } }),
+      getUser: vi
+        .fn()
+        .mockResolvedValue({ data: { user: { id: ADMIN_ID, email: ADMIN_EMAIL } } }),
     },
-    from: vi.fn().mockImplementation(() => ({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: { is_admin: true },
-        error: null,
-      }),
-    })),
   } as never);
 }
 
 function setupAuthAsNonAdmin() {
+  vi.stubEnv("ADMIN_EMAILS", ADMIN_EMAIL);
   vi.mocked(createClient).mockResolvedValue({
     auth: {
-      getUser: vi.fn().mockResolvedValue({ data: { user: { id: ADMIN_ID } } }),
+      getUser: vi
+        .fn()
+        .mockResolvedValue({ data: { user: { id: ADMIN_ID, email: NON_ADMIN_EMAIL } } }),
     },
-    from: vi.fn().mockImplementation(() => ({
-      select: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn().mockResolvedValue({
-        data: { is_admin: false },
-        error: null,
-      }),
-    })),
   } as never);
 }
 
@@ -156,11 +150,16 @@ function setupAdminClient(opts: {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
   vi.mocked(checkRateLimit).mockResolvedValue({
     allowed: true,
     remaining: 49,
     resetAt: Date.now() + 3_600_000,
   });
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
 });
 
 // ---------------------------------------------------------------------------

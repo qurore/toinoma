@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdminAction } from "@/lib/auth/admin";
 import { checkRateLimit } from "@/lib/rate-limit";
 import { createNotification } from "@/lib/notifications";
 import {
@@ -42,23 +42,6 @@ export type AiUsageAdjustResult =
   | ActionError;
 
 // --- Helpers ---
-
-async function requireAdmin(): Promise<{ adminId: string } | { error: string }> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return { error: "認証が必要です" };
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_admin) return { error: "管理者権限が必要です" };
-  return { adminId: user.id };
-}
 
 async function checkAdminRateLimit(adminId: string) {
   return checkRateLimit(
@@ -149,7 +132,7 @@ export async function setSubscriptionOverride(params: {
   expectedVersion: number;
   notifyUser?: boolean;
 }): Promise<SetSubscriptionOverrideResult> {
-  const auth = await requireAdmin();
+  const auth = await requireAdminAction();
   if ("error" in auth) return unauthorized(auth.error);
 
   const rl = await checkAdminRateLimit(auth.adminId);
@@ -320,7 +303,7 @@ async function adjustAiUsage(params: {
   notifyUser?: boolean;
   operation: "credit" | "deduct" | "reset";
 }): Promise<AiUsageAdjustResult> {
-  const auth = await requireAdmin();
+  const auth = await requireAdminAction();
   if ("error" in auth) return unauthorized(auth.error);
 
   const rl = await checkAdminRateLimit(auth.adminId);

@@ -1,6 +1,5 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdmin } from "@/lib/auth/admin";
 import { getResolvedTier } from "@toinoma/shared";
 import type { Metadata } from "next";
 import { AdminUsersClient } from "./admin-users-client";
@@ -31,21 +30,7 @@ export default async function AdminUsersPage(props: {
     page?: string;
   }>;
 }) {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) redirect("/login");
-
-  // Admin guard (layout already checks, but defense in depth)
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_admin) redirect("/");
+  await requireAdmin();
 
   const searchParams = await props.searchParams;
   const rawQuery = searchParams.q ?? "";

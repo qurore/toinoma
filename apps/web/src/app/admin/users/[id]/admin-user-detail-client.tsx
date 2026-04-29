@@ -10,7 +10,6 @@ import {
   Plus,
   Minus,
   RotateCcw,
-  Crown,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -67,7 +66,6 @@ type Profile = Pick<
   | "banned_at"
   | "suspended_until"
   | "ban_reason"
-  | "is_admin"
 >;
 type SellerProfile = Pick<
   Database["public"]["Tables"]["seller_profiles"]["Row"],
@@ -385,17 +383,6 @@ export function AdminUserDetailClient({
                   <dt className="text-muted-foreground">登録日</dt>
                   <dd>{formatDateShort(profile.created_at)}</dd>
                 </div>
-                {profile.is_admin && (
-                  <div className="flex items-center justify-between">
-                    <dt className="text-muted-foreground">権限</dt>
-                    <dd>
-                      <Badge variant="outline" className="gap-1">
-                        <Crown className="h-3 w-3" />
-                        管理者
-                      </Badge>
-                    </dd>
-                  </div>
-                )}
                 {profile.ban_reason && (
                   <div>
                     <dt className="text-muted-foreground">制裁理由</dt>

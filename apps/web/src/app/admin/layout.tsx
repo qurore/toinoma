@@ -1,4 +1,4 @@
-import { requireAdmin } from "@/lib/auth/require-seller";
+import { requireAdmin } from "@/lib/auth/admin";
 import { AppNavbar, getNavbarData } from "@/components/navigation/app-navbar";
 import { AdminMobileSidebar } from "@/components/admin/admin-mobile-sidebar";
 import { AdminDesktopNav } from "@/components/admin/admin-desktop-nav";

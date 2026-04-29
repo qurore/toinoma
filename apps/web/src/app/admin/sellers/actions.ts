@@ -1,8 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { requireAdminAction } from "@/lib/auth/admin";
 import type { Database } from "@/types/database";
 
 type AdminActionType = Database["public"]["Enums"]["admin_action_type"];
@@ -10,27 +10,6 @@ type AdminActionType = Database["public"]["Enums"]["admin_action_type"];
 // ──────────────────────────────────────────────
 // ADM-006: Seller verification actions
 // ──────────────────────────────────────────────
-
-async function requireAdmin(): Promise<
-  { adminId: string } | { error: string }
-> {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) return { error: "認証が必要です" };
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("is_admin")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile?.is_admin) return { error: "管理者権限が必要です" };
-
-  return { adminId: user.id };
-}
 
 async function createAuditLog(params: {
   adminId: string;
@@ -55,7 +34,7 @@ async function createAuditLog(params: {
 export async function verifySeller(
   sellerId: string
 ): Promise<{ success?: boolean; error?: string }> {
-  const authResult = await requireAdmin();
+  const authResult = await requireAdminAction();
   if ("error" in authResult) return { error: authResult.error };
 
   const admin = createAdminClient();
@@ -101,7 +80,7 @@ export async function verifySeller(
 export async function unverifySeller(
   sellerId: string
 ): Promise<{ success?: boolean; error?: string }> {
-  const authResult = await requireAdmin();
+  const authResult = await requireAdminAction();
   if ("error" in authResult) return { error: authResult.error };
 
   const admin = createAdminClient();
