@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-// No decorative icons needed
+import { Download } from "lucide-react";
 
 type MarginOption = "narrow" | "normal";
 
@@ -109,23 +109,39 @@ export function PdfPreview({
         </div>
 
         {/* FR-022: A4 preview */}
-        <div
-          className="relative mx-auto overflow-hidden rounded-lg border bg-white shadow-sm"
-          style={{
-            width: "100%",
-            maxWidth: "595px", // A4 width at 72 DPI
-            aspectRatio: "210 / 297", // A4 ratio
-          }}
-        >
-          <iframe
-            ref={iframeRef}
-            src={problemPdfUrl}
-            className="h-full w-full"
-            title={`PDF preview: ${title}`}
+        <div className="mx-auto" style={{ maxWidth: "595px" /* A4 width @72 DPI */ }}>
+          <div
+            className="relative overflow-hidden rounded-lg border bg-white shadow-sm"
             style={{
-              padding: margin === "narrow" ? "10px" : "20px",
+              width: "100%",
+              aspectRatio: "210 / 297", // A4 ratio
             }}
-          />
+          >
+            <iframe
+              ref={iframeRef}
+              src={problemPdfUrl}
+              className="h-full w-full"
+              title={`PDF preview: ${title}`}
+              // Prevent Supabase signed-URL tokens (in the query string) from
+              // leaking via outbound links the embedded PDF may contain.
+              referrerPolicy="no-referrer"
+              style={{
+                padding: margin === "narrow" ? "10px" : "20px",
+              }}
+            />
+          </div>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            プレビューを表示できない場合は{" "}
+            <button
+              type="button"
+              onClick={handleDownload}
+              className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+            >
+              <Download className="h-3 w-3" aria-hidden="true" />
+              ダウンロード
+            </button>
+            {" "}してください
+          </p>
         </div>
       </CardContent>
     </Card>

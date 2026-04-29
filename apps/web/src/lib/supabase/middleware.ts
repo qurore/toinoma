@@ -29,14 +29,35 @@ export function buildCspHeader(nodeEnv: string | undefined): string {
     ? "script-src 'self' 'unsafe-inline' https://js.stripe.com"
     : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com";
 
+  // CSP directive consumer manifest — keep this in sync with the source code
+  // grep targets noted in each comment. Order is semantic (scripts → styles →
+  // assets → connect → frames → meta), NOT alphabetical; if you reorder, you
+  // must rebaseline the snapshot test in middleware.test.ts deliberately.
   return [
     "default-src 'self'",
     scriptSrc,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
-    "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com",
+    // img-src consumers:
+    //   - components/ui/avatar.tsx (Radix Avatar primitive — renders raw <img>,
+    //     bypasses next/image; serves Google `*.googleusercontent.com` +
+    //     Twitter `pbs.twimg.com` OAuth avatars across all avatar render sites)
+    //   - Supabase Storage uploads (problem images, attachments)
+    //   - Stripe-hosted assets (checkout / Connect dashboard imagery)
+    "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com https://*.googleusercontent.com https://pbs.twimg.com",
+    // media-src consumers:
+    //   - components/solving/video-player.tsx:47 (<video> from Supabase Storage)
+    //   - components/seller/video-uploader.tsx:380 (<video> preview, blob: URL
+    //     before upload + Supabase Storage URL after upload)
+    "media-src 'self' blob: https://*.supabase.co",
     "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://generativelanguage.googleapis.com",
-    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+    // frame-src consumers (Supabase Storage signed-URL PDF iframes + Stripe):
+    //   - components/grading/solve-client.tsx:1043 (desktop split view)
+    //   - components/grading/solve-client.tsx:1100 (mobile tab view)
+    //   - app/(dashboard)/dashboard/collections/[id]/solve/collection-solve-client.tsx:304
+    //   - components/seller/pdf-preview.tsx:120 (FR-022 A4 preview)
+    //   - components/marketplace/problem-detail-tabs.tsx:133 (purchased preview)
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com https://*.supabase.co",
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'self'",

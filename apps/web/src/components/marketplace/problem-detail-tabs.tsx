@@ -134,6 +134,9 @@ export function ProblemDetailTabs({
                       src={problemPdfUrl}
                       className="h-[400px] w-full rounded-lg border border-border sm:h-[600px]"
                       title="問題PDF"
+                      // Prevent Supabase signed-URL tokens (in the query string)
+                      // from leaking via outbound links inside the embedded PDF.
+                      referrerPolicy="no-referrer"
                     />
                     <p className="mt-2 text-center text-xs text-muted-foreground">
                       PDFを読み込めない場合は{" "}

@@ -36,6 +36,7 @@ import {
   Send,
   ChevronUp,
   GripVertical,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ANSWER_TYPE_LABELS } from "@toinoma/shared/constants";
@@ -1032,19 +1033,35 @@ export function SolveClient({
           <div className="hidden lg:flex" style={{ minHeight: "calc(100vh - 14rem)" }}>
             {/* Problem sheet (left) */}
             <div
-              className="overflow-hidden rounded-lg border border-border"
+              className="flex flex-col overflow-hidden rounded-lg border border-border"
               style={{ width: `${dividerPosition}%` }}
             >
-              <div className="flex h-10 items-center border-b border-border bg-muted/50 px-3">
+              <div className="flex h-10 shrink-0 items-center border-b border-border bg-muted/50 px-3">
                 <span className="text-xs font-medium text-muted-foreground">
                   問題用紙
                 </span>
               </div>
               <iframe
                 src={problemPdfUrl!}
-                className="h-[calc(100%-2.5rem)] w-full"
+                className="w-full flex-1"
                 title="問題PDF"
+                // Prevent Supabase signed-URL tokens (in the query string) from
+                // leaking via outbound links the embedded PDF may contain.
+                referrerPolicy="no-referrer"
               />
+              <p className="shrink-0 border-t border-border bg-muted/30 px-3 py-1.5 text-center text-xs text-muted-foreground">
+                PDFを表示できない場合は{" "}
+                <a
+                  href={problemPdfUrl!}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                >
+                  <Download className="h-3 w-3" aria-hidden="true" />
+                  ダウンロード
+                </a>
+                {" "}してください
+              </p>
             </div>
 
             {/* Resizable divider */}
@@ -1101,7 +1118,23 @@ export function SolveClient({
                     src={problemPdfUrl!}
                     className="h-[70vh] w-full"
                     title="問題PDF"
+                    // Prevent Supabase signed-URL tokens from leaking via
+                    // outbound links inside the embedded PDF.
+                    referrerPolicy="no-referrer"
                   />
+                  <p className="border-t border-border bg-muted/30 px-3 py-1.5 text-center text-xs text-muted-foreground">
+                    PDFを表示できない場合は{" "}
+                    <a
+                      href={problemPdfUrl!}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                    >
+                      <Download className="h-3 w-3" aria-hidden="true" />
+                      ダウンロード
+                    </a>
+                    {" "}してください
+                  </p>
                 </div>
               </TabsContent>
 

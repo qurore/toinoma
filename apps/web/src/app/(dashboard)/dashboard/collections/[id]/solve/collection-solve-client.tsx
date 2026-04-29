@@ -12,6 +12,7 @@ import { SolveTimer } from "@/components/solving/solve-timer";
 import {
   ChevronRight,
   Loader2,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { shuffleArray } from "@toinoma/shared/utils";
@@ -301,11 +302,29 @@ export function CollectionSolveClient({
 
           {current.problemPdfUrl && (
             <div className="mb-6">
-              <iframe
-                src={current.problemPdfUrl}
-                className="h-[500px] w-full rounded-lg border border-border"
-                title="問題PDF"
-              />
+              <div className="overflow-hidden rounded-lg border border-border">
+                <iframe
+                  src={current.problemPdfUrl}
+                  className="h-[500px] w-full"
+                  title="問題PDF"
+                  // Prevent Supabase signed-URL tokens from leaking via
+                  // outbound links inside the embedded PDF.
+                  referrerPolicy="no-referrer"
+                />
+                <p className="border-t border-border bg-muted/30 px-3 py-1.5 text-center text-xs text-muted-foreground">
+                  PDFを表示できない場合は{" "}
+                  <a
+                    href={current.problemPdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 font-medium text-primary hover:underline"
+                  >
+                    <Download className="h-3 w-3" aria-hidden="true" />
+                    ダウンロード
+                  </a>
+                  {" "}してください
+                </p>
+              </div>
             </div>
           )}
 
