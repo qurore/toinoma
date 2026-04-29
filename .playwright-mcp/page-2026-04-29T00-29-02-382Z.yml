@@ -1,0 +1,58 @@
+- generic [active] [ref=e1]:
+  - link "メインコンテンツへスキップ" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - link "問の間 TOINOMA" [ref=e5] [cursor=pointer]:
+        - /url: /
+        - generic [ref=e6]:
+          - generic [ref=e7]: 問の間
+          - generic [ref=e8]: TOINOMA
+      - generic [ref=e9]:
+        - heading "問いと答えが 出会う場所" [level=1] [ref=e10]:
+          - text: 問いと答えが
+          - text: 出会う場所
+        - list [ref=e11]:
+          - listitem [ref=e12]: AI採点で記述式の部分点を即座に判定
+          - listitem [ref=e13]: 大学生作問者による本格入試対策問題
+          - listitem [ref=e14]: 9科目対応、難易度別の問題検索
+          - listitem [ref=e15]: 学習進捗の可視化で効率的な受験対策
+      - paragraph [ref=e16]: © 2026 Toinoma
+    - main [ref=e17]:
+      - generic [ref=e18]:
+        - heading "ログイン" [level=2] [ref=e19]
+        - paragraph [ref=e20]: アカウントにログインして学習を続けましょう
+        - generic [ref=e21]:
+          - button "Googleでログイン" [ref=e22]:
+            - img
+            - text: Googleでログイン
+          - button "X (Twitter) でログイン" [ref=e23]:
+            - img
+            - text: X (Twitter) でログイン
+        - generic [ref=e28]: またはメールでログイン
+        - generic [ref=e29]:
+          - generic [ref=e30]:
+            - text: メールアドレス
+            - textbox "メールアドレス" [ref=e31]:
+              - /placeholder: you@example.com
+          - generic [ref=e32]:
+            - generic [ref=e33]:
+              - generic [ref=e34]: パスワード
+              - link "パスワードをお忘れですか？" [ref=e35] [cursor=pointer]:
+                - /url: /forgot-password
+            - textbox "パスワード" [ref=e36]:
+              - /placeholder: パスワードを入力
+          - button "ログイン" [ref=e37]
+        - paragraph [ref=e38]:
+          - text: アカウントをお持ちでないですか？
+          - link "新規登録" [ref=e39] [cursor=pointer]:
+            - /url: /signup
+        - paragraph [ref=e40]:
+          - text: ログインすることで、
+          - link "利用規約" [ref=e41] [cursor=pointer]:
+            - /url: /legal/terms
+          - text: および
+          - link "プライバシーポリシー" [ref=e42] [cursor=pointer]:
+            - /url: /legal/privacy
+          - text: に同意したものとみなされます。
+  - region "Notifications alt+T"

@@ -12,6 +12,37 @@ const AUTH_REQUIRED_ROUTES = [
   "/welcome",
 ];
 
+/**
+ * Build the Content-Security-Policy header value.
+ *
+ * In non-production environments (dev/test), `'unsafe-eval'` is appended to
+ * `script-src` because Next.js HMR and React Refresh rely on `eval()` to load
+ * modules. Without it, the browser blocks every client bundle, hydration
+ * fails, and `<form onSubmit>` handlers silently fall back to native HTML
+ * GET submission (visible only as a URL becoming `?` with no params).
+ *
+ * Production CSP intentionally omits `'unsafe-eval'` to preserve XSS hardening.
+ */
+export function buildCspHeader(nodeEnv: string | undefined): string {
+  const isProduction = nodeEnv === "production";
+  const scriptSrc = isProduction
+    ? "script-src 'self' 'unsafe-inline' https://js.stripe.com"
+    : "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://js.stripe.com";
+
+  return [
+    "default-src 'self'",
+    scriptSrc,
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com",
+    "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://generativelanguage.googleapis.com",
+    "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+  ].join("; ");
+}
+
 // Routes reserved for unauthenticated (guest) users — authenticated users are redirected to /dashboard
 // These are the landing page and auth-flow pages that serve no purpose for logged-in users.
 const GUEST_ONLY_ROUTES = [
@@ -19,6 +50,20 @@ const GUEST_ONLY_ROUTES = [
   "/signup",
   "/forgot-password",
 ];
+
+// Auth routes that own a client-side form. If we ever see `email=` or
+// `password=` query params on a GET to one of these paths, the form was
+// submitted as a native HTML GET (i.e. React never hydrated) and the
+// password just leaked into the URL bar / referer / browser history.
+// We strip the params and log loudly so this regression cannot be silent
+// the way it was before PDCA-2026-0007.
+const HYDRATION_GUARDED_AUTH_ROUTES = new Set([
+  "/login",
+  "/signup",
+  "/forgot-password",
+  "/reset-password",
+]);
+const SENSITIVE_QUERY_PARAMS = ["password", "email", "confirm-password"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
@@ -53,6 +98,30 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const pathname = request.nextUrl.pathname;
+
+  // ── Hydration-failure guard ──
+  // If a client form was submitted before React hydrated, the browser
+  // performs a native HTML GET and credentials end up in the URL.
+  // Detect this on inbound GETs to auth pages, scrub the params, and
+  // emit a loud log so monitoring can alert on it.
+  if (
+    request.method === "GET" &&
+    HYDRATION_GUARDED_AUTH_ROUTES.has(pathname)
+  ) {
+    const hasSensitiveParam = SENSITIVE_QUERY_PARAMS.some((p) =>
+      request.nextUrl.searchParams.has(p)
+    );
+    if (hasSensitiveParam) {
+      // Console.error so the message lands in Vercel logs without throwing.
+      // Do NOT echo the param values — that would just relog the secret.
+      console.error(
+        `[hydration-failure] sensitive query params on ${pathname}; scrubbing URL.`
+      );
+      const url = request.nextUrl.clone();
+      for (const p of SENSITIVE_QUERY_PARAMS) url.searchParams.delete(p);
+      return NextResponse.redirect(url);
+    }
+  }
 
   // ── Unauthenticated user hitting a protected route → redirect to /login ──
   const isAuthRequired = AUTH_REQUIRED_ROUTES.some((route) =>
@@ -147,21 +216,11 @@ export async function updateSession(request: NextRequest) {
     "camera=(self), microphone=(), geolocation=()"
   );
   supabaseResponse.headers.set("X-XSS-Protection", "1; mode=block");
-  // CSP: allow self, inline styles (for Tailwind/Radix), and required external origins
+  // CSP: allow self, inline styles (for Tailwind/Radix), and required external origins.
+  // 'unsafe-eval' is added in non-production for Next.js HMR / React Refresh.
   supabaseResponse.headers.set(
     "Content-Security-Policy",
-    [
-      "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' https://js.stripe.com",
-      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
-      "font-src 'self' https://fonts.gstatic.com",
-      "img-src 'self' data: blob: https://*.supabase.co https://*.stripe.com",
-      "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.stripe.com https://generativelanguage.googleapis.com",
-      "frame-src 'self' https://js.stripe.com https://hooks.stripe.com",
-      "object-src 'none'",
-      "base-uri 'self'",
-      "form-action 'self'",
-    ].join("; ")
+    buildCspHeader(process.env.NODE_ENV)
   );
 
   return supabaseResponse;

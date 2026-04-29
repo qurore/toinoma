@@ -1,50 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { GoogleIcon, XIcon } from "@/components/auth/oauth-icons";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { mapAuthError } from "@/lib/supabase/auth-errors";
 
 // ──────────────────────────────────────────────
-// Benefits list for the brand panel
-// ──────────────────────────────────────────────
-
-const benefits = [
-  "AI採点で記述式の部分点を即座に判定",
-  "大学生作問者による本格入試対策問題",
-  "9科目対応、難易度別の問題検索",
-  "学習進捗の可視化で効率的な受験対策",
-];
-
-// ──────────────────────────────────────────────
-// Error mapping for signInWithPassword
-// ──────────────────────────────────────────────
-
-function mapSignInError(errorMessage: string): string {
-  if (errorMessage.includes("Invalid login credentials")) {
-    return "メールアドレスまたはパスワードが正しくありません";
-  }
-  if (errorMessage.includes("Email not confirmed")) {
-    return "メールアドレスが確認されていません。確認メールをご確認ください。";
-  }
-  if (
-    errorMessage.includes("rate limit") ||
-    errorMessage.includes("too many requests")
-  ) {
-    return "ログイン試行回数が上限に達しました。しばらく時間をおいてお試しください。";
-  }
-  return "ログインに失敗しました。もう一度お試しください。";
-}
-
-// ──────────────────────────────────────────────
-// Error mapping for OAuth callback query params
+// OAuth callback error mapping (URL-driven, so it stays a small switch)
 // ──────────────────────────────────────────────
 
 function mapCallbackError(errorParam: string | null): string | null {
@@ -92,6 +63,38 @@ function LoginContent() {
     mapCallbackError(errorParam)
   );
 
+  const formRef = useRef<HTMLFormElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // Hydration sentinel — flipped to "true" once React mounts on the client.
+  // Used by ops to detect silent hydration regressions in production logs
+  // and by the middleware guard (see middleware.ts) as a defensive check.
+  useEffect(() => {
+    formRef.current?.setAttribute("data-hydrated", "true");
+  }, []);
+
+  // Auto-focus the email input on initial render UNLESS an error banner is
+  // present — in that case the banner is focused first so AT users hear it.
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.focus();
+      return;
+    }
+    emailInputRef.current?.focus();
+    // We intentionally only run this when `error` toggles between
+    // null/non-null; tracking individual error message text would over-fire.
+  }, [error]);
+
+  // OAuth safety timeout: if the redirect never happens (browser blocks
+  // popup, network drops, etc.) reset the spinner after 30 seconds so the
+  // button doesn't appear hung forever.
+  useEffect(() => {
+    if (!loadingProvider) return;
+    const timer = window.setTimeout(() => setLoadingProvider(null), 30_000);
+    return () => window.clearTimeout(timer);
+  }, [loadingProvider]);
+
   async function handleOAuth(provider: "google" | "twitter") {
     setLoadingProvider(provider);
     setError(null);
@@ -111,240 +114,207 @@ function LoginContent() {
     setIsEmailLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (signInError) {
-      setError(mapSignInError(signInError.message));
+      if (signInError) {
+        setError(mapAuthError(signInError, "login"));
+        return;
+      }
+
+      // Toast success BEFORE navigation so the user sees confirmation even
+      // if the destination is slow to render.
+      toast.success("ログインしました");
+      router.push(next);
+      router.refresh();
+    } finally {
+      // Always reset loading — middleware bounces, network errors, and the
+      // happy path all need the button restored. router.push does not
+      // unmount the page synchronously, so this is safe.
       setIsEmailLoading(false);
-      return;
     }
-
-    router.push(next);
-    router.refresh();
   }
 
   const isDisabled = loadingProvider !== null || isEmailLoading;
+  const errorBannerId = "auth-error";
 
   return (
-    <div className="flex min-h-screen">
-      {/* Left — Brand panel (hidden on mobile) */}
-      <div className="hidden w-1/2 bg-hero lg:flex lg:flex-col lg:justify-between lg:p-12">
-        {/* Top — Logo */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 transition-opacity hover:opacity-80"
+    <AuthShell
+      heading="ログイン"
+      subheading="アカウントにログインして学習を続けましょう"
+      footer={
+        <>
+          アカウントをお持ちでないですか？{" "}
+          <Link
+            href="/signup"
+            className="font-medium text-primary hover:underline"
+          >
+            新規登録
+          </Link>
+        </>
+      }
+      legal={
+        <>
+          ログインすることで、
+          <Link href="/legal/terms" className="text-primary hover:underline">
+            利用規約
+          </Link>
+          および
+          <Link href="/legal/privacy" className="text-primary hover:underline">
+            プライバシーポリシー
+          </Link>
+          に同意したものとみなされます。
+        </>
+      }
+      showMobileBenefits
+    >
+      {/* Error banner — focusable so the auto-focus effect can hand it
+          to the screen reader before the form fields. */}
+      {error && (
+        <div
+          ref={errorRef}
+          id={errorBannerId}
+          role="alert"
+          tabIndex={-1}
+          className="mb-6 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-center text-sm text-destructive focus:outline-none focus:ring-2 focus:ring-destructive/30"
         >
-          <div className="flex flex-col leading-none">
-            <span className="font-display text-lg font-bold text-white">
-              問の間
-            </span>
-            <span className="text-[10px] font-medium tracking-wider text-white/60">
-              TOINOMA
-            </span>
-          </div>
-        </Link>
-
-        {/* Center — Headline and benefits */}
-        <div className="space-y-6 animate-fade-up">
-          <h1 className="text-3xl font-bold leading-tight text-white">
-            問いと答えが
-            <br />
-            出会う場所
-          </h1>
-          <ul className="space-y-2.5">
-            {benefits.map((b) => (
-              <li key={b} className="text-sm text-white/80 pl-3 relative before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-white/50">
-                {b}
-              </li>
-            ))}
-          </ul>
+          {error}
         </div>
+      )}
 
-        {/* Bottom — Copyright */}
-        <p className="text-xs text-white/40">
-          &copy; {new Date().getFullYear()} Toinoma
-        </p>
+      {/* OAuth buttons — spinner slot is always reserved so the icon swap
+          doesn't shift the label horizontally. */}
+      <div className="space-y-3">
+        <Button
+          variant="outline"
+          className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
+          onClick={() => handleOAuth("google")}
+          disabled={isDisabled}
+          aria-busy={loadingProvider === "google"}
+        >
+          <span className="relative inline-flex h-5 w-5 items-center justify-center">
+            <GoogleIcon
+              className={cn(
+                "h-5 w-5",
+                loadingProvider === "google" && "invisible"
+              )}
+            />
+            {loadingProvider === "google" && (
+              <Loader2
+                className="absolute h-5 w-5 animate-spin"
+                aria-hidden="true"
+              />
+            )}
+          </span>
+          Googleでログイン
+        </Button>
+
+        <Button
+          variant="outline"
+          className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
+          onClick={() => handleOAuth("twitter")}
+          disabled={isDisabled}
+          aria-busy={loadingProvider === "twitter"}
+        >
+          <span className="relative inline-flex h-5 w-5 items-center justify-center">
+            <XIcon
+              className={cn(
+                "h-5 w-5",
+                loadingProvider === "twitter" && "invisible"
+              )}
+            />
+            {loadingProvider === "twitter" && (
+              <Loader2
+                className="absolute h-5 w-5 animate-spin"
+                aria-hidden="true"
+              />
+            )}
+          </span>
+          X (Twitter) でログイン
+        </Button>
       </div>
 
-      {/* Right — Login form */}
-      <main className="flex flex-1 items-center justify-center p-6 pb-16 lg:p-12 lg:pb-12">
-        <div
-          className={cn(
-            "w-full max-w-sm",
-            "animate-fade-up [animation-delay:150ms] [animation-fill-mode:backwards]"
-          )}
-        >
-          {/* Mobile logo — visible only on small screens */}
-          <Link
-            href="/"
-            className="mb-8 flex items-center gap-2 lg:hidden"
-          >
-            <div className="flex flex-col leading-none">
-              <span className="font-display text-lg font-bold">問の間</span>
-              <span className="text-[10px] font-medium tracking-wider text-muted-foreground">
-                TOINOMA
-              </span>
-            </div>
-          </Link>
-
-          <h2 className="mb-1 text-2xl font-bold tracking-tight">
-            ログイン
-          </h2>
-          <p className="mb-8 text-sm text-muted-foreground">
-            アカウントにログインして学習を続けましょう
-          </p>
-
-          {/* Error banner */}
-          {error && (
-            <div
-              role="alert"
-              className="mb-6 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-center text-sm text-destructive"
-            >
-              {error}
-            </div>
-          )}
-
-          {/* OAuth buttons */}
-          <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
-              onClick={() => handleOAuth("google")}
-              disabled={isDisabled}
-            >
-              {loadingProvider === "google" ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <GoogleIcon className="h-5 w-5" />
-              )}
-              Googleでログイン
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
-              onClick={() => handleOAuth("twitter")}
-              disabled={isDisabled}
-            >
-              {loadingProvider === "twitter" ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <XIcon className="h-5 w-5" />
-              )}
-              X (Twitter) でログイン
-            </Button>
-          </div>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-background px-2 text-muted-foreground">
-                またはメールでログイン
-              </span>
-            </div>
-          </div>
-
-          {/* Email + Password form */}
-          <form onSubmit={handleEmailLogin} className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="email">メールアドレス</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isDisabled}
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">パスワード</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-muted-foreground hover:text-primary transition-colors"
-
-                >
-                  パスワードをお忘れですか？
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="パスワードを入力"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isDisabled}
-                autoComplete="current-password"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="h-12 w-full"
-              disabled={isDisabled}
-            >
-              {isEmailLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              ログイン
-            </Button>
-          </form>
-
-          {/* Signup link */}
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            アカウントをお持ちでないですか？{" "}
-            <Link
-              href="/signup"
-              className="font-medium text-primary hover:underline"
-            >
-              新規登録
-            </Link>
-          </p>
-
-          {/* Mobile benefits — visible only on small screens */}
-          <ul className="mt-8 space-y-1.5 lg:hidden">
-            {benefits.map((b) => (
-              <li
-                key={b}
-                className="text-xs text-muted-foreground pl-3 relative before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-muted-foreground/40"
-              >
-                {b}
-              </li>
-            ))}
-          </ul>
-
-          {/* Legal footer */}
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            ログインすることで、
-            <Link
-              href="/legal/terms"
-              className="text-primary hover:underline"
-            >
-              利用規約
-            </Link>
-            および
-            <Link
-              href="/legal/privacy"
-              className="text-primary hover:underline"
-            >
-              プライバシーポリシー
-            </Link>
-            に同意したものとみなされます。
-          </p>
+      {/* Divider */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border" />
         </div>
-      </main>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-background px-2 text-muted-foreground">
+            またはメールでログイン
+          </span>
+        </div>
+      </div>
 
-    </div>
+      {/* Email + Password form */}
+      <form ref={formRef} onSubmit={handleEmailLogin} className="space-y-3">
+        <div className="space-y-2">
+          <Label htmlFor="email">メールアドレス</Label>
+          <Input
+            ref={emailInputRef}
+            id="email"
+            name="email"
+            type="email"
+            inputMode="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={isDisabled}
+            autoComplete="email username"
+            spellCheck={false}
+            autoCorrect="off"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorBannerId : undefined}
+          />
+        </div>
+        <div className="space-y-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="password">パスワード</Label>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              パスワードをお忘れですか？
+            </Link>
+          </div>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            placeholder=""
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={isDisabled}
+            autoComplete="current-password"
+            spellCheck={false}
+            autoCorrect="off"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorBannerId : undefined}
+          />
+        </div>
+        <Button
+          type="submit"
+          className="h-12 w-full"
+          disabled={isDisabled}
+          aria-busy={isEmailLoading}
+        >
+          <Loader2
+            className={cn(
+              "mr-2 h-4 w-4 animate-spin",
+              !isEmailLoading && "invisible"
+            )}
+            aria-hidden="true"
+          />
+          ログイン
+        </Button>
+      </form>
+    </AuthShell>
   );
 }
 
@@ -356,8 +326,14 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center" role="status">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" aria-hidden="true" />
+        <div
+          className="flex min-h-screen items-center justify-center"
+          role="status"
+        >
+          <Loader2
+            className="h-8 w-8 animate-spin text-muted-foreground"
+            aria-hidden="true"
+          />
           <span className="sr-only">読み込み中</span>
         </div>
       }

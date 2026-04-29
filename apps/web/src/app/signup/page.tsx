@@ -1,42 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Loader2 } from "lucide-react";
 import { GoogleIcon, XIcon } from "@/components/auth/oauth-icons";
+import { AuthShell } from "@/components/auth/auth-shell";
+import { mapAuthError } from "@/lib/supabase/auth-errors";
 
 // ──────────────────────────────────────────────
-// Benefits list for the brand panel
+// Resend cooldown (seconds) — Supabase rate-limits resend at 60s by default;
+// matching the value in UI prevents user confusion.
 // ──────────────────────────────────────────────
 
-const benefits = [
-  "AI採点で記述式の部分点を即座に判定",
-  "大学生作問者による本格入試対策問題",
-  "9科目対応、難易度別の問題検索",
-  "学習進捗の可視化で効率的な受験対策",
-];
-
-// ──────────────────────────────────────────────
-// Error mapping for signup
-// ──────────────────────────────────────────────
-
-function mapSignUpError(errorMessage: string): string {
-  if (errorMessage.includes("already registered")) {
-    return "このメールアドレスは既に登録されています";
-  }
-  if (
-    errorMessage.includes("rate limit") ||
-    errorMessage.includes("too many requests")
-  ) {
-    return "リクエスト回数が上限に達しました。しばらく時間をおいてお試しください。";
-  }
-  return "アカウントの作成に失敗しました。もう一度お試しください。";
-}
+const RESEND_COOLDOWN_SECONDS = 60;
 
 export default function SignupPage() {
   const [loadingProvider, setLoadingProvider] = useState<string | null>(null);
@@ -46,6 +28,45 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [isEmailLoading, setIsEmailLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [isResending, setIsResending] = useState(false);
+
+  const formRef = useRef<HTMLFormElement>(null);
+  const emailInputRef = useRef<HTMLInputElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  // Hydration sentinel (see middleware.ts for the consumer).
+  useEffect(() => {
+    formRef.current?.setAttribute("data-hydrated", "true");
+  }, []);
+
+  // Auto-focus email on mount unless an error banner is up; in that case
+  // hand focus to the banner so SR users hear it first.
+  useEffect(() => {
+    if (isSuccess) return;
+    if (error) {
+      errorRef.current?.focus();
+      return;
+    }
+    emailInputRef.current?.focus();
+  }, [error, isSuccess]);
+
+  // OAuth safety timeout — see login page for rationale.
+  useEffect(() => {
+    if (!loadingProvider) return;
+    const timer = window.setTimeout(() => setLoadingProvider(null), 30_000);
+    return () => window.clearTimeout(timer);
+  }, [loadingProvider]);
+
+  // Resend cooldown countdown — decrements once a second until zero.
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const timer = window.setTimeout(
+      () => setResendCooldown((s) => s - 1),
+      1000
+    );
+    return () => window.clearTimeout(timer);
+  }, [resendCooldown]);
 
   async function handleOAuth(provider: "google" | "twitter") {
     setLoadingProvider(provider);
@@ -76,281 +97,333 @@ export default function SignupPage() {
     setIsEmailLoading(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-      },
-    });
+    try {
+      const supabase = createClient();
+      const { error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        },
+      });
 
-    if (signUpError) {
-      setError(mapSignUpError(signUpError.message));
+      if (signUpError) {
+        setError(mapAuthError(signUpError, "signup"));
+        return;
+      }
+
+      // Confirmation toast precedes the success view so the user gets two
+      // signals (toast + screen) instead of just a layout swap.
+      toast.success("確認メールを送信しました");
+      setIsSuccess(true);
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+    } finally {
       setIsEmailLoading(false);
-      return;
     }
-
-    setIsSuccess(true);
-    setIsEmailLoading(false);
   };
 
+  async function handleResend() {
+    if (resendCooldown > 0 || !email) return;
+    setIsResending(true);
+    try {
+      const supabase = createClient();
+      const { error: resendError } = await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        },
+      });
+      if (resendError) {
+        toast.error(mapAuthError(resendError, "signup"));
+        return;
+      }
+      toast.success("確認メールを再送信しました");
+      setResendCooldown(RESEND_COOLDOWN_SECONDS);
+    } finally {
+      setIsResending(false);
+    }
+  }
+
+  function handleStartOver() {
+    setIsSuccess(false);
+    setEmail("");
+    setPassword("");
+    setConfirmPassword("");
+    setError(null);
+    setResendCooldown(0);
+  }
+
   const isDisabled = loadingProvider !== null || isEmailLoading;
+  const errorBannerId = "auth-error";
+  const passwordHintId = "password-hint";
+  const confirmPasswordHintId = "confirm-password-hint";
+
+  // ──────────────────────────────────────────────
+  // Success view — confirmation email sent.
+  // ──────────────────────────────────────────────
 
   if (isSuccess) {
     return (
-      <div className="flex min-h-screen items-center justify-center p-6">
-        <div className="w-full max-w-sm text-center">
-          <p className="mb-3 text-2xl" aria-hidden="true">&#10003;</p>
-          <h1 className="mb-2 text-2xl font-bold tracking-tight">
-            確認メールを送信しました
-          </h1>
-          <p className="mb-8 text-sm text-muted-foreground">
-            <strong>{email}</strong>{" "}
-            に確認メールを送信しました。メール内のリンクをクリックしてアカウントを有効化してください。
-          </p>
-          <Button variant="outline" className="w-full" asChild>
-            <Link href="/login">ログインページに戻る</Link>
-          </Button>
+      <AuthShell
+        heading="確認メールを送信しました"
+        subheading="メール内のリンクをクリックしてアカウントを有効化してください"
+      >
+        <div className="space-y-4">
+          <div
+            role="status"
+            className="rounded-lg border border-primary/20 bg-primary/5 p-4 text-center text-sm"
+          >
+            <p className="break-all">
+              <strong>{email}</strong>
+            </p>
+            <p className="mt-1 text-muted-foreground">
+              に確認メールを送信しました
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={handleResend}
+              disabled={resendCooldown > 0 || isResending}
+              aria-busy={isResending}
+            >
+              <Loader2
+                className={cn(
+                  "mr-2 h-4 w-4 animate-spin",
+                  !isResending && "invisible"
+                )}
+                aria-hidden="true"
+              />
+              {resendCooldown > 0
+                ? `確認メールを再送信 (${resendCooldown}秒)`
+                : "確認メールを再送信"}
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              className="w-full"
+              onClick={handleStartOver}
+            >
+              別のメールアドレスで登録
+            </Button>
+
+            <Button variant="ghost" className="w-full" asChild>
+              <Link href="/login">ログインページに戻る</Link>
+            </Button>
+          </div>
         </div>
-      </div>
+      </AuthShell>
     );
   }
 
+  // ──────────────────────────────────────────────
+  // Default view — signup form.
+  // ──────────────────────────────────────────────
+
   return (
-    <div className="flex min-h-screen">
-      {/* Left — Brand panel (hidden on mobile) */}
-      <div className="hidden w-1/2 bg-hero lg:flex lg:flex-col lg:justify-between lg:p-12">
-        {/* Top — Logo */}
-        <Link
-          href="/"
-          className="flex items-center gap-2 transition-opacity hover:opacity-80"
+    <AuthShell
+      heading="アカウントを作成"
+      subheading="問の間に登録して、問題の購入やAI採点を始めましょう"
+      footer={
+        <>
+          既にアカウントをお持ちですか？{" "}
+          <Link
+            href="/login"
+            className="font-medium text-primary hover:underline"
+          >
+            ログイン
+          </Link>
+        </>
+      }
+      legal={
+        <>
+          登録することで、
+          <Link href="/legal/terms" className="text-primary hover:underline">
+            利用規約
+          </Link>
+          および
+          <Link href="/legal/privacy" className="text-primary hover:underline">
+            プライバシーポリシー
+          </Link>
+          に同意したものとみなされます。
+        </>
+      }
+      showMobileBenefits
+    >
+      {error && (
+        <div
+          ref={errorRef}
+          id={errorBannerId}
+          role="alert"
+          tabIndex={-1}
+          className="mb-6 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-center text-sm text-destructive focus:outline-none focus:ring-2 focus:ring-destructive/30"
         >
-          <div className="flex flex-col leading-none">
-            <span className="font-display text-lg font-bold text-white">
-              問の間
-            </span>
-            <span className="text-[10px] font-medium tracking-wider text-white/60">
-              TOINOMA
-            </span>
-          </div>
-        </Link>
-
-        {/* Center — Headline and benefits */}
-        <div className="space-y-6 animate-fade-up">
-          <h1 className="text-3xl font-bold leading-tight text-white">
-            問いと答えが
-            <br />
-            出会う場所
-          </h1>
-          <ul className="space-y-2.5">
-            {benefits.map((b) => (
-              <li key={b} className="text-sm text-white/80 pl-3 relative before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-white/50">
-                {b}
-              </li>
-            ))}
-          </ul>
+          {error}
         </div>
+      )}
 
-        {/* Bottom — Copyright */}
-        <p className="text-xs text-white/40">
-          &copy; {new Date().getFullYear()} Toinoma
-        </p>
+      {/* OAuth buttons — spinner slot reserved to prevent label shift */}
+      <div className="space-y-3">
+        <Button
+          variant="outline"
+          className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
+          onClick={() => handleOAuth("google")}
+          disabled={isDisabled}
+          aria-busy={loadingProvider === "google"}
+        >
+          <span className="relative inline-flex h-5 w-5 items-center justify-center">
+            <GoogleIcon
+              className={cn(
+                "h-5 w-5",
+                loadingProvider === "google" && "invisible"
+              )}
+            />
+            {loadingProvider === "google" && (
+              <Loader2
+                className="absolute h-5 w-5 animate-spin"
+                aria-hidden="true"
+              />
+            )}
+          </span>
+          Googleで登録
+        </Button>
+
+        <Button
+          variant="outline"
+          className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
+          onClick={() => handleOAuth("twitter")}
+          disabled={isDisabled}
+          aria-busy={loadingProvider === "twitter"}
+        >
+          <span className="relative inline-flex h-5 w-5 items-center justify-center">
+            <XIcon
+              className={cn(
+                "h-5 w-5",
+                loadingProvider === "twitter" && "invisible"
+              )}
+            />
+            {loadingProvider === "twitter" && (
+              <Loader2
+                className="absolute h-5 w-5 animate-spin"
+                aria-hidden="true"
+              />
+            )}
+          </span>
+          X (Twitter) で登録
+        </Button>
       </div>
 
-      {/* Right — Signup form */}
-      <main className="flex flex-1 items-center justify-center p-6 pb-16 lg:p-12 lg:pb-12">
-        <div
-          className={cn(
-            "w-full max-w-sm",
-            "animate-fade-up [animation-delay:150ms] [animation-fill-mode:backwards]"
-          )}
-        >
-          {/* Mobile logo — visible only on small screens */}
-          <Link
-            href="/"
-            className="mb-8 flex items-center gap-2 lg:hidden"
+      {/* Divider */}
+      <div className="relative my-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs">
+          <span className="bg-background px-2 text-muted-foreground">
+            またはメールで登録
+          </span>
+        </div>
+      </div>
+
+      {/* Email + Password form */}
+      <form ref={formRef} onSubmit={handleSignup} className="space-y-3">
+        <div className="space-y-2">
+          <Label htmlFor="email">メールアドレス</Label>
+          <Input
+            ref={emailInputRef}
+            id="email"
+            name="email"
+            type="email"
+            inputMode="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            disabled={isDisabled}
+            autoComplete="email username"
+            spellCheck={false}
+            autoCorrect="off"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? errorBannerId : undefined}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="password">パスワード</Label>
+          <Input
+            id="password"
+            name="password"
+            type="password"
+            placeholder=""
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={isDisabled}
+            minLength={8}
+            autoComplete="new-password"
+            spellCheck={false}
+            autoCorrect="off"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={
+              error ? `${errorBannerId} ${passwordHintId}` : passwordHintId
+            }
+          />
+          <p
+            id={passwordHintId}
+            className="text-xs text-muted-foreground"
           >
-            <div className="flex flex-col leading-none">
-              <span className="font-display text-lg font-bold">問の間</span>
-              <span className="text-[10px] font-medium tracking-wider text-muted-foreground">
-                TOINOMA
-              </span>
-            </div>
-          </Link>
-
-          <h2 className="mb-1 text-2xl font-bold tracking-tight">
-            アカウントを作成
-          </h2>
-          <p className="mb-8 text-sm text-muted-foreground">
-            問の間に登録して、問題の購入やAI採点を始めましょう
-          </p>
-
-          {/* Error banner */}
-          {error && (
-            <div
-              role="alert"
-              className="mb-6 rounded-lg border border-destructive/20 bg-destructive/5 p-3 text-center text-sm text-destructive"
-            >
-              {error}
-            </div>
-          )}
-
-          {/* OAuth buttons */}
-          <div className="space-y-3">
-            <Button
-              variant="outline"
-              className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
-              onClick={() => handleOAuth("google")}
-              disabled={isDisabled}
-            >
-              {loadingProvider === "google" ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <GoogleIcon className="h-5 w-5" />
-              )}
-              Googleで登録
-            </Button>
-
-            <Button
-              variant="outline"
-              className="h-12 w-full justify-center gap-3 text-sm font-medium shadow-sm transition-all hover:shadow-md"
-              onClick={() => handleOAuth("twitter")}
-              disabled={isDisabled}
-            >
-              {loadingProvider === "twitter" ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
-              ) : (
-                <XIcon className="h-5 w-5" />
-              )}
-              X (Twitter) で登録
-            </Button>
-          </div>
-
-          {/* Divider */}
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border" />
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="bg-background px-2 text-muted-foreground">
-                またはメールで登録
-              </span>
-            </div>
-          </div>
-
-          {/* Email + Password form */}
-          <form onSubmit={handleSignup} className="space-y-3">
-            <div className="space-y-2">
-              <Label htmlFor="email">メールアドレス</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                disabled={isDisabled}
-                autoComplete="email"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">パスワード</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="8文字以上"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={isDisabled}
-                minLength={8}
-                autoComplete="new-password"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirm-password">パスワード（確認）</Label>
-              <Input
-                id="confirm-password"
-                type="password"
-                placeholder="もう一度入力してください"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                disabled={isDisabled}
-                minLength={8}
-                autoComplete="new-password"
-              />
-            </div>
-            <Button
-              type="submit"
-              className="h-12 w-full"
-              disabled={isDisabled}
-            >
-              {isEmailLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : null}
-              アカウントを作成
-            </Button>
-          </form>
-
-          {/* Login link */}
-          <p className="mt-6 text-center text-sm text-muted-foreground">
-            既にアカウントをお持ちですか？{" "}
-            <Link
-              href="/login"
-              className="font-medium text-primary hover:underline"
-            >
-              ログイン
-            </Link>
-          </p>
-
-          {/* Mobile benefits — visible only on small screens */}
-          <ul className="mt-8 space-y-1.5 lg:hidden">
-            {benefits.map((b) => (
-              <li
-                key={b}
-                className="text-xs text-muted-foreground pl-3 relative before:absolute before:left-0 before:top-[0.55em] before:h-1 before:w-1 before:rounded-full before:bg-muted-foreground/40"
-              >
-                {b}
-              </li>
-            ))}
-          </ul>
-
-          {/* Legal footer */}
-          <p className="mt-8 text-center text-xs text-muted-foreground">
-            登録することで、
-            <Link
-              href="/legal/terms"
-              className="text-primary hover:underline"
-            >
-              利用規約
-            </Link>
-            および
-            <Link
-              href="/legal/privacy"
-              className="text-primary hover:underline"
-            >
-              プライバシーポリシー
-            </Link>
-            に同意したものとみなされます。
+            8文字以上で入力してください
           </p>
         </div>
-      </main>
-
-      {/* Minimal footer for mobile (desktop has brand panel copyright) */}
-      <footer className="fixed inset-x-0 bottom-0 flex items-center justify-center gap-4 bg-background/80 py-4 text-xs text-muted-foreground backdrop-blur-sm lg:hidden">
-        <Link href="/legal/terms" className="hover:text-foreground transition-colors">
-          利用規約
-        </Link>
-        <Link href="/legal/privacy" className="hover:text-foreground transition-colors">
-          プライバシー
-        </Link>
-        <Link href="/help" className="hover:text-foreground transition-colors">
-          ヘルプ
-        </Link>
-        <span>&copy; {new Date().getFullYear()} Toinoma</span>
-      </footer>
-    </div>
+        <div className="space-y-2">
+          <Label htmlFor="confirm-password">パスワード（確認）</Label>
+          <Input
+            id="confirm-password"
+            name="confirm-password"
+            type="password"
+            placeholder=""
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            disabled={isDisabled}
+            minLength={8}
+            autoComplete="new-password"
+            spellCheck={false}
+            autoCorrect="off"
+            aria-invalid={error ? true : undefined}
+            aria-describedby={
+              error
+                ? `${errorBannerId} ${confirmPasswordHintId}`
+                : confirmPasswordHintId
+            }
+          />
+          <p
+            id={confirmPasswordHintId}
+            className="text-xs text-muted-foreground"
+          >
+            上のパスワードと一致するように入力してください
+          </p>
+        </div>
+        <Button
+          type="submit"
+          className="h-12 w-full"
+          disabled={isDisabled}
+          aria-busy={isEmailLoading}
+        >
+          <Loader2
+            className={cn(
+              "mr-2 h-4 w-4 animate-spin",
+              !isEmailLoading && "invisible"
+            )}
+            aria-hidden="true"
+          />
+          アカウントを作成
+        </Button>
+      </form>
+    </AuthShell>
   );
 }
