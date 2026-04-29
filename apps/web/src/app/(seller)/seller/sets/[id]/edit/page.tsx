@@ -51,9 +51,14 @@ export default async function EditProblemSetPage({
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">{ps.title}</p>
         </div>
-        <Button variant="outline" size="sm" asChild>
-          <Link href={`/seller/sets/${id}/rubric`}>ルーブリック編集</Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/seller/sets/${id}/content`}>問題内容を編集</Link>
+          </Button>
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/seller/sets/${id}/rubric`}>ルーブリック編集</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-6">

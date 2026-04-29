@@ -166,6 +166,11 @@ export interface Database {
           purchase_count: number;
           avg_rating: number | null;
           review_count: number;
+          structured_content: Json | null;
+          content_format: "legacy_pdf" | "structured" | "hybrid";
+          writing_mode: "horizontal" | "vertical" | "auto";
+          source_pdf_path: string | null;
+          structured_content_version: number;
           created_at: string;
           updated_at: string;
         };
@@ -189,6 +194,11 @@ export interface Database {
           purchase_count?: number;
           avg_rating?: number | null;
           review_count?: number;
+          structured_content?: Json | null;
+          content_format?: "legacy_pdf" | "structured" | "hybrid";
+          writing_mode?: "horizontal" | "vertical" | "auto";
+          source_pdf_path?: string | null;
+          structured_content_version?: number;
           created_at?: string;
           updated_at?: string;
         };
@@ -210,6 +220,11 @@ export interface Database {
           purchase_count?: number;
           avg_rating?: number | null;
           review_count?: number;
+          structured_content?: Json | null;
+          content_format?: "legacy_pdf" | "structured" | "hybrid";
+          writing_mode?: "horizontal" | "vertical" | "auto";
+          source_pdf_path?: string | null;
+          structured_content_version?: number;
           updated_at?: string;
         };
         Relationships: [
@@ -218,6 +233,129 @@ export interface Database {
             columns: ["seller_id"];
             isOneToOne: false;
             referencedRelation: "seller_profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      content_assets: {
+        Row: {
+          id: string;
+          problem_set_id: string;
+          kind: "figure" | "table_image" | "audio" | "photo" | "math_image";
+          label: string | null;
+          storage_bucket: string;
+          storage_path: string;
+          mime_type: string;
+          width: number | null;
+          height: number | null;
+          duration_ms: number | null;
+          alt_text: string | null;
+          byte_size: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          problem_set_id: string;
+          kind: "figure" | "table_image" | "audio" | "photo" | "math_image";
+          label?: string | null;
+          storage_bucket?: string;
+          storage_path: string;
+          mime_type: string;
+          width?: number | null;
+          height?: number | null;
+          duration_ms?: number | null;
+          alt_text?: string | null;
+          byte_size?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          kind?: "figure" | "table_image" | "audio" | "photo" | "math_image";
+          label?: string | null;
+          storage_bucket?: string;
+          storage_path?: string;
+          mime_type?: string;
+          width?: number | null;
+          height?: number | null;
+          duration_ms?: number | null;
+          alt_text?: string | null;
+          byte_size?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "content_assets_problem_set_id_fkey";
+            columns: ["problem_set_id"];
+            isOneToOne: false;
+            referencedRelation: "problem_sets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      parse_jobs: {
+        Row: {
+          id: string;
+          user_id: string;
+          problem_set_id: string | null;
+          source_storage_bucket: string;
+          source_storage_path: string;
+          source_mime: string;
+          source_subject: Subject | null;
+          status: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+          progress: number;
+          error_code: string | null;
+          error_message: string | null;
+          result_ast: Json | null;
+          result_warnings: Json | null;
+          pages_total: number | null;
+          pages_processed: number | null;
+          attempt: number;
+          started_at: string | null;
+          completed_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id: string;
+          problem_set_id?: string | null;
+          source_storage_bucket?: string;
+          source_storage_path: string;
+          source_mime: string;
+          source_subject?: Subject | null;
+          status?: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+          progress?: number;
+          error_code?: string | null;
+          error_message?: string | null;
+          result_ast?: Json | null;
+          result_warnings?: Json | null;
+          pages_total?: number | null;
+          pages_processed?: number | null;
+          attempt?: number;
+          started_at?: string | null;
+          completed_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          problem_set_id?: string | null;
+          status?: "queued" | "running" | "succeeded" | "failed" | "cancelled";
+          progress?: number;
+          error_code?: string | null;
+          error_message?: string | null;
+          result_ast?: Json | null;
+          result_warnings?: Json | null;
+          pages_total?: number | null;
+          pages_processed?: number | null;
+          attempt?: number;
+          started_at?: string | null;
+          completed_at?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "parse_jobs_problem_set_id_fkey";
+            columns: ["problem_set_id"];
+            isOneToOne: false;
+            referencedRelation: "problem_sets";
             referencedColumns: ["id"];
           },
         ];

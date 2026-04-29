@@ -381,6 +381,38 @@
     writing-mode: horizontal-tb;
   }
 
+  /* Structured-content renderer styles */
+  .structured-content {
+    font-feature-settings: "palt" 1;
+  }
+  .structured-content.structured-vertical .structured-passage,
+  .structured-content .structured-passage[data-passage-lang="ja-classical"],
+  .structured-content .structured-passage[data-passage-lang="kanbun"] {
+    font-family: "Noto Serif JP", "Hiragino Mincho ProN", serif;
+    line-height: 2;
+    letter-spacing: 0.05em;
+  }
+  .structured-content .ruby-node rt {
+    font-size: 0.55em;
+    font-weight: 400;
+    letter-spacing: 0;
+  }
+  .structured-content .kakko {
+    font-feature-settings: "palt" 1;
+  }
+  .structured-content [data-confidence="low"]::after,
+  .structured-content [data-confidence="image_fallback"]::after {
+    content: "?";
+    color: hsl(35 100% 45%);
+    font-weight: 700;
+    font-size: 0.7em;
+    margin-inline-start: 0.1em;
+    vertical-align: super;
+  }
+  .structured-content .structured-kanbun {
+    font-family: "Noto Serif JP", "Hiragino Mincho ProN", "SimSun", serif;
+  }
+
   /* A4 print styles */
   @media print {
     .no-print {
