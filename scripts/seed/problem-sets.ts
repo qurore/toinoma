@@ -4,11 +4,13 @@ import type { ProblemSetRubric } from "@toinoma/shared/schemas";
 import { log } from "./logger";
 import type { QuestionOutcome } from "./questions";
 import type { ProblemSetSpec } from "./types";
+import { loadStructuredContent } from "./structured-content";
 
 export interface ProblemSetOutcome {
   spec: ProblemSetSpec;
   problemSetId: string;
   created: boolean;
+  structuredContentSource: "parsed" | "stub" | "skipped";
 }
 
 interface BuildArgs {
@@ -17,6 +19,8 @@ interface BuildArgs {
   spec: ProblemSetSpec;
   problemPdfUrl: string;
   solutionPdfUrl: string;
+  /** Internal storage path of the source problem.pdf, e.g. `<uid>/utokyo-2026/<slug>/problem.pdf`. */
+  sourcePdfPath: string | null;
   questions: QuestionOutcome[];
   hasJunction: boolean;
   availableColumns: Set<string>;
@@ -55,6 +59,7 @@ export async function ensureProblemSet(
     spec,
     problemPdfUrl,
     solutionPdfUrl,
+    sourcePdfPath,
     questions,
     hasJunction,
     availableColumns,
@@ -109,6 +114,37 @@ export async function ensureProblemSet(
     if (availableColumns.has(key)) basePayload[key] = value;
   }
 
+  // Structured-content columns. Tolerate degraded schemas — only set columns that exist.
+  let structuredSource: ProblemSetOutcome["structuredContentSource"] = "skipped";
+  const hasStructuredCol = availableColumns.has("structured_content");
+  const hasContentFormatCol = availableColumns.has("content_format");
+  const hasWritingModeCol = availableColumns.has("writing_mode");
+  const hasSourcePdfPathCol = availableColumns.has("source_pdf_path");
+
+  if (hasStructuredCol || hasContentFormatCol || hasWritingModeCol || hasSourcePdfPathCol) {
+    const loaded = loadStructuredContent(spec);
+    structuredSource = loaded.source;
+
+    if (hasStructuredCol) {
+      basePayload.structured_content = loaded.ast as unknown as Json;
+    }
+    if (hasContentFormatCol) {
+      basePayload.content_format = "structured";
+    }
+    if (hasWritingModeCol) {
+      basePayload.writing_mode = spec.writingMode;
+    }
+    if (hasSourcePdfPathCol && sourcePdfPath) {
+      basePayload.source_pdf_path = sourcePdfPath;
+    }
+
+    log(
+      { phase: "problem_sets", subject: spec.subjectSlug },
+      `structured_content: ${loaded.source}` +
+        (loaded.filePath ? ` (file=${loaded.filePath.replace(/^.*\/data\//, "data/")})` : ""),
+    );
+  }
+
   // The seed must tolerate degraded schemas where some Insert columns don't
   // exist in the live DB. We erase the strict Database typing on the table
   // builder for these calls — capability detection upstream guarantees the
@@ -143,7 +179,12 @@ export async function ensureProblemSet(
     if (hasJunction && questions.length > 0) {
       await ensureProblemSetQuestions(supabase, existingId, questions);
     }
-    return { spec, problemSetId: existingId, created: false };
+    return {
+      spec,
+      problemSetId: existingId,
+      created: false,
+      structuredContentSource: structuredSource,
+    };
   }
 
   const { data: inserted, error: insertError } = await rawTable
@@ -157,7 +198,12 @@ export async function ensureProblemSet(
   if (hasJunction && questions.length > 0) {
     await ensureProblemSetQuestions(supabase, inserted.id, questions);
   }
-  return { spec, problemSetId: inserted.id, created: true };
+  return {
+    spec,
+    problemSetId: inserted.id,
+    created: true,
+    structuredContentSource: structuredSource,
+  };
 }
 
 async function ensureProblemSetQuestions(

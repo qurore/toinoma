@@ -13,6 +13,7 @@
     "clean": "turbo clean",
     "seed:utokyo": "tsx scripts/seed-utokyo-2026.ts",
     "seed:utokyo:dry": "tsx scripts/seed-utokyo-2026.ts --dry-run",
+    "seed:utokyo:parse": "tsx scripts/parse-utokyo-fixtures.ts",
     "seed:utokyo:test": "vitest run --config scripts/seed/__tests__/vitest.config.mts",
     "seed:utokyo:typecheck": "tsc --noEmit -p scripts/tsconfig.json"
   },

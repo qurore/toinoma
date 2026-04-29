@@ -1,4 +1,8 @@
-import type { QuestionRubric } from "@toinoma/shared/schemas";
+import type {
+  PassageLang,
+  QuestionRubric,
+  WritingMode,
+} from "@toinoma/shared/schemas";
 import type { AnswerType, Difficulty, Subject } from "@toinoma/shared/types";
 
 export interface QuestionSpec {
@@ -23,4 +27,8 @@ export interface ProblemSetSpec {
   difficulty: Difficulty;
   timeLimitMinutes: number;
   questions: QuestionSpec[];
+  /** Default rendering mode for the structured content of this set. */
+  writingMode: WritingMode;
+  /** Default language hint for the structured content of this set. */
+  defaultLang: PassageLang;
 }

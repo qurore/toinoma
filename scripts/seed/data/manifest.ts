@@ -50,6 +50,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "medium",
     timeLimitMinutes: 120,
     questions: englishQuestions,
+    writingMode: "horizontal",
+    defaultLang: "en",
   },
   {
     subjectSlug: "math_sciences",
@@ -59,6 +61,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "hard",
     timeLimitMinutes: 150,
     questions: mathSciencesQuestions,
+    writingMode: "horizontal",
+    defaultLang: "ja-modern",
   },
   {
     subjectSlug: "math_humanities",
@@ -68,6 +72,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "medium",
     timeLimitMinutes: 100,
     questions: mathHumanitiesQuestions,
+    writingMode: "horizontal",
+    defaultLang: "ja-modern",
   },
   {
     subjectSlug: "japanese_sciences",
@@ -77,6 +83,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "hard",
     timeLimitMinutes: 100,
     questions: japaneseSciencesQuestions,
+    writingMode: "vertical",
+    defaultLang: "mixed",
   },
   {
     subjectSlug: "japanese_humanities",
@@ -86,6 +94,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "hard",
     timeLimitMinutes: 150,
     questions: japaneseHumanitiesQuestions,
+    writingMode: "vertical",
+    defaultLang: "mixed",
   },
   {
     subjectSlug: "physics",
@@ -95,6 +105,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "hard",
     timeLimitMinutes: 75,
     questions: physicsQuestions,
+    writingMode: "horizontal",
+    defaultLang: "ja-modern",
   },
   {
     subjectSlug: "chemistry",
@@ -104,6 +116,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "hard",
     timeLimitMinutes: 75,
     questions: chemistryQuestions,
+    writingMode: "horizontal",
+    defaultLang: "ja-modern",
   },
   {
     subjectSlug: "biology",
@@ -113,6 +127,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "hard",
     timeLimitMinutes: 75,
     questions: biologyQuestions,
+    writingMode: "horizontal",
+    defaultLang: "ja-modern",
   },
   {
     subjectSlug: "japanese_history",
@@ -122,6 +138,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "hard",
     timeLimitMinutes: 80,
     questions: japaneseHistoryQuestions,
+    writingMode: "horizontal",
+    defaultLang: "ja-modern",
   },
   {
     subjectSlug: "world_history",
@@ -131,6 +149,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "hard",
     timeLimitMinutes: 80,
     questions: worldHistoryQuestions,
+    writingMode: "horizontal",
+    defaultLang: "ja-modern",
   },
   {
     subjectSlug: "geography",
@@ -140,6 +160,8 @@ export const MANIFEST: readonly ProblemSetSpec[] = [
     difficulty: "medium",
     timeLimitMinutes: 80,
     questions: geographyQuestions,
+    writingMode: "horizontal",
+    defaultLang: "ja-modern",
   },
 ] as const;
 

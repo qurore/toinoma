@@ -125,6 +125,17 @@ async function summarizeDegradedMode(
   if (missingCols.length > 0) {
     notes.push(`problem_sets columns missing: ${missingCols.join(", ")} — those fields will be OMITTED`);
   }
+  const missingStructured = [
+    "structured_content",
+    "content_format",
+    "writing_mode",
+    "source_pdf_path",
+  ].filter((c) => !capabilities.problemSetColumns.has(c));
+  if (missingStructured.length > 0) {
+    notes.push(
+      `problem_sets structured-content columns missing: ${missingStructured.join(", ")} — apply migration 20260428200000_structured_content_parser.sql`,
+    );
+  }
   return notes;
 }
 
@@ -278,6 +289,7 @@ async function main(): Promise<void> {
 
     let problemUrl = "";
     let solutionUrl = "";
+    const problemObjectPath = `${sellerResult.sellerUserId}/utokyo-2026/${setSpec.subjectSlug}/problem.pdf`;
 
     if (!flags.skipStorage) {
       for (const kind of ["problem", "answer", "analysis"] as const) {
@@ -312,9 +324,7 @@ async function main(): Promise<void> {
     } else {
       problemUrl = supabase.storage
         .from(PROBLEM_PDFS_BUCKET)
-        .getPublicUrl(
-          `${sellerResult.sellerUserId}/utokyo-2026/${setSpec.subjectSlug}/problem.pdf`
-        ).data.publicUrl;
+        .getPublicUrl(problemObjectPath).data.publicUrl;
       solutionUrl = supabase.storage
         .from(PROBLEM_PDFS_BUCKET)
         .getPublicUrl(
@@ -338,11 +348,31 @@ async function main(): Promise<void> {
       spec: setSpec,
       problemPdfUrl: problemUrl,
       solutionPdfUrl: solutionUrl,
+      sourcePdfPath: problemObjectPath,
       questions: questionOutcomes,
       hasJunction: capabilities.hasJunction,
       availableColumns: capabilities.problemSetColumns,
     });
     problemSetOutcomes.push(setOutcome);
+  }
+
+  // Summarize structured-content sources across all sets.
+  const structuredCounts = problemSetOutcomes.reduce(
+    (acc, o) => {
+      acc[o.structuredContentSource] = (acc[o.structuredContentSource] ?? 0) + 1;
+      return acc;
+    },
+    {} as Record<string, number>,
+  );
+  log(
+    { phase: "summary" },
+    `structured_content: parsed=${structuredCounts.parsed ?? 0}, stub=${structuredCounts.stub ?? 0}, skipped=${structuredCounts.skipped ?? 0}`,
+  );
+  if ((structuredCounts.stub ?? 0) > 0) {
+    log(
+      { phase: "summary" },
+      `→ Run \`pnpm seed:utokyo:parse\` to replace stubs with real parsed AST (uses Gemini API).`,
+    );
   }
 
   log({ phase: "summary" }, `uploads: ${totalUploaded}/${totalPdfs} new, ${formatBytes(totalPdfBytes)} total`);

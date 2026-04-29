@@ -80,6 +80,38 @@ describe("manifest", () => {
     expect(photoMarkedCount).toBeGreaterThanOrEqual(11);
   });
 
+  it("every set declares a writingMode and defaultLang", () => {
+    for (const set of MANIFEST) {
+      expect(["horizontal", "vertical"], `set ${set.subjectSlug}`).toContain(
+        set.writingMode,
+      );
+      expect(
+        ["ja-modern", "ja-classical", "kanbun", "en", "mixed"],
+        `set ${set.subjectSlug}`,
+      ).toContain(set.defaultLang);
+    }
+  });
+
+  it("japanese sets default to vertical writing-mode", () => {
+    const japaneseSets = MANIFEST.filter((s) => s.dbSubject === "japanese");
+    expect(japaneseSets).toHaveLength(2);
+    for (const s of japaneseSets) {
+      expect(s.writingMode, `${s.subjectSlug}`).toBe("vertical");
+    }
+  });
+
+  it("english set defaults to en lang", () => {
+    const en = MANIFEST.find((s) => s.subjectSlug === "english");
+    expect(en?.defaultLang).toBe("en");
+  });
+
+  it("non-japanese sets default to horizontal writing-mode", () => {
+    const nonJapanese = MANIFEST.filter((s) => s.dbSubject !== "japanese");
+    for (const s of nonJapanese) {
+      expect(s.writingMode, `${s.subjectSlug}`).toBe("horizontal");
+    }
+  });
+
   it("all titles fit visual-width contract (<=24 columns)", () => {
     function visualWidth(s: string): number {
       let w = 0;
